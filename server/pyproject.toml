@@ -1,0 +1,88 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hungarian-tarokk-server"
+version = "1.0.0"
+description = "WebSocket server for Hungarian Tarokk card game"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    { name = "Your Name" }
+]
+dependencies = [
+    "fastapi==0.115.0",
+    "python-socketio==5.11.0",
+    "uvicorn[standard]==0.30.0",
+    "pydantic==2.9.0",
+    "pydantic-settings==2.5.0",
+    "python-dotenv==1.0.1",
+    "structlog==24.4.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.3.0",
+    "pytest-asyncio==0.24.0",
+    "pytest-cov==5.0.0",
+    "ruff==0.6.0",
+]
+
+[tool.setuptools]
+packages = ["models", "game_logic", "networking", "validation", "utils"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--tb=short",
+    "--disable-warnings",
+]
+markers = [
+    "slow: marks tests as slow",
+    "integration: marks tests as integration tests",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+    "B008",  # do not perform function calls in argument defaults
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # unused imports in __init__.py
+"tests/*" = ["B011"]      # assert False checks
+
+[tool.coverage.run]
+source = ["server"]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]

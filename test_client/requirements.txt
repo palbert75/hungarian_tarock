@@ -1,0 +1,5 @@
+python-socketio[client]==5.11.0
+websocket-client==1.8.0
+requests==2.32.0
+prompt-toolkit==3.0.47
+rich==13.7.1

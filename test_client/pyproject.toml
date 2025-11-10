@@ -1,0 +1,13 @@
+[project]
+name = "test-client"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "prompt-toolkit==3.0.47",
+    "python-socketio[client]==5.11.0",
+    "requests==2.32.0",
+    "rich==13.7.1",
+    "websocket-client==1.8.0",
+]
