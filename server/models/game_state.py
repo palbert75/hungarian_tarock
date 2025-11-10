@@ -9,6 +9,7 @@ from models.card import Card, TarokkRank
 from models.deck import Deck
 from models.player import Player
 from models.bid import Bid, BidType
+from models.announcement import Announcement
 
 
 class GamePhase(str, Enum):
@@ -59,6 +60,10 @@ class GameState(BaseModel):
 
     # Discard phase tracking
     players_who_discarded: List[int] = Field(default_factory=list)
+
+    # Announcements
+    announcements: List[Announcement] = Field(default_factory=list)
+    announcement_history: List[Optional[Announcement]] = Field(default_factory=list)  # Track all actions (announcement or None for pass)
 
     def add_player(self, player: Player) -> None:
         """Add a player to the game."""
@@ -293,6 +298,51 @@ class GameState(BaseModel):
 
         raise ValueError(f"Called card {tarokk_rank} not found in any player's hand")
 
+    def start_announcement_phase(self) -> None:
+        """Start the announcement phase."""
+        self.phase = GamePhase.ANNOUNCEMENTS
+        self.announcement_history.clear()
+        self.announcements.clear()
+        # Start with dealer's right
+        self.current_turn = self.dealer_right_position()
+
+    def make_announcement(self, announcement: Announcement) -> None:
+        """
+        Add an announcement to the game.
+
+        Args:
+            announcement: The announcement to add
+        """
+        self.announcements.append(announcement)
+        self.announcement_history.append(announcement)
+        # Move to next player
+        self.current_turn = self.next_position(self.current_turn)
+
+    def player_pass_announcement(self, player_position: int) -> None:
+        """
+        Mark that a player has passed on making announcements.
+
+        Args:
+            player_position: Position of player who passed
+        """
+        # None indicates a pass
+        self.announcement_history.append(None)
+        # Move to next player
+        self.current_turn = self.next_position(self.current_turn)
+
+    def is_announcement_phase_complete(self) -> bool:
+        """
+        Check if the announcement phase is complete.
+
+        Phase ends when 3 consecutive passes occur (similar to bidding).
+        """
+        if len(self.announcement_history) < 3:
+            return False
+
+        # Check if last 3 actions were all passes (None)
+        last_three = self.announcement_history[-3:]
+        return all(action is None for action in last_three)
+
     def start_playing(self) -> None:
         """Start the trick-taking phase."""
         self.phase = GamePhase.PLAYING
@@ -446,4 +496,5 @@ class GameState(BaseModel):
             "trick_number": self.trick_number,
             "current_trick": [{"player": pos, "card": card.to_dict()} for pos, card in self.current_trick],
             "talon": [card.to_dict() for card in self.talon],
+            "announcements": [a.to_dict() for a in self.announcements],
         }

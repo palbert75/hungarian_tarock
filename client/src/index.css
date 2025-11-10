@@ -1,0 +1,121 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Color palette */
+  --color-table-green: #1a5f3f;
+  --color-table-felt: #2a7f5f;
+  --color-card-back: #8b0000;
+
+  /* Suit colors */
+  --color-hearts: #dc143c;
+  --color-diamonds: #dc143c;
+  --color-spades: #000000;
+  --color-clubs: #000000;
+  --color-tarokk: #4169e1;
+
+  /* UI colors */
+  --color-gold: #ffd700;
+  --color-silver: #c0c0c0;
+  --color-bronze: #cd7f32;
+
+  /* Semantic colors */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+
+  /* Backgrounds */
+  --color-bg-primary: #1e293b;
+  --color-bg-secondary: #334155;
+  --color-bg-elevated: #475569;
+
+  /* Text */
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #cbd5e1;
+  --color-text-muted: #94a3b8;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  overflow: hidden;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-bg-elevated);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Accessibility - Focus indicators */
+*:focus-visible {
+  outline: 3px solid var(--color-info);
+  outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .card {
+    border: 3px solid currentColor;
+  }
+}
+
+/* Utility classes */
+.text-gradient {
+  background: linear-gradient(135deg, var(--color-gold), var(--color-bronze));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glow {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+}
+
+.card-shadow {
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.3),
+    0 2px 4px -1px rgba(0, 0, 0, 0.2);
+}
+
+.card-shadow-lg {
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.4),
+    0 10px 10px -5px rgba(0, 0, 0, 0.3);
+}

@@ -1,7 +1,8 @@
 """Game rules validation for Hungarian Tarokk."""
 
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 from models.card import Card, Suit
+from models.announcement import AnnouncementType
 
 
 def get_legal_cards(hand: List[Card], lead_suit: Suit, is_first_card: bool = False) -> List[Card]:
@@ -203,3 +204,69 @@ def has_four_kings(hand: List[Card]) -> bool:
         True if hand has all four Kings
     """
     return len([c for c in hand if c.is_king()]) == 4
+
+
+def can_announce(hand: List[Card], announcement_type: AnnouncementType) -> Tuple[bool, str]:
+    """
+    Check if a player can make a specific announcement.
+
+    Args:
+        hand: Player's hand
+        announcement_type: Type of announcement to check
+
+    Returns:
+        Tuple of (can_announce, error_message)
+    """
+    if announcement_type == AnnouncementType.TRULL:
+        if has_trull(hand):
+            return True, "OK"
+        return False, "Must have all 3 honours (skíz, XXI, pagát) for Trull"
+
+    elif announcement_type == AnnouncementType.FOUR_KINGS:
+        if has_four_kings(hand):
+            return True, "OK"
+        return False, "Must have all 4 Kings for Four Kings announcement"
+
+    elif announcement_type == AnnouncementType.DOUBLE_GAME:
+        # Double game is a prediction, not based on cards
+        return True, "OK"
+
+    elif announcement_type == AnnouncementType.VOLAT:
+        # Volat is a prediction, not based on cards
+        return True, "OK"
+
+    elif announcement_type == AnnouncementType.PAGAT_ULTIMO:
+        # Must have pagát (I) to announce pagát ultimó
+        has_pagat = any(c.is_honour() and c.rank == "I" for c in hand)
+        if has_pagat:
+            return True, "OK"
+        return False, "Must have pagát (I) to announce pagát ultimó"
+
+    elif announcement_type == AnnouncementType.XXI_CATCH:
+        # Must have skíz to catch XXI
+        has_skiz = any(c.is_honour() and c.rank.lower() == "skiz" for c in hand)
+        if has_skiz:
+            return True, "OK"
+        return False, "Must have skíz to announce XXI catch"
+
+    return False, "Unknown announcement type"
+
+
+def get_valid_announcements(hand: List[Card]) -> List[AnnouncementType]:
+    """
+    Get list of valid announcements a player can make.
+
+    Args:
+        hand: Player's hand
+
+    Returns:
+        List of valid announcement types
+    """
+    valid = []
+
+    for announcement_type in AnnouncementType:
+        can_make, _ = can_announce(hand, announcement_type)
+        if can_make:
+            valid.append(announcement_type)
+
+    return valid

@@ -7,13 +7,14 @@ import structlog
 from networking.protocol import (
     MessageType, Message, create_error_message,
     JoinRoomMessage, PlaceBidMessage, DiscardCardsMessage,
-    CallPartnerMessage, PlayCardMessage
+    CallPartnerMessage, MakeAnnouncementMessage, PlayCardMessage
 )
 from networking.room_manager import RoomManager
 from models.bid import BidType
 from models.game_state import GamePhase
+from models.announcement import Announcement, AnnouncementType
 from game_logic.bidding import BiddingManager
-from validation.rules import get_legal_cards, validate_discard
+from validation.rules import get_legal_cards, validate_discard, can_announce
 
 logger = structlog.get_logger()
 
@@ -296,12 +297,120 @@ async def call_partner(sid: str, data: dict):
             "called_card": tarokk_rank
         })
 
-        # Start trick-taking
-        await start_trick_taking(room)
+        # Start announcement phase
+        await start_announcement_phase(room)
 
     except Exception as e:
         logger.error("call_partner_error", sid=sid, error=str(e))
         await sio.emit("error", create_error_message("CALL_PARTNER_ERROR", str(e)).to_dict(), room=sid)
+
+
+@sio.event
+async def make_announcement(sid: str, data: dict):
+    """Handle make announcement action."""
+    try:
+        room = room_manager.get_room_by_session(sid)
+        if not room:
+            raise ValueError("Not in a room")
+
+        player = room.get_player_by_session(sid)
+        if not player:
+            raise ValueError("Player not found")
+
+        game_state = room.game_state
+
+        if game_state.phase != GamePhase.ANNOUNCEMENTS:
+            raise ValueError("Not in announcement phase")
+
+        if game_state.current_turn != player.position:
+            raise ValueError("Not your turn")
+
+        announcement_type_str = data.get("announcement_type")
+        announced = data.get("announced", True)
+
+        if not announcement_type_str:
+            raise ValueError("Must specify announcement type")
+
+        announcement_type = AnnouncementType(announcement_type_str)
+
+        # Validate announcement
+        is_valid, error = can_announce(player.hand, announcement_type)
+        if not is_valid:
+            raise ValueError(error)
+
+        # Create and add announcement
+        announcement = Announcement(
+            player_position=player.position,
+            announcement_type=announcement_type,
+            announced=announced
+        )
+        game_state.make_announcement(announcement)
+
+        # Notify all players
+        await broadcast_to_room(room.room_id, MessageType.ANNOUNCEMENT_MADE, {
+            "player_position": player.position,
+            "announcement_type": announcement_type_str,
+            "announced": announced
+        })
+
+        # Check if announcement phase is complete
+        if game_state.is_announcement_phase_complete():
+            await broadcast_to_room(room.room_id, MessageType.ANNOUNCEMENTS_COMPLETE, {})
+            # Start trick-taking
+            await start_trick_taking(room)
+        else:
+            # Notify next player
+            await send_your_turn(room, game_state.current_turn)
+
+        await broadcast_game_state(room.room_id)
+
+    except Exception as e:
+        logger.error("make_announcement_error", sid=sid, error=str(e))
+        await sio.emit("error", create_error_message("ANNOUNCEMENT_ERROR", str(e)).to_dict(), room=sid)
+
+
+@sio.event
+async def pass_announcement(sid: str, data: dict):
+    """Handle pass announcement action."""
+    try:
+        room = room_manager.get_room_by_session(sid)
+        if not room:
+            raise ValueError("Not in a room")
+
+        player = room.get_player_by_session(sid)
+        if not player:
+            raise ValueError("Player not found")
+
+        game_state = room.game_state
+
+        if game_state.phase != GamePhase.ANNOUNCEMENTS:
+            raise ValueError("Not in announcement phase")
+
+        if game_state.current_turn != player.position:
+            raise ValueError("Not your turn")
+
+        # Mark player as passed
+        game_state.player_pass_announcement(player.position)
+
+        # Notify all players
+        await broadcast_to_room(room.room_id, MessageType.PASS_ANNOUNCEMENT, {
+            "player_position": player.position
+        })
+
+        # Check if announcement phase is complete
+        if game_state.is_announcement_phase_complete():
+            await broadcast_to_room(room.room_id, MessageType.ANNOUNCEMENTS_COMPLETE, {})
+            # Start trick-taking
+            await start_trick_taking(room)
+        else:
+            # Notify next player
+            await send_your_turn(room, game_state.current_turn)
+
+        await broadcast_game_state(room.room_id)
+
+    except Exception as e:
+        logger.error("pass_announcement_error", sid=sid, error=str(e))
+        await sio.emit("error", create_error_message("PASS_ANNOUNCEMENT_ERROR", str(e)).to_dict(), room=sid)
 
 
 @sio.event
@@ -438,6 +547,12 @@ async def send_your_turn(room: Any, player_position: int):
     elif game_state.phase == GamePhase.PARTNER_CALL:
         your_turn_data["valid_actions"] = ["call_partner"]
 
+    elif game_state.phase == GamePhase.ANNOUNCEMENTS:
+        from validation.rules import get_valid_announcements
+        your_turn_data["valid_actions"] = ["make_announcement", "pass_announcement"]
+        valid_announcements = get_valid_announcements(player.hand)
+        your_turn_data["valid_announcements"] = [a.value for a in valid_announcements]
+
     elif game_state.phase == GamePhase.PLAYING:
         your_turn_data["valid_actions"] = ["play_card"]
         # Get legal cards
@@ -501,6 +616,16 @@ async def handle_partner_call_phase(room):
 
     # Notify declarer to call partner
     await send_your_turn(room, game_state.declarer_position)
+
+
+async def start_announcement_phase(room):
+    """Start the announcement phase."""
+    game_state = room.game_state
+    game_state.start_announcement_phase()
+
+    await broadcast_game_state(room.room_id)
+    # Notify first player (dealer's right)
+    await send_your_turn(room, game_state.current_turn)
 
 
 async def start_trick_taking(room):

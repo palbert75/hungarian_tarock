@@ -197,6 +197,26 @@ class TarokkClient:
             self._trigger_handlers("partner_revealed", data)
 
         @self.sio.event
+        def announcement_made(data):
+            player_pos = data.get("player_position")
+            announcement_type = data.get("announcement_type")
+            announced = data.get("announced", True)
+            status = "announced" if announced else "silent"
+            self.log(f"[bold yellow]📢 Player {player_pos} made announcement: {announcement_type} ({status})[/bold yellow]")
+            self._trigger_handlers("announcement_made", data)
+
+        @self.sio.event
+        def pass_announcement(data):
+            player_pos = data.get("player_position")
+            self.log(f"[dim]Player {player_pos} passed on announcements[/dim]")
+            self._trigger_handlers("pass_announcement", data)
+
+        @self.sio.event
+        def announcements_complete(data):
+            self.log(f"[bold green]✓ Announcement phase complete[/bold green]")
+            self._trigger_handlers("announcements_complete", data)
+
+        @self.sio.event
         def card_played(data):
             player_pos = data.get("player_position")
             card = data.get("card", {})
@@ -378,6 +398,17 @@ class TarokkClient:
     def call_partner(self, tarokk_rank: str):
         """Call partner."""
         self.sio.emit("call_partner", {"tarokk_rank": tarokk_rank})
+
+    def make_announcement(self, announcement_type: str, announced: bool = True):
+        """Make an announcement."""
+        self.sio.emit("make_announcement", {
+            "announcement_type": announcement_type,
+            "announced": announced
+        })
+
+    def pass_announcement(self):
+        """Pass on making announcements."""
+        self.sio.emit("pass_announcement", {})
 
     def play_card(self, card_id: str):
         """Play a card."""

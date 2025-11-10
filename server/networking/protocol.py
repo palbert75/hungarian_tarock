@@ -39,6 +39,12 @@ class MessageType(str, Enum):
     PARTNER_CALLED = "partner_called"
     PARTNER_REVEALED = "partner_revealed"
 
+    # Announcements
+    MAKE_ANNOUNCEMENT = "make_announcement"
+    ANNOUNCEMENT_MADE = "announcement_made"
+    PASS_ANNOUNCEMENT = "pass_announcement"
+    ANNOUNCEMENTS_COMPLETE = "announcements_complete"
+
     # Trick-taking
     PLAY_CARD = "play_card"
     CARD_PLAYED = "card_played"
@@ -91,6 +97,12 @@ class DiscardCardsMessage(BaseModel):
 class CallPartnerMessage(BaseModel):
     """Call partner message from client."""
     tarokk_rank: str  # e.g., "XX"
+
+
+class MakeAnnouncementMessage(BaseModel):
+    """Make announcement message from client."""
+    announcement_type: str  # e.g., "trull", "four_kings", etc.
+    announced: bool = True  # True = announced, False = silent
 
 
 class PlayCardMessage(BaseModel):
@@ -154,6 +166,13 @@ class PlayerDiscardedMessage(BaseModel):
 class PartnerCalledMessage(BaseModel):
     """Partner called notification."""
     called_card: str
+
+
+class AnnouncementMadeMessage(BaseModel):
+    """Announcement made notification."""
+    player_position: int
+    announcement_type: str
+    announced: bool
 
 
 class CardPlayedMessage(BaseModel):

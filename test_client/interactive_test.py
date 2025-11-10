@@ -188,10 +188,12 @@ class MultiPlayerTest:
         self.console.print("6. Place bid (current player)")
         self.console.print("7. Discard cards (current player)")
         self.console.print("8. Call partner (current player)")
-        self.console.print("9. Play card (current player)")
-        self.console.print("10. Auto-play current turn")
-        self.console.print("11. View current player's options")
-        self.console.print("12. Simulate disconnect/reconnect (current player)")
+        self.console.print("9. Make announcement (current player)")
+        self.console.print("10. Pass announcement (current player)")
+        self.console.print("11. Play card (current player)")
+        self.console.print("12. Auto-play current turn")
+        self.console.print("13. View current player's options")
+        self.console.print("14. Simulate disconnect/reconnect (current player)")
         self.console.print("[dim]Press Ctrl+C to quit[/dim]")
 
     def view_all_hands(self):
@@ -516,6 +518,47 @@ class MultiPlayerTest:
         self.console.print(f"[green]✓ Called partner: {tarokk}[/green]")
         time.sleep(1)
 
+    def make_announcement_interactive(self):
+        """Make an announcement for current player."""
+        client = self.clients[self.current_player]
+
+        # Get valid announcements if available
+        turn_data = self.your_turn_data.get(self.current_player, {})
+        valid_announcements = turn_data.get("valid_announcements", [])
+
+        if not valid_announcements:
+            self.console.print("[yellow]No valid announcements available[/yellow]")
+            return
+
+        self.console.print(f"\n[cyan]Valid announcements: {', '.join(valid_announcements)}[/cyan]")
+        announcement_type = Prompt.ask(
+            "Which announcement?",
+            choices=valid_announcements + ["cancel"]
+        )
+
+        if announcement_type == "cancel":
+            return
+
+        # Ask if announced or silent
+        announced_choice = Prompt.ask(
+            "Announced or silent?",
+            choices=["announced", "silent"],
+            default="announced"
+        )
+        announced = (announced_choice == "announced")
+
+        client.make_announcement(announcement_type, announced)
+        status = "announced" if announced else "silent"
+        self.console.print(f"[green]✓ Made announcement: {announcement_type} ({status})[/green]")
+        time.sleep(1)
+
+    def pass_announcement_interactive(self):
+        """Pass on announcements for current player."""
+        client = self.clients[self.current_player]
+        client.pass_announcement()
+        self.console.print(f"[green]✓ Passed on announcements[/green]")
+        time.sleep(1)
+
     def play_card_interactive(self):
         """Play a card for current player."""
         client = self.clients[self.current_player]
@@ -588,6 +631,18 @@ class MultiPlayerTest:
             client.call_partner("XX")
             self.console.print("[green]Auto-call: XX[/green]")
 
+        elif phase == "announcements":
+            valid_announcements = turn_data.get("valid_announcements", [])
+            if valid_announcements:
+                # Auto-announce the first valid announcement (announced, not silent)
+                announcement = valid_announcements[0]
+                client.make_announcement(announcement, announced=True)
+                self.console.print(f"[green]Auto-announce: {announcement}[/green]")
+            else:
+                # No valid announcements, pass
+                client.pass_announcement()
+                self.console.print("[green]Auto-pass announcements[/green]")
+
         elif phase == "playing":
             valid_cards = turn_data.get("valid_cards", [])
             hand = client.get_hand()
@@ -617,6 +672,9 @@ class MultiPlayerTest:
 
         if "valid_bids" in turn_data:
             self.console.print(f"[cyan]Valid bids: {', '.join(turn_data['valid_bids'])}[/cyan]")
+
+        if "valid_announcements" in turn_data:
+            self.console.print(f"[cyan]Valid announcements: {', '.join(turn_data['valid_announcements'])}[/cyan]")
 
         if "valid_cards" in turn_data:
             valid_card_ids = turn_data['valid_cards']
@@ -704,12 +762,16 @@ class MultiPlayerTest:
                 elif choice == "8":
                     self.call_partner_interactive()
                 elif choice == "9":
-                    self.play_card_interactive()
+                    self.make_announcement_interactive()
                 elif choice == "10":
-                    self.auto_play_turn()
+                    self.pass_announcement_interactive()
                 elif choice == "11":
-                    self.view_current_options()
+                    self.play_card_interactive()
                 elif choice == "12":
+                    self.auto_play_turn()
+                elif choice == "13":
+                    self.view_current_options()
+                elif choice == "14":
                     self.simulate_disconnect_reconnect()
 
             except KeyboardInterrupt:
