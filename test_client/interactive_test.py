@@ -192,7 +192,7 @@ class MultiPlayerTest:
         self.console.print("10. Auto-play current turn")
         self.console.print("11. View current player's options")
         self.console.print("12. Simulate disconnect/reconnect (current player)")
-        self.console.print("0. Quit")
+        self.console.print("[dim]Press Ctrl+C to quit[/dim]")
 
     def view_all_hands(self):
         """Display all players' hands."""
@@ -685,11 +685,9 @@ class MultiPlayerTest:
                 client = self.clients[self.current_player]
                 self.console.print(f"\n[bold]Active Player: {client.player_name} (Position {self.current_player})[/bold]")
 
-                choice = Prompt.ask("Choose action", default="0")
+                choice = Prompt.ask("Choose action", default="1")
 
-                if choice == "0":
-                    break
-                elif choice == "1":
+                if choice == "1":
                     self.view_all_hands()
                 elif choice == "2":
                     self.view_game_state()
