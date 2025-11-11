@@ -40,16 +40,18 @@ fastapi_app = FastAPI(
 async def log_requests(request: Request, call_next):
     start_time = time.time()
 
-    print(f"\n>>> Incoming HTTP Request")
-    print(f"    Method: {request.method}")
-    print(f"    URL: {request.url}")
-    print(f"    Path: {request.url.path}")
-    print(f"    Headers: {dict(request.headers)}")
+    logger.debug("incoming_http_request",
+                 method=request.method,
+                 url=str(request.url),
+                 path=request.url.path,
+                 headers=dict(request.headers))
 
     response = await call_next(request)
 
     duration = time.time() - start_time
-    print(f"<<< Response Status: {response.status_code} (took {duration:.3f}s)\n")
+    logger.debug("http_response",
+                 status_code=response.status_code,
+                 duration_seconds=duration)
 
     return response
 
@@ -86,14 +88,13 @@ app = socketio.ASGIApp(sio, other_asgi_app=fastapi_app)
 
 def main():
     """Run the server."""
-    print("\n" + "="*60)
-    print("    HUNGARIAN TAROKK SERVER STARTING")
-    print("="*60)
-    print(f"Server URL: http://{settings.host}:{settings.port}")
-    print(f"Socket.IO endpoint: http://{settings.host}:{settings.port}/socket.io/")
-    print(f"Debug mode: {settings.debug}")
-    print(f"CORS origins: {settings.cors_origins}")
-    print("="*60 + "\n")
+    logger.info("server_starting",
+                host=settings.host,
+                port=settings.port,
+                server_url=f"http://{settings.host}:{settings.port}",
+                socketio_endpoint=f"http://{settings.host}:{settings.port}/socket.io/",
+                debug_mode=settings.debug,
+                cors_origins=settings.cors_origins)
 
     logger.info(
         "starting_server",

@@ -18,6 +18,10 @@ def calculate_team_scores(
     """
     Calculate card points for both teams.
 
+    Hungarian Tarokk rules:
+    - Declarer's team: Declarer's tricks + Partner's tricks + ONLY Declarer's discards
+    - Opponents: Other players' tricks + ALL OTHER discards (including partner's!)
+
     Args:
         players: All players
         declarer_position: Declarer's position
@@ -29,12 +33,26 @@ def calculate_team_scores(
     declarer_team_points = 0
     opponent_team_points = 0
 
+    declarer = players[declarer_position]
+    partner = players[partner_position] if partner_position is not None else None
+
     for player in players:
-        points = player.get_total_points()
-        if player.position in [declarer_position, partner_position]:
-            declarer_team_points += points
+        # Count tricks won
+        tricks_points = sum(c.points for c in player.tricks_won)
+
+        if player.position == declarer_position:
+            # Declarer: tricks + discards go to declarer team
+            discard_points = sum(c.points for c in player.discard_pile)
+            declarer_team_points += tricks_points + discard_points
+        elif player.position == partner_position:
+            # Partner: tricks go to declarer team, but discards go to OPPONENTS!
+            declarer_team_points += tricks_points
+            discard_points = sum(c.points for c in player.discard_pile)
+            opponent_team_points += discard_points
         else:
-            opponent_team_points += points
+            # Opponents: tricks + discards go to opponent team
+            discard_points = sum(c.points for c in player.discard_pile)
+            opponent_team_points += tricks_points + discard_points
 
     return declarer_team_points, opponent_team_points
 

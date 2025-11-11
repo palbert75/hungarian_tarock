@@ -276,6 +276,20 @@ class SocketManager {
       // Discard events
       this.socket.on('player_discarded', (data) => {
         console.log('[Socket] Player discarded:', data)
+        const gameState = useGameStore.getState().gameState
+        const player = gameState?.players[data.player_position]
+        const playerName = player?.name || `Player ${data.player_position + 1}`
+
+        // Show notification about discarded cards
+        let message = `${playerName} discarded ${data.num_cards} card${data.num_cards !== 1 ? 's' : ''}`
+        if (data.tarokks_discarded > 0) {
+          message += ` (${data.tarokks_discarded} tarokk${data.tarokks_discarded !== 1 ? 's' : ''})`
+        }
+
+        useGameStore.getState().addToast({
+          type: 'info',
+          message: message,
+        })
       })
 
       // Partner events
@@ -352,18 +366,23 @@ class SocketManager {
 
       this.socket.on('trick_complete', (data) => {
         console.log('[Socket] Trick complete:', data)
-        const gameState = useGameStore.getState().gameState
 
-        // Safely get winner name
-        let winnerName = 'Unknown Player'
-        if (data.winner !== undefined && data.winner !== null && gameState?.players) {
-          const winner = gameState.players[data.winner]
-          winnerName = winner && winner.name ? winner.name : `Player ${data.winner + 1}`
+        // Use winner_name from server if provided, otherwise look it up
+        let winnerName = data.winner_name
+        if (!winnerName) {
+          // Fallback: look up from game state
+          const gameState = useGameStore.getState().gameState
+          if (data.winner !== undefined && data.winner !== null && gameState?.players) {
+            const winner = gameState.players[data.winner]
+            winnerName = winner && winner.name ? winner.name : `Player ${data.winner + 1}`
+          } else {
+            winnerName = 'Unknown Player'
+          }
         }
 
         // Safely get trick number
         const trickNumber = data.trick_number !== undefined && data.trick_number !== null
-          ? data.trick_number
+          ? data.trick_number + 1  // Display as 1-indexed
           : '?'
 
         useGameStore.getState().addToast({

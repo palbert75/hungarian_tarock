@@ -714,8 +714,10 @@ async def play_card(sid: str, data: dict):
         if len(game_state.current_trick) == 0:  # Trick was completed and cleared
             # Trick complete - winner determined in game_state.complete_trick()
             winner = game_state.previous_trick_winner
+            winner_player = game_state.players[winner]
             await broadcast_to_room(room.room_id, MessageType.TRICK_COMPLETE, {
                 "winner": winner,
+                "winner_name": winner_player.name,
                 "trick_number": game_state.trick_number - 1
             })
 

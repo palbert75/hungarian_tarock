@@ -35,7 +35,13 @@ export default function LobbyScreen() {
   }
 
   const handleLogout = () => {
+    // Disconnect from socket
     socketManager.disconnect()
+
+    // Clear all persisted session data
+    useGameStore.persist.clearStorage()
+
+    // Reload the page to reset everything
     window.location.reload()
   }
 

@@ -457,6 +457,10 @@ class GameState(BaseModel):
         """
         Calculate final scores for both teams.
 
+        Hungarian Tarokk rules:
+        - Declarer's team: Declarer's tricks + Partner's tricks + ONLY Declarer's discards
+        - Opponents: Other players' tricks + ALL OTHER discards (including partner's!)
+
         Returns:
             Tuple of (declarer_team_points, opponent_team_points)
         """
@@ -467,11 +471,22 @@ class GameState(BaseModel):
         opponent_team_points = 0
 
         for player in self.players:
-            points = player.get_total_points()
-            if player.position == self.declarer_position or player.position == self.partner_position:
-                declarer_team_points += points
+            # Count tricks won
+            tricks_points = sum(c.points for c in player.tricks_won)
+
+            if player.position == self.declarer_position:
+                # Declarer: tricks + discards go to declarer team
+                discard_points = sum(c.points for c in player.discard_pile)
+                declarer_team_points += tricks_points + discard_points
+            elif player.position == self.partner_position:
+                # Partner: tricks go to declarer team, but discards go to OPPONENTS!
+                declarer_team_points += tricks_points
+                discard_points = sum(c.points for c in player.discard_pile)
+                opponent_team_points += discard_points
             else:
-                opponent_team_points += points
+                # Opponents: tricks + discards go to opponent team
+                discard_points = sum(c.points for c in player.discard_pile)
+                opponent_team_points += tricks_points + discard_points
 
         return declarer_team_points, opponent_team_points
 

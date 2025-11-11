@@ -2,8 +2,12 @@
 
 from typing import Dict, Optional, List
 from uuid import uuid4
+import structlog
+
 from models.game_state import GameState, GamePhase
 from models.player import Player
+
+logger = structlog.get_logger()
 
 
 class Room:
@@ -87,13 +91,15 @@ class Room:
             self.player_sessions[player.id] = new_session_id
             # Mark as connected
             player.is_connected = True
-            print(f"[Room] Reconnected player {player.name} (ID: {player_id})")
-            print(f"[Room]   Old session: {old_session}")
-            print(f"[Room]   New session: {new_session_id}")
-            print(f"[Room]   Position: {player.position}")
+            logger.debug("reconnected_player_by_id",
+                        player_name=player.name,
+                        player_id=player_id,
+                        old_session=old_session,
+                        new_session=new_session_id,
+                        position=player.position)
             return player
 
-        print(f"[Room] Failed to reconnect player by ID: {player_id} (not found)")
+        logger.debug("reconnect_failed_player_not_found", player_id=player_id)
         return None
 
     def get_player_by_name(self, player_name: str) -> Optional[Player]:
@@ -240,22 +246,24 @@ class RoomManager:
         # Check for reconnection - try by ID first (more reliable), then by name
         existing_player = None
         if player_id:
-            print(f"[RoomManager] Checking for reconnection by ID: {player_id}")
+            logger.debug("checking_reconnection_by_id", player_id=player_id, room_id=room_id)
             existing_player = room.game_state.get_player_by_id(player_id)
             if existing_player:
-                print(f"[RoomManager] Found existing player by ID, reconnecting...")
+                logger.debug("found_player_by_id_reconnecting",
+                           player_id=player_id,
+                           player_name=existing_player.name)
                 # This is a reconnection by ID - update session ID
                 player = room.reconnect_player_by_id(player_id, session_id)
                 self.session_to_room[session_id] = room_id
                 return room
             else:
-                print(f"[RoomManager] No player found with ID: {player_id}")
+                logger.debug("no_player_found_with_id", player_id=player_id)
 
         # Try to find by name
-        print(f"[RoomManager] Checking for reconnection by name: {player_name}")
+        logger.debug("checking_reconnection_by_name", player_name=player_name, room_id=room_id)
         existing_player = room.get_player_by_name(player_name)
         if existing_player:
-            print(f"[RoomManager] Found existing player by name, reconnecting...")
+            logger.debug("found_player_by_name_reconnecting", player_name=player_name)
             # This is a reconnection by name - update session ID
             player = room.reconnect_player(player_name, session_id)
             self.session_to_room[session_id] = room_id
