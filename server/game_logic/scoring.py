@@ -1,7 +1,9 @@
 """Scoring logic for Hungarian Tarokk."""
 
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Optional
 from models.player import Player
+from models.announcement import Announcement, AnnouncementType
+from models.bid import Bid
 
 
 def calculate_player_points(player: Player) -> int:

@@ -25,6 +25,7 @@ interface GameStore {
   // Game state
   gameState: GameState | null
   yourTurnData: YourTurnData | null
+  gameOverData: any | null  // Scoring details from server
 
   // UI state
   selectedCards: string[]
@@ -46,6 +47,7 @@ interface GameStore {
   // Actions - Game
   setGameState: (gameState: GameState | null) => void
   setYourTurnData: (data: YourTurnData | null) => void
+  setGameOverData: (data: any) => void
 
   // Actions - UI
   toggleCardSelection: (cardId: string) => void
@@ -79,6 +81,7 @@ export const useGameStore = create<GameStore>()(
       availableRooms: [],
       gameState: null,
       yourTurnData: null,
+      gameOverData: null,
       selectedCards: [],
       hoveredCard: null,
       showingModal: null,
@@ -102,6 +105,8 @@ export const useGameStore = create<GameStore>()(
   setGameState: (gameState) => set({ gameState }),
 
   setYourTurnData: (data) => set({ yourTurnData: data }),
+
+  setGameOverData: (data) => set({ gameOverData: data }),
 
   // UI actions
   toggleCardSelection: (cardId) => {

@@ -66,8 +66,15 @@ export interface Player {
 }
 
 export interface TrickCard {
-  player: number
+  player_position: number
   card: Card
+}
+
+export interface CompletedTrick {
+  trick_number: number
+  cards: TrickCard[]
+  winner: number
+  lead_suit: string | null
 }
 
 export interface GameState {
@@ -84,6 +91,7 @@ export interface GameState {
   current_trick: TrickCard[]
   talon: Card[]
   announcements: Announcement[]
+  trick_history: CompletedTrick[]
 }
 
 export interface RoomState {

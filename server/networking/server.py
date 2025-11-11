@@ -888,7 +888,9 @@ async def start_trick_taking(room):
 
 
 async def handle_game_over(room):
-    """Handle game over."""
+    """Handle game over with complete scoring."""
+    from game_logic.final_scoring import calculate_final_score
+
     game_state = room.game_state
 
     # Reveal partner at game end (if not already revealed)
@@ -896,24 +898,39 @@ async def handle_game_over(room):
         game_state.partner_revealed = True
         game_state.players[game_state.partner_position].partner_revealed = True
 
-    # Calculate scores
-    declarer_points, opponent_points = game_state.calculate_scores()
-    winner = "declarer_team" if game_state.declarer_team_wins() else "opponent_team"
+    # Calculate complete final scoring
+    scoring_result = calculate_final_score(
+        players=game_state.players,
+        declarer_position=game_state.declarer_position,
+        partner_position=game_state.partner_position,
+        winning_bid=game_state.winning_bid,
+        announcements=game_state.announcements,
+        trick_history=game_state.trick_history
+    )
 
     # Notify all players
     await broadcast_to_room(room.room_id, MessageType.GAME_OVER, {
         "declarer": game_state.declarer_position,
         "partner": game_state.partner_position,
-        "declarer_team_points": declarer_points,
-        "opponent_team_points": opponent_points,
-        "winner": winner,
-        "game_value": game_state.winning_bid.game_value if game_state.winning_bid else 0,
-        "bonuses": [],
-        "payments": {}
+        "declarer_team_points": scoring_result["declarer_team_points"],
+        "opponent_team_points": scoring_result["opponent_team_points"],
+        "winner": scoring_result["winner"],
+        "base_game_value": scoring_result["base_game_value"],
+        "game_multiplier": scoring_result["game_multiplier"],
+        "final_game_value": scoring_result["final_game_value"],
+        "player_scores": scoring_result["player_scores"],
+        "achieved_announcements": scoring_result["achieved_announcements"],
+        "failed_announcements": scoring_result["failed_announcements"],
+        "announcement_details": scoring_result["announcement_details"],
     })
 
     # Change phase to game end
     game_state.phase = GamePhase.GAME_END
+
+    logger.info("game_over",
+                room_id=room.room_id,
+                winner=scoring_result["winner"],
+                scores=scoring_result["player_scores"])
 
 
 # Export the Socket.IO app

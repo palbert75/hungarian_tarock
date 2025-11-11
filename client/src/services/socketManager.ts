@@ -375,6 +375,7 @@ class SocketManager {
       // Game over
       this.socket.on('game_over', (data) => {
         console.log('[Socket] Game over:', data)
+        useGameStore.getState().setGameOverData(data)
         useGameStore.getState().addToast({
           type: 'success',
           message: `Game over! Winner: ${data.winner}`,

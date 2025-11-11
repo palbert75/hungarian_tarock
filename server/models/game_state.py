@@ -57,6 +57,7 @@ class GameState(BaseModel):
     trick_leader: Optional[int] = None
     trick_number: int = 0
     previous_trick_winner: Optional[int] = None
+    trick_history: List[dict] = Field(default_factory=list)  # Complete history of all tricks
 
     # Discard phase tracking
     players_who_discarded: List[int] = Field(default_factory=list)
@@ -409,6 +410,20 @@ class GameState(BaseModel):
         trick_cards = [card for _, card in self.current_trick]
         self.players[winner_pos].add_to_tricks(trick_cards)
 
+        # Save trick to history BEFORE clearing
+        self.trick_history.append({
+            "trick_number": self.trick_number + 1,  # 1-indexed for display
+            "cards": [
+                {
+                    "player_position": pos,
+                    "card": card.to_dict()
+                }
+                for pos, card in self.current_trick
+            ],
+            "winner": winner_pos,
+            "lead_suit": lead_suit.value if lead_suit else None
+        })
+
         # Setup for next trick
         self.previous_trick_winner = winner_pos
         self.current_trick.clear()
@@ -481,7 +496,7 @@ class GameState(BaseModel):
             if player:
                 player_pos = player.position
 
-        return {
+        result = {
             "game_id": self.game_id,
             "phase": self.phase.value,
             "players": [
@@ -496,7 +511,10 @@ class GameState(BaseModel):
             "partner_position": self.partner_position if self.partner_revealed else None,
             "partner_revealed": self.partner_revealed,
             "trick_number": self.trick_number,
-            "current_trick": [{"player": pos, "card": card.to_dict()} for pos, card in self.current_trick],
+            "current_trick": [{"player_position": pos, "card": card.to_dict()} for pos, card in self.current_trick],
             "talon": [card.to_dict() for card in self.talon],
             "announcements": [a.to_dict() for a in self.announcements],
+            "trick_history": self.trick_history,  # Full history of completed tricks
         }
+
+        return result
