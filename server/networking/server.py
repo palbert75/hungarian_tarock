@@ -135,6 +135,12 @@ async def join_room(sid: str, data: dict):
         # Join socket.io room
         await sio.enter_room(sid, room.room_id)
 
+        # Send chat history to the joining player
+        chat_history = room.get_chat_history()
+        if chat_history:
+            await sio.emit("chat_history", {"messages": chat_history}, room=sid)
+            logger.debug("sent_chat_history", sid=sid, message_count=len(chat_history))
+
         # Send room state to all players
         await broadcast_room_state(room.room_id)
 
@@ -736,6 +742,51 @@ async def play_card(sid: str, data: dict):
     except Exception as e:
         logger.error("play_card_error", sid=sid, error=str(e))
         await sio.emit("error", create_error_message("PLAY_CARD_ERROR", str(e)).to_dict(), room=sid)
+
+
+@sio.event
+async def send_chat_message(sid: str, data: dict):
+    """Handle chat message from player."""
+    try:
+        room = room_manager.get_room_by_session(sid)
+        if not room:
+            raise ValueError("Not in a room")
+
+        player = room.get_player_by_session(sid)
+        if not player:
+            raise ValueError("Player not found")
+
+        message = data.get("message", "")
+        if not message or not message.strip():
+            raise ValueError("Message cannot be empty")
+
+        # Limit message length
+        if len(message) > 500:
+            raise ValueError("Message too long (max 500 characters)")
+
+        logger.debug("chat_message_received", sid=sid,
+                    player_name=player.name,
+                    room_id=room.room_id,
+                    message_length=len(message))
+
+        # Create chat message
+        import time
+        chat_message = {
+            "id": f"{player.id}_{int(time.time() * 1000)}",
+            "player_name": player.name,
+            "message": message.strip(),
+            "timestamp": int(time.time() * 1000)
+        }
+
+        # Store in room history
+        room.add_chat_message(chat_message)
+
+        # Broadcast chat message to all players in room
+        await sio.emit("chat_message", chat_message, room=room.room_id)
+
+    except Exception as e:
+        logger.error("send_chat_message_error", sid=sid, error=str(e))
+        await sio.emit("error", create_error_message("CHAT_ERROR", str(e)).to_dict(), room=sid)
 
 
 # Helper functions

@@ -146,6 +146,15 @@ class SocketManager {
       // Room events
       this.socket.on('room_state', (data: RoomState) => {
         console.log('[Socket] Room state:', data)
+        const currentRoomId = useGameStore.getState().roomState?.room_id
+
+        // If joining a new room or switching rooms, clear chat messages
+        // (chat history will be loaded via chat_history event)
+        if (!currentRoomId || currentRoomId !== data.room_id) {
+          console.log('[Socket] Joining room, clearing local chat (will receive history from server)')
+          useGameStore.getState().clearChatMessages()
+        }
+
         useGameStore.getState().setRoomState(data)
 
         // Find our player info and update store
@@ -401,6 +410,32 @@ class SocketManager {
         })
       })
 
+      // Chat events
+      this.socket.on('chat_history', (data) => {
+        console.log('[Socket] Chat history received:', data.messages?.length || 0, 'messages')
+        // Load chat history into store
+        if (data.messages && Array.isArray(data.messages)) {
+          data.messages.forEach((msg: any) => {
+            useGameStore.getState().addChatMessage({
+              id: msg.id || Math.random().toString(36).substring(7),
+              player_name: msg.player_name,
+              message: msg.message,
+              timestamp: msg.timestamp || Date.now(),
+            })
+          })
+        }
+      })
+
+      this.socket.on('chat_message', (data) => {
+        console.log('[Socket] Chat message:', data)
+        useGameStore.getState().addChatMessage({
+          id: data.id || Math.random().toString(36).substring(7),
+          player_name: data.player_name,
+          message: data.message,
+          timestamp: data.timestamp || Date.now(),
+        })
+      })
+
       // Error handling
       this.socket.on('error', (data) => {
         console.error('[Socket] Error:', data)
@@ -519,6 +554,15 @@ class SocketManager {
     this.socket?.emit('leave_room', {})
     useGameStore.getState().setRoomState(null)
     useGameStore.getState().setGameState(null)
+  }
+
+  sendChatMessage(message: string) {
+    const { playerName } = useGameStore.getState()
+    console.log('[Socket] Sending chat message:', message)
+    this.socket?.emit('send_chat_message', {
+      player_name: playerName,
+      message,
+    })
   }
 }
 

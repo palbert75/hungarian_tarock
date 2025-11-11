@@ -24,6 +24,7 @@ class Room:
         self.room_id = room_id or str(uuid4())
         self.game_state = GameState()
         self.player_sessions: Dict[str, str] = {}  # player_id -> session_id (socket ID)
+        self.chat_messages: List[dict] = []  # Chat history (max 100 messages)
 
     def add_player(self, player_name: str, session_id: str) -> Player:
         """
@@ -169,6 +170,27 @@ class Room:
     def get_session_ids(self) -> List[str]:
         """Get all session IDs in this room."""
         return list(self.player_sessions.values())
+
+    def add_chat_message(self, message: dict) -> None:
+        """
+        Add a chat message to room history.
+
+        Args:
+            message: Chat message dictionary with id, player_name, message, timestamp
+        """
+        self.chat_messages.append(message)
+        # Keep only last 100 messages to prevent unbounded growth
+        if len(self.chat_messages) > 100:
+            self.chat_messages = self.chat_messages[-100:]
+
+    def get_chat_history(self) -> List[dict]:
+        """
+        Get chat message history for this room.
+
+        Returns:
+            List of chat messages
+        """
+        return self.chat_messages
 
     def get_room_info(self) -> dict:
         """

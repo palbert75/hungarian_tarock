@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { useGameStore } from '@/store/gameStore'
 import { socketManager } from '@/services/socketManager'
+import Chat from '@/components/Chat'
 
 export default function WaitingRoomScreen() {
   const roomState = useGameStore((state) => state.roomState)
@@ -42,12 +43,14 @@ export default function WaitingRoomScreen() {
   }
 
   return (
-    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-3xl px-6"
-      >
+    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
+      <div className="w-full max-w-7xl h-full flex flex-col lg:flex-row gap-6">
+        {/* Main Content */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex-1 flex flex-col"
+        >
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -178,7 +181,17 @@ export default function WaitingRoomScreen() {
             🎉 All players ready! Game starting...
           </motion.div>
         )}
-      </motion.div>
+        </motion.div>
+
+        {/* Chat Sidebar */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="w-full lg:w-96 h-[400px] lg:h-full"
+        >
+          <Chat className="h-full" />
+        </motion.div>
+      </div>
     </div>
   )
 }

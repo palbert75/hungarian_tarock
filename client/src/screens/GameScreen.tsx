@@ -1,9 +1,11 @@
-import { motion } from 'framer-motion'
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '@/store/gameStore'
 import { socketManager } from '@/services/socketManager'
 import PlayerAvatar from '@/components/PlayerAvatar'
 import Hand from '@/components/Hand'
 import Card from '@/components/Card'
+import Chat from '@/components/Chat'
 import BiddingPhase from './phases/BiddingPhase'
 import DiscardingPhase from './phases/DiscardingPhase'
 import PartnerCallPhase from './phases/PartnerCallPhase'
@@ -42,6 +44,7 @@ const getBidDisplayName = (bidType: string | null): string => {
 }
 
 export default function GameScreen() {
+  const [showChat, setShowChat] = useState(false)
   const gameState = useGameStore((state) => state.gameState)
   const playerPosition = useGameStore((state) => state.playerPosition)
   const selectedCards = useGameStore((state) => state.selectedCards)
@@ -148,6 +151,14 @@ export default function GameScreen() {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setShowChat(!showChat)}
+            className={`px-4 py-2 ${showChat ? 'bg-blue-600 hover:bg-blue-700' : 'bg-slate-700 hover:bg-slate-600'} text-white font-semibold rounded-lg transition-colors text-sm`}
+          >
+            💬 Chat
+          </motion.button>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -394,6 +405,33 @@ export default function GameScreen() {
           </div>
         </motion.div>
       )}
+
+      {/* Chat Sidebar */}
+      <AnimatePresence>
+        {showChat && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowChat(false)}
+              className="fixed inset-0 bg-black/30 z-30"
+            />
+
+            {/* Chat Panel */}
+            <motion.div
+              initial={{ x: 400 }}
+              animate={{ x: 0 }}
+              exit={{ x: 400 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed right-0 top-0 bottom-0 w-96 z-40"
+            >
+              <Chat className="h-full shadow-2xl" />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

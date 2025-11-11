@@ -9,6 +9,7 @@ import type {
   Card,
   ModalType,
   ToastMessage,
+  ChatMessage,
 } from '@/types'
 
 interface GameStore {
@@ -34,6 +35,7 @@ interface GameStore {
   toasts: ToastMessage[]
   soundEnabled: boolean
   musicEnabled: boolean
+  chatMessages: ChatMessage[]
 
   // Actions - Connection
   setConnectionStatus: (status: ConnectionStatus) => void
@@ -58,6 +60,10 @@ interface GameStore {
   removeToast: (id: string) => void
   toggleSound: () => void
   toggleMusic: () => void
+
+  // Actions - Chat
+  addChatMessage: (message: ChatMessage) => void
+  clearChatMessages: () => void
 
   // Helpers
   getMyHand: () => Card[]
@@ -88,6 +94,7 @@ export const useGameStore = create<GameStore>()(
       toasts: [],
       soundEnabled: true,
       musicEnabled: false,
+      chatMessages: [],
 
   // Connection actions
   setConnectionStatus: (status) => set({ connectionStatus: status }),
@@ -153,6 +160,17 @@ export const useGameStore = create<GameStore>()(
 
   toggleMusic: () => {
     set((state) => ({ musicEnabled: !state.musicEnabled }))
+  },
+
+  // Chat actions
+  addChatMessage: (message) => {
+    set((state) => ({
+      chatMessages: [...state.chatMessages, message],
+    }))
+  },
+
+  clearChatMessages: () => {
+    set({ chatMessages: [] })
   },
 
   // Helpers

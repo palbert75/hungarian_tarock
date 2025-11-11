@@ -143,3 +143,10 @@ export interface ToastMessage {
   message: string
   duration?: number
 }
+
+export interface ChatMessage {
+  id: string
+  player_name: string
+  message: string
+  timestamp: number
+}
