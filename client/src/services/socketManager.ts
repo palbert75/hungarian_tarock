@@ -234,6 +234,10 @@ class SocketManager {
     this.socket?.emit('place_bid', { bid_type: bidType })
   }
 
+  pass() {
+    this.socket?.emit('pass', {})
+  }
+
   discardCards(cardIds: string[]) {
     useGameStore.getState().clearSelectedCards()
     this.socket?.emit('discard_cards', { card_ids: cardIds })
