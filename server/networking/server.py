@@ -1,5 +1,6 @@
 """WebSocket server for Hungarian Tarokk."""
 
+import asyncio
 import socketio
 from typing import Dict, Any
 import structlog
@@ -59,6 +60,25 @@ async def disconnect(sid: str):
     if room:
         # Notify other players
         await broadcast_room_state(room.room_id)
+
+
+@sio.event
+async def list_rooms(sid: str, data: dict):
+    """Handle list rooms request."""
+    try:
+        logger.info("list_rooms_request", sid=sid)
+
+        available_rooms = room_manager.get_available_rooms()
+
+        await sio.emit("rooms_list", {
+            "rooms": available_rooms
+        }, room=sid)
+
+        logger.info("rooms_list_sent", sid=sid, count=len(available_rooms))
+
+    except Exception as e:
+        logger.error("list_rooms_error", sid=sid, error=str(e))
+        await sio.emit("error", create_error_message("LIST_ROOMS_ERROR", str(e)).to_dict(), room=sid)
 
 
 @sio.event
@@ -191,13 +211,27 @@ async def place_bid(sid: str, data: dict):
                 # Move to talon distribution
                 await handle_talon_distribution(room)
             else:
-                # All passed - throw in hand
-                await broadcast_to_room(room.room_id, MessageType.ERROR, {
-                    "code": "ALL_PASSED",
-                    "message": "All players passed. Hand thrown in."
+                # All passed - throw in hand and deal new
+                logger.info("all_players_passed", room_id=room.room_id)
+
+                await broadcast_to_room(room.room_id, MessageType.GAME_STATE, {
+                    "message": "All players passed. Dealing new hand..."
                 })
-                # Reset for new hand
-                game_state.phase = GamePhase.WAITING
+
+                # Wait a moment for UI to show message
+                await asyncio.sleep(2)
+
+                # Deal new cards and start bidding again
+                game_state.start_dealing()
+                game_state.start_bidding()
+
+                # Broadcast new game state
+                await broadcast_game_state(room.room_id)
+
+                # Notify first bidder
+                await send_your_turn(room, game_state.current_turn)
+
+                logger.info("new_hand_dealt", room_id=room.room_id)
         else:
             # Notify next player
             await send_your_turn(room, game_state.current_turn)

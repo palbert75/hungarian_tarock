@@ -96,6 +96,19 @@ export interface RoomState {
   game_started: boolean
 }
 
+export interface AvailableRoom {
+  room_id: string
+  players: Array<{
+    id: string
+    name: string
+    position: number
+    is_ready: boolean
+    is_connected: boolean
+  }>
+  is_full: boolean
+  game_started: boolean
+}
+
 export type ConnectionStatus =
   | 'disconnected'
   | 'connecting'

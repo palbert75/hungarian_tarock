@@ -3,6 +3,7 @@ import type {
   ConnectionStatus,
   GameState,
   RoomState,
+  AvailableRoom,
   YourTurnData,
   Card,
   ModalType,
@@ -18,6 +19,7 @@ interface GameStore {
 
   // Room state
   roomState: RoomState | null
+  availableRooms: AvailableRoom[]
 
   // Game state
   gameState: GameState | null
@@ -38,6 +40,7 @@ interface GameStore {
 
   // Actions - Room
   setRoomState: (roomState: RoomState | null) => void
+  setAvailableRooms: (rooms: AvailableRoom[]) => void
 
   // Actions - Game
   setGameState: (gameState: GameState | null) => void
@@ -66,6 +69,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   playerName: '',
   playerPosition: null,
   roomState: null,
+  availableRooms: [],
   gameState: null,
   yourTurnData: null,
   selectedCards: [],
@@ -84,6 +88,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   // Room actions
   setRoomState: (roomState) => set({ roomState }),
+
+  setAvailableRooms: (rooms) => set({ availableRooms: rooms }),
 
   // Game actions
   setGameState: (gameState) => set({ gameState }),

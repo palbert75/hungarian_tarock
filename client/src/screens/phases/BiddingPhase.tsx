@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { socketManager } from '@/services/socketManager'
 import Hand from '@/components/Hand'
+import PlayerAvatar from '@/components/PlayerAvatar'
 import type { Bid, GameState } from '@/types'
 
 interface BiddingPhaseProps {
@@ -31,7 +32,7 @@ const getBidColor = (bidType: string): string => {
 }
 
 const getBidDisplayName = (bidType: string | null): string => {
-  if (!bidType) return 'Pass'
+  if (!bidType || bidType === 'pass') return 'Pass'
   return bidTypes.find((b) => b.value === bidType)?.label || bidType
 }
 
@@ -55,7 +56,7 @@ export default function BiddingPhase({ gameState, playerPosition }: BiddingPhase
     }
 
     const highestBid = gameState.bid_history
-      .filter((b) => b.bid_type !== null)
+      .filter((b) => b.bid_type !== null && b.bid_type !== 'pass')
       .slice(-1)[0]
 
     if (!highestBid || !highestBid.bid_type) {
@@ -78,16 +79,16 @@ export default function BiddingPhase({ gameState, playerPosition }: BiddingPhase
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto">
+    <div className="w-full max-w-2xl mx-auto">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-slate-800/90 backdrop-blur-sm rounded-2xl p-8 shadow-2xl"
+        className="bg-slate-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-2xl"
       >
         {/* Header */}
-        <div className="text-center mb-6">
-          <h2 className="text-3xl font-bold text-white mb-2">Bidding Phase</h2>
-          <p className="text-slate-300">
+        <div className="text-center mb-4">
+          <h2 className="text-2xl font-bold text-white mb-1">Bidding Phase</h2>
+          <p className="text-slate-300 text-sm">
             {isMyTurn ? (
               <span className="text-yellow-400 font-semibold">Your turn to bid</span>
             ) : (
@@ -97,40 +98,6 @@ export default function BiddingPhase({ gameState, playerPosition }: BiddingPhase
             )}
           </p>
         </div>
-
-        {/* Bid History */}
-        {gameState.bid_history.length > 0 && (
-          <div className="mb-6 bg-slate-700/50 rounded-xl p-4">
-            <h3 className="text-white font-semibold mb-3 text-sm">Bid History</h3>
-            <div className="space-y-2">
-              {gameState.bid_history.map((bid: Bid, index: number) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="flex items-center justify-between text-sm"
-                >
-                  <span className="text-slate-300">
-                    {gameState.players[bid.player_position]?.name}
-                  </span>
-                  <span
-                    className={`
-                      font-semibold px-3 py-1 rounded-lg
-                      ${
-                        bid.bid_type
-                          ? getBidColor(bid.bid_type) + ' text-white'
-                          : 'bg-slate-600 text-slate-300'
-                      }
-                    `}
-                  >
-                    {getBidDisplayName(bid.bid_type)}
-                  </span>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Bid Buttons */}
         {isMyTurn && (
@@ -147,14 +114,14 @@ export default function BiddingPhase({ gameState, playerPosition }: BiddingPhase
                     onClick={() => isValid && handleBid(bid.value)}
                     disabled={!isValid}
                     className={`
-                      px-6 py-4 rounded-xl font-semibold text-white
+                      px-4 py-3 rounded-xl font-semibold text-white
                       transition-all duration-200
                       ${isValid ? getBidColor(bid.value) : 'bg-slate-700 text-slate-500 cursor-not-allowed'}
                       ${isValid ? 'shadow-lg' : ''}
                     `}
                   >
-                    <div className="text-lg">{bid.label}</div>
-                    <div className="text-xs opacity-80 mt-1">{bid.description}</div>
+                    <div className="text-base">{bid.label}</div>
+                    <div className="text-xs opacity-80 mt-0.5">{bid.description}</div>
                   </motion.button>
                 )
               })}
@@ -165,7 +132,7 @@ export default function BiddingPhase({ gameState, playerPosition }: BiddingPhase
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handlePass}
-              className="w-full px-6 py-3 bg-slate-600 hover:bg-slate-700 text-white font-semibold rounded-xl transition-colors"
+              className="w-full px-4 py-2.5 bg-slate-600 hover:bg-slate-700 text-white font-semibold rounded-xl transition-colors"
             >
               Pass
             </motion.button>
@@ -174,15 +141,15 @@ export default function BiddingPhase({ gameState, playerPosition }: BiddingPhase
 
         {/* Waiting Message */}
         {!isMyTurn && (
-          <div className="text-center py-8">
+          <div className="text-center py-4">
             <motion.div
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="text-6xl mb-4"
+              className="text-4xl mb-2"
             >
               ⏳
             </motion.div>
-            <p className="text-slate-400">Waiting for {currentPlayer.name} to bid...</p>
+            <p className="text-slate-400 text-sm">Waiting for {currentPlayer.name} to bid...</p>
           </div>
         )}
       </motion.div>
@@ -193,17 +160,23 @@ export default function BiddingPhase({ gameState, playerPosition }: BiddingPhase
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="mt-6 bg-slate-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-2xl"
+          className="mt-4 bg-slate-800/90 backdrop-blur-sm rounded-2xl px-4 py-2 shadow-2xl relative"
         >
-          <h3 className="text-white font-semibold text-center mb-4">Your Hand</h3>
+          {/* Player Avatar in upper left corner */}
+          <div className="absolute top-2 left-2 z-10">
+            <PlayerAvatar
+              player={myPlayer}
+              isCurrentTurn={gameState.current_turn === playerPosition}
+              position={playerPosition as 0 | 1 | 2 | 3}
+              isLocalPlayer={true}
+            />
+          </div>
+
           <Hand
             cards={myPlayer.hand}
             layout="fan"
             size="md"
           />
-          <div className="mt-4 text-center text-slate-400 text-sm">
-            {myPlayer.hand.length} cards
-          </div>
         </motion.div>
       )}
     </div>

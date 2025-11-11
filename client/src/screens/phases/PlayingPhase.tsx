@@ -157,75 +157,75 @@ export default function PlayingPhase({ gameState, playerPosition }: PlayingPhase
         )}
       </motion.div>
 
-      {/* Player's Hand */}
-      {isMyTurn && myPlayer.hand && myPlayer.hand.length > 0 && (
+      {/* Player's Hand - Always visible */}
+      {myPlayer.hand && myPlayer.hand.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-slate-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-2xl"
         >
-          <div className="mb-4">
-            <h3 className="text-white font-semibold text-center mb-2">Your Hand</h3>
-            {validCards.length > 0 && validCards.length < myPlayer.hand.length && (
-              <p className="text-center text-slate-400 text-sm">
-                💡 Only highlighted cards can be played
-              </p>
-            )}
-          </div>
+          {isMyTurn ? (
+            <>
+              <div className="mb-4">
+                <h3 className="text-white font-semibold text-center mb-2">Your Hand</h3>
+                {validCards.length > 0 && validCards.length < myPlayer.hand.length && (
+                  <p className="text-center text-slate-400 text-sm">
+                    💡 Only highlighted cards can be played
+                  </p>
+                )}
+              </div>
 
-          <Hand
-            cards={myPlayer.hand}
-            selectedCards={selectedCards}
-            validCards={validCards}
-            onCardClick={toggleCardSelection}
-            layout="fan"
-            size="md"
-          />
+              <Hand
+                cards={myPlayer.hand}
+                selectedCards={selectedCards}
+                validCards={validCards}
+                onCardClick={toggleCardSelection}
+                layout="fan"
+                size="md"
+              />
 
-          {/* Play Card Button */}
-          <div className="mt-6">
-            <motion.button
-              whileHover={canPlayCard ? { scale: 1.02 } : undefined}
-              whileTap={canPlayCard ? { scale: 0.98 } : undefined}
-              onClick={handlePlayCard}
-              disabled={!canPlayCard}
-              className={`
-                w-full px-6 py-4 rounded-xl font-semibold text-white text-lg
-                transition-all duration-200
-                ${
-                  canPlayCard
-                    ? 'bg-green-600 hover:bg-green-700 shadow-lg'
-                    : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                }
-              `}
-            >
-              {selectedCards.length === 0
-                ? 'Select a card to play'
-                : canPlayCard
-                ? '✓ Play Card'
-                : 'Invalid card selection'}
-            </motion.button>
-          </div>
-        </motion.div>
-      )}
+              {/* Play Card Button */}
+              <div className="mt-6">
+                <motion.button
+                  whileHover={canPlayCard ? { scale: 1.02 } : undefined}
+                  whileTap={canPlayCard ? { scale: 0.98 } : undefined}
+                  onClick={handlePlayCard}
+                  disabled={!canPlayCard}
+                  className={`
+                    w-full px-6 py-4 rounded-xl font-semibold text-white text-lg
+                    transition-all duration-200
+                    ${
+                      canPlayCard
+                        ? 'bg-green-600 hover:bg-green-700 shadow-lg'
+                        : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                    }
+                  `}
+                >
+                  {selectedCards.length === 0
+                    ? 'Select a card to play'
+                    : canPlayCard
+                    ? '✓ Play Card'
+                    : 'Invalid card selection'}
+                </motion.button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="mb-4">
+                <h3 className="text-white font-semibold text-center mb-2">Your Hand</h3>
+                <p className="text-center text-slate-400 text-sm">
+                  ⏳ Waiting for {gameState.players[gameState.current_turn]?.name} to play...
+                </p>
+              </div>
 
-      {/* Waiting for turn */}
-      {!isMyTurn && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center py-8"
-        >
-          <motion.div
-            animate={{ scale: [1, 1.1, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="text-6xl mb-4"
-          >
-            ⏳
-          </motion.div>
-          <p className="text-slate-400">
-            Waiting for {gameState.players[gameState.current_turn]?.name} to play...
-          </p>
+              {/* Show hand but not clickable when not your turn */}
+              <Hand
+                cards={myPlayer.hand}
+                layout="fan"
+                size="md"
+              />
+            </>
+          )}
         </motion.div>
       )}
     </div>

@@ -18,7 +18,10 @@ export default function DiscardingPhase({ gameState, playerPosition }: Discardin
   const isMyTurn = gameState.current_turn === playerPosition
 
   // Calculate how many cards need to be discarded
-  const cardsToDiscard = gameState.talon_size || 0
+  // Player should have 9 cards after discarding
+  const targetHandSize = 9
+  const currentHandSize = myPlayer.hand?.length || 0
+  const cardsToDiscard = Math.max(0, currentHandSize - targetHandSize)
   const canConfirm = selectedCards.length === cardsToDiscard
 
   // Get valid cards to discard (would come from server in real implementation)

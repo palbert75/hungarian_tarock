@@ -210,6 +210,9 @@ def can_announce(hand: List[Card], announcement_type: AnnouncementType) -> Tuple
     """
     Check if a player can make a specific announcement.
 
+    Announcements are declarations/challenges that you will achieve a goal.
+    Most announcements can be made freely as predictions.
+
     Args:
         hand: Player's hand
         announcement_type: Type of announcement to check
@@ -218,14 +221,14 @@ def can_announce(hand: List[Card], announcement_type: AnnouncementType) -> Tuple
         Tuple of (can_announce, error_message)
     """
     if announcement_type == AnnouncementType.TRULL:
-        if has_trull(hand):
-            return True, "OK"
-        return False, "Must have all 3 honours (skíz, XXI, pagát) for Trull"
+        # Trull is a declaration that you will collect all 3 honours
+        # You don't need to have them to announce
+        return True, "OK"
 
     elif announcement_type == AnnouncementType.FOUR_KINGS:
-        if has_four_kings(hand):
-            return True, "OK"
-        return False, "Must have all 4 Kings for Four Kings announcement"
+        # Four Kings is a declaration that you will collect all 4 Kings
+        # You don't need to have them to announce
+        return True, "OK"
 
     elif announcement_type == AnnouncementType.DOUBLE_GAME:
         # Double game is a prediction, not based on cards
@@ -237,6 +240,7 @@ def can_announce(hand: List[Card], announcement_type: AnnouncementType) -> Tuple
 
     elif announcement_type == AnnouncementType.PAGAT_ULTIMO:
         # Must have pagát (I) to announce pagát ultimó
+        # (You need it to play it in the last trick)
         has_pagat = any(c.is_honour() and c.rank == "I" for c in hand)
         if has_pagat:
             return True, "OK"

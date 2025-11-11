@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { socketManager } from '@/services/socketManager'
+import Hand from '@/components/Hand'
+import PlayerAvatar from '@/components/PlayerAvatar'
 import type { GameState, Announcement } from '@/types'
 
 interface AnnouncementsPhaseProps {
@@ -57,20 +59,36 @@ export default function AnnouncementsPhase({
   gameState,
   playerPosition,
 }: AnnouncementsPhaseProps) {
-  const [selectedAnnouncement, setSelectedAnnouncement] = useState<string | null>(null)
-  const [announcedChoice, setAnnouncedChoice] = useState<boolean>(true)
+  const [selectedAnnouncements, setSelectedAnnouncements] = useState<string[]>([])
 
   const isMyTurn = gameState.current_turn === playerPosition
   const currentPlayer = gameState.players[gameState.current_turn]
+  const myPlayer = gameState.players[playerPosition]
 
   // Get valid announcements (would come from server in real implementation)
-  const validAnnouncements = gameState.valid_announcements || []
+  // If server doesn't provide valid_announcements, allow all announcements for now
+  const validAnnouncements = gameState.valid_announcements && gameState.valid_announcements.length > 0
+    ? gameState.valid_announcements
+    : announcementTypes.map(a => a.value)
 
-  const handleAnnounce = () => {
-    if (selectedAnnouncement) {
-      socketManager.makeAnnouncement(selectedAnnouncement, announcedChoice)
-      setSelectedAnnouncement(null)
-      setAnnouncedChoice(true)
+  const toggleAnnouncement = (announcementType: string) => {
+    setSelectedAnnouncements((prev) => {
+      if (prev.includes(announcementType)) {
+        // Remove if already selected
+        return prev.filter((type) => type !== announcementType)
+      }
+      // Add new announcement
+      return [...prev, announcementType]
+    })
+  }
+
+  const handleConfirmAnnouncements = () => {
+    if (selectedAnnouncements.length > 0) {
+      // Send all announcements to server (always announced: true)
+      selectedAnnouncements.forEach((announcementType) => {
+        socketManager.makeAnnouncement(announcementType, true)
+      })
+      setSelectedAnnouncements([])
     }
   }
 
@@ -91,12 +109,12 @@ export default function AnnouncementsPhase({
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-slate-800/90 backdrop-blur-sm rounded-2xl p-8 shadow-2xl"
+        className="bg-slate-800/90 backdrop-blur-sm rounded-2xl p-4 shadow-2xl"
       >
         {/* Header */}
-        <div className="text-center mb-6">
-          <h2 className="text-3xl font-bold text-white mb-2">Announcements</h2>
-          <p className="text-slate-300">
+        <div className="text-center mb-3">
+          <h2 className="text-xl font-bold text-white mb-1">Announcements</h2>
+          <p className="text-slate-300 text-sm">
             {isMyTurn ? (
               <span className="text-yellow-400 font-semibold">Your turn to announce</span>
             ) : (
@@ -107,7 +125,7 @@ export default function AnnouncementsPhase({
             )}
           </p>
           {consecutivePasses > 0 && (
-            <p className="text-slate-400 text-sm mt-1">
+            <p className="text-slate-400 text-xs mt-1">
               {consecutivePasses} consecutive pass{consecutivePasses !== 1 ? 'es' : ''} (need 3 to end)
             </p>
           )}
@@ -115,8 +133,8 @@ export default function AnnouncementsPhase({
 
         {/* Announcement History */}
         {gameState.announcements && gameState.announcements.length > 0 && (
-          <div className="mb-6 bg-slate-700/50 rounded-xl p-4">
-            <h3 className="text-white font-semibold mb-3 text-sm">Announcements Made</h3>
+          <div className="mb-3 bg-slate-700/50 rounded-xl p-2">
+            <h3 className="text-white font-semibold mb-2 text-xs">Announcements Made</h3>
             <div className="space-y-2">
               {gameState.announcements.map((announcement: Announcement, index: number) => {
                 const announcementInfo = announcementTypes.find(
@@ -167,112 +185,114 @@ export default function AnnouncementsPhase({
         )}
 
         {isMyTurn ? (
-          <div className="space-y-4">
-            {/* Announcement Selection */}
-            <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-3">
+            {/* Info */}
+            <div className="bg-blue-900/30 border border-blue-700/50 rounded-lg p-2 text-xs text-blue-200">
+              💡 Click to announce. You can select multiple announcements.
+            </div>
+
+            {/* Announcement Selection Grid */}
+            <div className="grid grid-cols-3 gap-3">
               {announcementTypes.map((announcement) => {
                 const isValid = validAnnouncements.includes(announcement.value)
-                const isSelected = selectedAnnouncement === announcement.value
+                const isSelected = selectedAnnouncements.includes(announcement.value)
 
                 return (
                   <motion.button
                     key={announcement.value}
-                    whileHover={isValid ? { scale: 1.02 } : undefined}
-                    whileTap={isValid ? { scale: 0.98 } : undefined}
-                    onClick={() => isValid && setSelectedAnnouncement(announcement.value)}
                     disabled={!isValid}
+                    whileHover={isValid ? { scale: 1.05 } : undefined}
+                    whileTap={isValid ? { scale: 0.95 } : undefined}
+                    onClick={() => {
+                      if (isValid) {
+                        toggleAnnouncement(announcement.value)
+                      }
+                    }}
                     className={`
-                      px-4 py-3 rounded-xl font-semibold text-left
+                      px-3 py-4 rounded-xl font-semibold text-left
                       transition-all duration-200
                       ${
                         isSelected
-                          ? 'bg-blue-600 text-white ring-4 ring-blue-400'
+                          ? 'bg-blue-600 text-white ring-4 ring-blue-400 scale-105'
                           : isValid
                           ? 'bg-slate-700 text-white hover:bg-slate-600'
-                          : 'bg-slate-800 text-slate-600 cursor-not-allowed'
+                          : 'bg-slate-800 text-slate-600 cursor-not-allowed opacity-50'
                       }
                     `}
                   >
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-2">
                       <span className="text-2xl">{announcement.icon}</span>
-                      <span className="text-base">{announcement.label}</span>
+                      <span className="text-sm font-bold">{announcement.label}</span>
                     </div>
-                    <div className="text-xs opacity-80 ml-9">{announcement.description}</div>
-                    <div className="text-xs opacity-70 ml-9 mt-1">
-                      Announced: +{announcement.points.announced} | Silent: +
-                      {announcement.points.silent}
+                    <div className="text-xs opacity-80 mb-1">{announcement.description}</div>
+                    <div className="text-xs opacity-70">
+                      📢 +{announcement.points.announced} | 🤫 +{announcement.points.silent}
                     </div>
+                    {isSelected && (
+                      <div className="mt-2 text-center text-lg">
+                        📢
+                      </div>
+                    )}
                   </motion.button>
                 )
               })}
             </div>
 
-            {/* Announced/Silent Choice */}
-            {selectedAnnouncement && (
+            {/* Selected Announcements Summary */}
+            {selectedAnnouncements.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-slate-700/50 rounded-xl p-4"
+                className="bg-green-900/30 border border-green-700/50 rounded-lg p-2"
               >
-                <h4 className="text-white font-semibold mb-3 text-sm">How to announce?</h4>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => setAnnouncedChoice(true)}
-                    className={`
-                      px-4 py-3 rounded-lg font-semibold transition-all
-                      ${
-                        announcedChoice
-                          ? 'bg-yellow-600 text-white'
-                          : 'bg-slate-600 text-slate-300 hover:bg-slate-500'
-                      }
-                    `}
-                  >
-                    📢 Announced
-                    <div className="text-xs opacity-80 mt-1">More points if successful</div>
-                  </button>
-                  <button
-                    onClick={() => setAnnouncedChoice(false)}
-                    className={`
-                      px-4 py-3 rounded-lg font-semibold transition-all
-                      ${
-                        !announcedChoice
-                          ? 'bg-slate-500 text-white'
-                          : 'bg-slate-600 text-slate-300 hover:bg-slate-500'
-                      }
-                    `}
-                  >
-                    🤫 Silent
-                    <div className="text-xs opacity-80 mt-1">Fewer points, less risk</div>
-                  </button>
+                <h4 className="text-green-200 font-semibold mb-1.5 text-xs">
+                  Selected ({selectedAnnouncements.length}):
+                </h4>
+                <div className="flex flex-wrap gap-1.5">
+                  {selectedAnnouncements.map((announcementType) => {
+                    const info = announcementTypes.find((a) => a.value === announcementType)
+                    return (
+                      <div
+                        key={announcementType}
+                        className="bg-slate-700 text-white px-2 py-0.5 rounded text-[10px] flex items-center gap-1"
+                      >
+                        <span>{info?.icon}</span>
+                        <span>{info?.label}</span>
+                        <span>📢</span>
+                      </div>
+                    )
+                  })}
                 </div>
               </motion.div>
             )}
 
             {/* Action Buttons */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               <motion.button
-                whileHover={selectedAnnouncement ? { scale: 1.02 } : undefined}
-                whileTap={selectedAnnouncement ? { scale: 0.98 } : undefined}
-                onClick={handleAnnounce}
-                disabled={!selectedAnnouncement}
+                whileHover={selectedAnnouncements.length > 0 ? { scale: 1.02 } : undefined}
+                whileTap={selectedAnnouncements.length > 0 ? { scale: 0.98 } : undefined}
+                onClick={handleConfirmAnnouncements}
+                disabled={selectedAnnouncements.length === 0}
                 className={`
-                  px-6 py-4 rounded-xl font-semibold text-white text-lg
+                  px-3 py-2 rounded-xl font-semibold text-white text-sm
                   transition-all duration-200
                   ${
-                    selectedAnnouncement
+                    selectedAnnouncements.length > 0
                       ? 'bg-green-600 hover:bg-green-700 shadow-lg'
                       : 'bg-slate-700 text-slate-500 cursor-not-allowed'
                   }
                 `}
               >
-                ✓ Confirm
+                {selectedAnnouncements.length > 0
+                  ? `✓ Confirm (${selectedAnnouncements.length})`
+                  : '✓ Confirm'}
               </motion.button>
 
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handlePass}
-                className="px-6 py-4 bg-slate-600 hover:bg-slate-700 text-white font-semibold rounded-xl transition-colors text-lg"
+                className="px-3 py-2 bg-slate-600 hover:bg-slate-700 text-white font-semibold rounded-xl transition-colors text-sm"
               >
                 Pass
               </motion.button>
@@ -280,18 +300,44 @@ export default function AnnouncementsPhase({
           </div>
         ) : (
           /* Waiting Message */
-          <div className="text-center py-8">
+          <div className="text-center py-4">
             <motion.div
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="text-6xl mb-4"
+              className="text-4xl mb-2"
             >
               ⏳
             </motion.div>
-            <p className="text-slate-400">Waiting for {currentPlayer.name}...</p>
+            <p className="text-slate-400 text-sm">Waiting for {currentPlayer.name}...</p>
           </div>
         )}
       </motion.div>
+
+      {/* Player's Hand - Always visible during announcements */}
+      {myPlayer.hand && myPlayer.hand.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mt-4 bg-slate-800/90 backdrop-blur-sm rounded-2xl px-4 py-2 shadow-2xl relative"
+        >
+          {/* Player Avatar in upper left corner */}
+          <div className="absolute top-2 left-2 z-10">
+            <PlayerAvatar
+              player={myPlayer}
+              isCurrentTurn={gameState.current_turn === playerPosition}
+              position={playerPosition as 0 | 1 | 2 | 3}
+              isLocalPlayer={true}
+            />
+          </div>
+
+          <Hand
+            cards={myPlayer.hand}
+            layout="fan"
+            size="md"
+          />
+        </motion.div>
+      )}
     </div>
   )
 }

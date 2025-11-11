@@ -135,16 +135,52 @@ class SocketManager {
         }
       })
 
+      this.socket.on('rooms_list', (data: { rooms: any[] }) => {
+        console.log('[Socket] Rooms list:', data)
+        useGameStore.getState().setAvailableRooms(data.rooms)
+      })
+
       // Game events
-      this.socket.on('game_state', (data: GameState) => {
+      this.socket.on('game_state', (data: GameState | { message: string }) => {
         console.log('[Socket] Game state received:', data)
+
+        // Check if it's a message (all players passed)
+        if ('message' in data && !('phase' in data)) {
+          console.log('[Socket] Message:', data.message)
+          useGameStore.getState().addToast({
+            type: 'warning',
+            message: data.message,
+            duration: 4000,
+          })
+          // Clear selected cards
+          useGameStore.getState().clearSelectedCards()
+          return
+        }
+
+        const gameState = data as GameState
         console.log('[Socket] My position:', useGameStore.getState().playerPosition)
         const myPos = useGameStore.getState().playerPosition
-        if (myPos !== null && data.players[myPos]) {
-          console.log('[Socket] My hand:', data.players[myPos].hand)
-          console.log('[Socket] Hand size:', data.players[myPos].hand?.length || 0)
+        if (myPos !== null && gameState.players[myPos]) {
+          console.log('[Socket] My hand:', gameState.players[myPos].hand)
+          console.log('[Socket] Hand size:', gameState.players[myPos].hand?.length || 0)
         }
-        useGameStore.getState().setGameState(data)
+
+        // Clear selected cards when new hand is dealt
+        const currentPhase = useGameStore.getState().gameState?.phase
+        if (currentPhase !== gameState.phase && gameState.phase === 'dealing') {
+          useGameStore.getState().clearSelectedCards()
+        }
+
+        // Show toast when transitioning from dealing to bidding (new hand dealt)
+        if (currentPhase === 'dealing' && gameState.phase === 'bidding') {
+          useGameStore.getState().addToast({
+            type: 'success',
+            message: 'New hand dealt! Bidding begins.',
+            duration: 2000,
+          })
+        }
+
+        useGameStore.getState().setGameState(gameState)
       })
 
       this.socket.on('game_started', () => {
@@ -179,12 +215,20 @@ class SocketManager {
       // Bidding events
       this.socket.on('bid_placed', (data) => {
         console.log('[Socket] Bid placed:', data)
-        const playerName = useGameStore
-          .getState()
-          .gameState?.players[data.player_position]?.name
+        const gameState = useGameStore.getState().gameState
+        const playerName = gameState?.players[data.player_position]?.name || 'Player'
+        const bidType = data.bid_type || 'pass'
+
+        // Format bid display
+        const bidDisplay = bidType === 'pass' ? 'Pass' :
+                          bidType === 'three' ? 'Three' :
+                          bidType === 'two' ? 'Two' :
+                          bidType === 'one' ? 'One' :
+                          bidType === 'solo' ? 'Solo' : bidType
+
         useGameStore.getState().addToast({
           type: 'info',
-          message: `${playerName} bid: ${data.bid_type}`,
+          message: `${playerName} bid: ${bidDisplay}`,
           duration: 2000,
         })
       })
@@ -294,6 +338,11 @@ class SocketManager {
 
   // Emit methods
 
+  listRooms() {
+    console.log('[Socket] Requesting room list')
+    this.socket?.emit('list_rooms', {})
+  }
+
   joinRoom(roomId?: string) {
     const { playerName } = useGameStore.getState()
     this.socket?.emit('join_room', {
@@ -313,8 +362,7 @@ class SocketManager {
 
   pass() {
     console.log('[Socket] Passing (bidding)')
-    // Pass is just a bid with null type
-    this.socket?.emit('place_bid', { bid_type: null })
+    this.socket?.emit('place_bid', { bid_type: 'pass' })
   }
 
   discardCards(cardIds: string[]) {

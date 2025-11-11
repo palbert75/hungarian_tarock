@@ -9,6 +9,33 @@ import PartnerCallPhase from './phases/PartnerCallPhase'
 import AnnouncementsPhase from './phases/AnnouncementsPhase'
 import PlayingPhase from './phases/PlayingPhase'
 import GameOverScreen from './GameOverScreen'
+import type { Bid } from '@/types'
+
+const getBidColor = (bidType: string): string => {
+  switch (bidType) {
+    case 'three':
+      return 'bg-blue-600'
+    case 'two':
+      return 'bg-purple-600'
+    case 'one':
+      return 'bg-orange-600'
+    case 'solo':
+      return 'bg-red-600'
+    default:
+      return 'bg-slate-600'
+  }
+}
+
+const getBidDisplayName = (bidType: string | null): string => {
+  if (!bidType || bidType === 'pass') return 'Pass'
+  const bidTypes = [
+    { value: 'three', label: 'Three' },
+    { value: 'two', label: 'Two' },
+    { value: 'one', label: 'One' },
+    { value: 'solo', label: 'Solo' },
+  ]
+  return bidTypes.find((b) => b.value === bidType)?.label || bidType
+}
 
 export default function GameScreen() {
   const gameState = useGameStore((state) => state.gameState)
@@ -103,51 +130,50 @@ export default function GameScreen() {
       <div className="w-full h-full pt-20 pb-4 px-4 flex flex-col">
         {showPhaseOverlay ? (
           /* Phase Overlay (Bidding, Discarding, Announcements) */
-          <div className="flex-1 flex items-center justify-center">
-            {/* Show player avatars in corners */}
-            <div className="absolute top-24 left-8">
-              {leftPlayer && (
-                <PlayerAvatar
-                  player={leftPlayer.player}
-                  isCurrentTurn={gameState.current_turn === leftPlayer.absolutePosition}
-                  position={leftPlayer.absolutePosition as 0 | 1 | 2 | 3}
-                  isLocalPlayer={false}
-                />
-              )}
-            </div>
-            <div className="absolute top-24 left-1/2 transform -translate-x-1/2">
-              {topPlayer && (
-                <PlayerAvatar
-                  player={topPlayer.player}
-                  isCurrentTurn={gameState.current_turn === topPlayer.absolutePosition}
-                  position={topPlayer.absolutePosition as 0 | 1 | 2 | 3}
-                  isLocalPlayer={false}
-                />
-              )}
-            </div>
-            <div className="absolute top-24 right-8">
-              {rightPlayer && (
-                <PlayerAvatar
-                  player={rightPlayer.player}
-                  isCurrentTurn={gameState.current_turn === rightPlayer.absolutePosition}
-                  position={rightPlayer.absolutePosition as 0 | 1 | 2 | 3}
-                  isLocalPlayer={false}
-                />
-              )}
-            </div>
-            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
-              {bottomPlayer && (
-                <PlayerAvatar
-                  player={bottomPlayer.player}
-                  isCurrentTurn={gameState.current_turn === bottomPlayer.absolutePosition}
-                  position={bottomPlayer.absolutePosition as 0 | 1 | 2 | 3}
-                  isLocalPlayer={true}
-                />
-              )}
+          <div className="flex-1 flex flex-col">
+            {/* Show player avatars at top */}
+            <div className="flex items-start justify-between px-8 pt-4 pb-2">
+              {/* Left Player */}
+              <div>
+                {leftPlayer && (
+                  <PlayerAvatar
+                    player={leftPlayer.player}
+                    isCurrentTurn={gameState.current_turn === leftPlayer.absolutePosition}
+                    position={leftPlayer.absolutePosition as 0 | 1 | 2 | 3}
+                    isLocalPlayer={false}
+                  />
+                )}
+              </div>
+
+              {/* Top Player */}
+              <div>
+                {topPlayer && (
+                  <PlayerAvatar
+                    player={topPlayer.player}
+                    isCurrentTurn={gameState.current_turn === topPlayer.absolutePosition}
+                    position={topPlayer.absolutePosition as 0 | 1 | 2 | 3}
+                    isLocalPlayer={false}
+                  />
+                )}
+              </div>
+
+              {/* Right Player */}
+              <div>
+                {rightPlayer && (
+                  <PlayerAvatar
+                    player={rightPlayer.player}
+                    isCurrentTurn={gameState.current_turn === rightPlayer.absolutePosition}
+                    position={rightPlayer.absolutePosition as 0 | 1 | 2 | 3}
+                    isLocalPlayer={false}
+                  />
+                )}
+              </div>
             </div>
 
-            {/* Phase Content */}
-            <div className="z-10">{renderPhase()}</div>
+            {/* Phase Content - Centered below players */}
+            <div className="flex-1 flex items-center justify-center px-4">
+              {renderPhase()}
+            </div>
           </div>
         ) : showFullTable ? (
           /* Full Table Layout (Playing Phase) */
@@ -225,6 +251,47 @@ export default function GameScreen() {
           </div>
         )}
       </div>
+
+      {/* Bid History - Bottom Left Corner (only during bidding phase) */}
+      {gameState.phase === 'bidding' && gameState.bid_history.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          className="absolute bottom-4 left-4 bg-slate-800/95 backdrop-blur-sm rounded-xl p-4 shadow-2xl z-20 max-w-xs"
+        >
+          <h3 className="text-white font-semibold mb-3 text-sm flex items-center gap-2">
+            <span>📋</span> Bid History
+          </h3>
+          <div className="space-y-2 max-h-64 overflow-y-auto pr-2" style={{ scrollbarWidth: 'thin', scrollbarColor: '#475569 #334155' }}>
+            {gameState.bid_history.map((bid: Bid, index: number) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="flex items-center justify-between text-sm gap-3"
+              >
+                <span className="text-slate-300 truncate">
+                  {gameState.players[bid.player_position]?.name}
+                </span>
+                <span
+                  className={`
+                    font-semibold px-3 py-1 rounded-lg text-white flex-shrink-0
+                    ${
+                      bid.bid_type && bid.bid_type !== 'pass'
+                        ? getBidColor(bid.bid_type)
+                        : 'bg-slate-600 text-slate-300'
+                    }
+                  `}
+                >
+                  {getBidDisplayName(bid.bid_type)}
+                </span>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      )}
     </div>
   )
 }

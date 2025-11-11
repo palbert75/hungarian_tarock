@@ -1,12 +1,14 @@
-import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '@/store/gameStore'
 import { socketManager } from '@/services/socketManager'
 
 export default function LobbyScreen() {
   const playerName = useGameStore((state) => state.playerName)
+  const availableRooms = useGameStore((state) => state.availableRooms)
   const addToast = useGameStore((state) => state.addToast)
   const [roomCode, setRoomCode] = useState('')
+  const [showBrowser, setShowBrowser] = useState(false)
 
   const handleCreateRoom = () => {
     console.log('[Lobby] Creating new room...')
@@ -36,6 +38,34 @@ export default function LobbyScreen() {
     socketManager.disconnect()
     window.location.reload()
   }
+
+  const handleBrowseRooms = () => {
+    setShowBrowser(true)
+    socketManager.listRooms()
+  }
+
+  const handleJoinFromBrowser = (roomId: string) => {
+    console.log('[Lobby] Joining room from browser:', roomId)
+    socketManager.joinRoom(roomId)
+  }
+
+  const handleRefreshRooms = () => {
+    socketManager.listRooms()
+    addToast({
+      type: 'info',
+      message: 'Refreshing room list...',
+    })
+  }
+
+  // Auto-refresh rooms every 5 seconds when browser is open
+  useEffect(() => {
+    if (showBrowser) {
+      const interval = setInterval(() => {
+        socketManager.listRooms()
+      }, 5000)
+      return () => clearInterval(interval)
+    }
+  }, [showBrowser])
 
   return (
     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -69,12 +99,11 @@ export default function LobbyScreen() {
               <div>Create Room</div>
             </button>
             <button
-              className="flex-1 py-4 px-6 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition-all transform hover:scale-105 active:scale-95 opacity-50 cursor-not-allowed"
-              disabled
+              onClick={handleBrowseRooms}
+              className="flex-1 py-4 px-6 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold rounded-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg"
             >
               <div className="text-2xl mb-2">🔍</div>
               <div>Browse Rooms</div>
-              <div className="text-xs mt-1">(Coming soon)</div>
             </button>
           </div>
 
@@ -103,11 +132,107 @@ export default function LobbyScreen() {
           </div>
         </div>
 
-        {/* Coming Soon Features */}
-        <div className="mt-6 text-center text-slate-500 text-sm">
-          <p>📊 Room browser and statistics coming soon!</p>
-        </div>
       </motion.div>
+
+      {/* Room Browser Modal */}
+      <AnimatePresence>
+        {showBrowser && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+            onClick={() => setShowBrowser(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-slate-800 rounded-2xl p-6 max-w-3xl w-full max-h-[80vh] overflow-hidden flex flex-col shadow-2xl"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-white">🔍 Browse Rooms</h2>
+                  <p className="text-slate-400 text-sm mt-1">
+                    {availableRooms.length} room{availableRooms.length !== 1 ? 's' : ''} available
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleRefreshRooms}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                  >
+                    🔄 Refresh
+                  </button>
+                  <button
+                    onClick={() => setShowBrowser(false)}
+                    className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+                  >
+                    ✕ Close
+                  </button>
+                </div>
+              </div>
+
+              {/* Room List */}
+              <div className="flex-1 overflow-y-auto space-y-3">
+                {availableRooms.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="text-6xl mb-4">🎴</div>
+                    <p className="text-slate-400 text-lg">No rooms available</p>
+                    <p className="text-slate-500 text-sm mt-2">Create one to get started!</p>
+                  </div>
+                ) : (
+                  availableRooms.map((room) => (
+                    <motion.div
+                      key={room.room_id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-slate-700/50 rounded-xl p-4 hover:bg-slate-700 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="text-white font-semibold">
+                              Room #{room.room_id.substring(0, 8)}
+                            </h3>
+                            <span className="text-sm text-slate-400">
+                              {room.players.length}/4 players
+                            </span>
+                          </div>
+
+                          {/* Player List */}
+                          <div className="flex gap-2 flex-wrap">
+                            {room.players.map((player) => (
+                              <div
+                                key={player.id}
+                                className="flex items-center gap-1 px-3 py-1 bg-slate-600 rounded-lg text-sm"
+                              >
+                                <span className="text-white">{player.name}</span>
+                                {player.is_ready && (
+                                  <span className="text-green-400">✓</span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => handleJoinFromBrowser(room.room_id)}
+                          className="ml-4 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
+                        >
+                          Join
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
