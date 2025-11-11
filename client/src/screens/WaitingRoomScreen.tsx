@@ -16,7 +16,21 @@ export default function WaitingRoomScreen() {
   }
 
   const handleLeaveRoom = () => {
+    // Save player name before clearing
+    const playerName = useGameStore.getState().playerName
+
+    // Leave the room via socket
     socketManager.leaveRoom()
+
+    // Clear persisted session data
+    useGameStore.persist.clearStorage()
+
+    // Restore player name so user doesn't have to re-enter it
+    if (playerName) {
+      useGameStore.getState().setPlayerInfo('', playerName)
+    }
+
+    console.log('[WaitingRoomScreen] Left room and cleared session storage')
   }
 
   const handleCopyRoomCode = () => {

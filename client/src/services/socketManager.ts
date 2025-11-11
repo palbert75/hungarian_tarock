@@ -19,6 +19,12 @@ class SocketManager {
       console.log('[Socket] Player Name:', playerName)
       console.log('[Socket] Timestamp:', new Date().toISOString())
 
+      // Check if we have a stored player ID (for reconnection)
+      const storedPlayerId = useGameStore.getState().playerId
+      if (storedPlayerId) {
+        console.log('[Socket] Found stored player ID:', storedPlayerId)
+      }
+
       this.socket = io(this.serverUrl, {
         transports: ['websocket', 'polling'],
         upgrade: true,
@@ -61,7 +67,22 @@ class SocketManager {
         console.log('[Socket] Transport:', this.socket?.io?.engine?.transport?.name)
         console.log('[Socket] Connected at:', new Date().toISOString())
         useGameStore.getState().setConnectionStatus('connected')
-        useGameStore.getState().setPlayerInfo(this.socket!.id!, playerName)
+
+        // Store the player name immediately
+        // We'll get the actual player ID from the server when we receive room_state after joining a room
+        const currentPlayerId = useGameStore.getState().playerId
+        const currentPlayerName = useGameStore.getState().playerName
+
+        if (currentPlayerId) {
+          console.log('[Socket] Have stored player ID for reconnection:', currentPlayerId)
+          // Reconnection case - keep both ID and name
+          useGameStore.getState().setPlayerInfo(currentPlayerId, playerName)
+        } else {
+          // First time connection - store name (ID will come from server)
+          console.log('[Socket] Storing player name:', playerName)
+          useGameStore.getState().setPlayerInfo('', playerName)
+        }
+
         resolve()
       })
 
@@ -127,11 +148,19 @@ class SocketManager {
         console.log('[Socket] Room state:', data)
         useGameStore.getState().setRoomState(data)
 
-        // Find our position
+        // Find our player info and update store
         const myName = useGameStore.getState().playerName
         const player = data.players.find((p) => p.name === myName)
         if (player) {
+          // Update position
           useGameStore.getState().setPlayerPosition(player.position)
+
+          // Update player ID with server's ID (important for reconnection)
+          const currentPlayerId = useGameStore.getState().playerId
+          if (currentPlayerId !== player.id) {
+            console.log('[Socket] Updating player ID from server:', player.id)
+            useGameStore.getState().setPlayerInfo(player.id, myName)
+          }
         }
       })
 
@@ -378,11 +407,34 @@ class SocketManager {
   }
 
   joinRoom(roomId?: string) {
-    const { playerName } = useGameStore.getState()
+    const { playerName, playerId } = useGameStore.getState()
     this.socket?.emit('join_room', {
       player_name: playerName,
+      player_id: playerId,
       room_id: roomId || null,
     })
+  }
+
+  // Attempt to reconnect to previous game session
+  reconnectToGame(): boolean {
+    const { playerId, playerName, roomState } = useGameStore.getState()
+
+    console.log('[Socket] Attempting reconnection...', {
+      playerId,
+      playerName,
+      roomId: roomState?.room_id,
+    })
+
+    // Check if we have enough info to reconnect
+    if (!playerId || !playerName || !roomState?.room_id) {
+      console.log('[Socket] Not enough data for reconnection')
+      return false
+    }
+
+    // Try to rejoin the room
+    console.log('[Socket] Reconnecting to room:', roomState.room_id)
+    this.joinRoom(roomState.room_id)
+    return true
   }
 
   ready() {
@@ -411,6 +463,13 @@ class SocketManager {
   makeAnnouncement(announcementType: string, announced: boolean) {
     this.socket?.emit('make_announcement', {
       announcement_type: announcementType,
+      announced,
+    })
+  }
+
+  makeAnnouncements(announcementTypes: string[], announced: boolean) {
+    this.socket?.emit('make_announcement', {
+      announcement_types: announcementTypes,
       announced,
     })
   }

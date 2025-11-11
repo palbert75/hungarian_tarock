@@ -103,35 +103,44 @@ async def create_room(sid: str, data: dict):
 
 @sio.event
 async def join_room(sid: str, data: dict):
-    """Handle join room request."""
+    """Handle join room request (including reconnections)."""
     try:
         room_id = data.get("room_id")
         player_name = data.get("player_name", "Player")
-        logger.info("join_room_request", sid=sid, room_id=room_id, player_name=player_name)
+        player_id = data.get("player_id")  # Client's stored player ID for reconnection
+
+        logger.info("join_room_request", sid=sid, room_id=room_id,
+                   player_name=player_name, player_id=player_id)
 
         if not room_id:
             # Create new room if no room_id provided
             room = room_manager.create_room(sid, player_name)
             logger.info("room_created", room_id=room.room_id, player_name=player_name)
         else:
-            # Check if this is a reconnection
-            room = room_manager.get_room(room_id)
-            if room and room.get_player_by_name(player_name):
-                logger.info("player_reconnecting", sid=sid, room_id=room_id, player_name=player_name)
+            # Join existing room (may be reconnection or new player)
+            # Pass player_id to allow reconnection by ID
+            room = room_manager.join_room(room_id, sid, player_name, player_id)
 
-            room = room_manager.join_room(room_id, sid, player_name)
-
-            # Log whether it was a reconnection or new join
+            # Log the result
             player = room.get_player_by_name(player_name)
-            if player:
-                logger.info("player_joined", sid=sid, room_id=room_id, player_name=player_name,
-                           position=player.position, is_reconnection=player.is_connected)
+            if player and player_id:
+                logger.info("player_reconnected", sid=sid, room_id=room_id,
+                          player_name=player_name, player_id=player.id,
+                          position=player.position)
+            elif player:
+                logger.info("player_joined", sid=sid, room_id=room_id,
+                          player_name=player_name, player_id=player.id,
+                          position=player.position)
 
         # Join socket.io room
         await sio.enter_room(sid, room.room_id)
 
         # Send room state to all players
         await broadcast_room_state(room.room_id)
+
+        # If game is in progress, also send current game state
+        if room.game_state.phase != GamePhase.WAITING:
+            await broadcast_game_state(room.room_id)
 
     except Exception as e:
         logger.error("join_room_error", sid=sid, error=str(e))
@@ -380,7 +389,7 @@ async def call_partner(sid: str, data: dict):
 
 @sio.event
 async def make_announcement(sid: str, data: dict):
-    """Handle make announcement action."""
+    """Handle make announcement action (single or multiple)."""
     try:
         room = room_manager.get_room_by_session(sid)
         if not room:
@@ -398,41 +407,57 @@ async def make_announcement(sid: str, data: dict):
         if game_state.current_turn != player.position:
             raise ValueError("Not your turn")
 
-        announcement_type_str = data.get("announcement_type")
+        # Support both single announcement and multiple announcements
+        announcement_types = data.get("announcement_types")  # Array of types
+        if announcement_types is None:
+            # Fallback to single announcement for backward compatibility
+            announcement_type_str = data.get("announcement_type")
+            if not announcement_type_str:
+                raise ValueError("Must specify announcement type(s)")
+            announcement_types = [announcement_type_str]
+
         announced = data.get("announced", True)
 
-        if not announcement_type_str:
-            raise ValueError("Must specify announcement type")
+        logger.info("make_announcement_request", sid=sid,
+                   player_position=player.position,
+                   announcement_types=announcement_types,
+                   announced=announced,
+                   count=len(announcement_types))
 
-        announcement_type = AnnouncementType(announcement_type_str)
+        # Process all announcements
+        for announcement_type_str in announcement_types:
+            announcement_type = AnnouncementType(announcement_type_str)
 
-        # Validate announcement
-        is_valid, error = can_announce(player.hand, announcement_type)
-        if not is_valid:
-            raise ValueError(error)
+            # Validate announcement
+            is_valid, error = can_announce(player.hand, announcement_type)
+            if not is_valid:
+                raise ValueError(f"{announcement_type_str}: {error}")
 
-        # Create and add announcement
-        announcement = Announcement(
-            player_position=player.position,
-            announcement_type=announcement_type,
-            announced=announced
-        )
-        game_state.make_announcement(announcement)
+            # Create and add announcement
+            announcement = Announcement(
+                player_position=player.position,
+                announcement_type=announcement_type,
+                announced=announced
+            )
+            game_state.make_announcement(announcement)
 
-        # Notify all players
-        await broadcast_to_room(room.room_id, MessageType.ANNOUNCEMENT_MADE, {
-            "player_position": player.position,
-            "announcement_type": announcement_type_str,
-            "announced": announced
-        })
+            # Notify all players about this announcement
+            await broadcast_to_room(room.room_id, MessageType.ANNOUNCEMENT_MADE, {
+                "player_position": player.position,
+                "announcement_type": announcement_type_str,
+                "announced": announced
+            })
 
-        # Check if announcement phase is complete
+        logger.info("announcements_processed", player_position=player.position,
+                   count=len(announcement_types))
+
+        # After all announcements are processed, check if phase is complete
         if game_state.is_announcement_phase_complete():
             await broadcast_to_room(room.room_id, MessageType.ANNOUNCEMENTS_COMPLETE, {})
             # Start trick-taking
             await start_trick_taking(room)
         else:
-            # Notify next player
+            # Notify next player (only after all announcements are processed)
             await send_your_turn(room, game_state.current_turn)
 
         await broadcast_game_state(room.room_id)

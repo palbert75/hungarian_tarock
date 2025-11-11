@@ -84,10 +84,9 @@ export default function AnnouncementsPhase({
 
   const handleConfirmAnnouncements = () => {
     if (selectedAnnouncements.length > 0) {
-      // Send all announcements to server (always announced: true)
-      selectedAnnouncements.forEach((announcementType) => {
-        socketManager.makeAnnouncement(announcementType, true)
-      })
+      // Send all announcements to server at once (always announced: true)
+      console.log('[AnnouncementsPhase] Confirming announcements:', selectedAnnouncements)
+      socketManager.makeAnnouncements(selectedAnnouncements, true)
       setSelectedAnnouncements([])
     }
   }

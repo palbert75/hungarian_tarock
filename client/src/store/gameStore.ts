@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 import type {
   ConnectionStatus,
   GameState,
@@ -62,22 +63,28 @@ interface GameStore {
   getPlayerAtPosition: (position: number) => any
 }
 
-export const useGameStore = create<GameStore>((set, get) => ({
-  // Initial state
-  connectionStatus: 'disconnected',
-  playerId: null,
-  playerName: '',
-  playerPosition: null,
-  roomState: null,
-  availableRooms: [],
-  gameState: null,
-  yourTurnData: null,
-  selectedCards: [],
-  hoveredCard: null,
-  showingModal: null,
-  toasts: [],
-  soundEnabled: true,
-  musicEnabled: false,
+// Use sessionStorage for development (multi-tab testing) or localStorage for production
+// sessionStorage is isolated per tab, localStorage is shared across tabs
+const useSessionStorage = import.meta.env.DEV // Use sessionStorage in dev mode
+
+export const useGameStore = create<GameStore>()(
+  persist(
+    (set, get) => ({
+      // Initial state
+      connectionStatus: 'disconnected',
+      playerId: null,
+      playerName: '',
+      playerPosition: null,
+      roomState: null,
+      availableRooms: [],
+      gameState: null,
+      yourTurnData: null,
+      selectedCards: [],
+      hoveredCard: null,
+      showingModal: null,
+      toasts: [],
+      soundEnabled: true,
+      musicEnabled: false,
 
   // Connection actions
   setConnectionStatus: (status) => set({ connectionStatus: status }),
@@ -165,4 +172,33 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     return gameState.players[position]
   },
-}))
+    }),
+    {
+      name: 'tarokk-game-storage',
+      // Use sessionStorage in dev mode (per-tab), localStorage in production (persistent)
+      storage: useSessionStorage
+        ? {
+            getItem: (name) => {
+              const value = sessionStorage.getItem(name)
+              return value ? JSON.parse(value) : null
+            },
+            setItem: (name, value) => {
+              sessionStorage.setItem(name, JSON.stringify(value))
+            },
+            removeItem: (name) => {
+              sessionStorage.removeItem(name)
+            },
+          }
+        : undefined, // undefined = use default localStorage
+      partialize: (state) => ({
+        playerId: state.playerId,
+        playerName: state.playerName,
+        playerPosition: state.playerPosition,
+        roomState: state.roomState,
+        gameState: state.gameState,
+        soundEnabled: state.soundEnabled,
+        musicEnabled: state.musicEnabled,
+      }),
+    }
+  )
+)

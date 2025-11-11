@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useGameStore } from '@/store/gameStore'
 import { socketManager } from '@/services/socketManager'
@@ -6,8 +6,65 @@ import { socketManager } from '@/services/socketManager'
 export default function ConnectionScreen() {
   const [name, setName] = useState('')
   const [isConnecting, setIsConnecting] = useState(false)
+  const [isReconnecting, setIsReconnecting] = useState(false)
+  const reconnectionAttempted = useRef(false)
   const connectionStatus = useGameStore((state) => state.connectionStatus)
   const addToast = useGameStore((state) => state.addToast)
+  const playerId = useGameStore((state) => state.playerId)
+  const playerName = useGameStore((state) => state.playerName)
+  const roomState = useGameStore((state) => state.roomState)
+
+  // Attempt to reconnect to previous session on mount (only once)
+  useEffect(() => {
+    // Prevent multiple reconnection attempts
+    if (reconnectionAttempted.current) return
+
+    const attemptReconnection = async () => {
+      // Check if we have persisted data for reconnection
+      if (playerId && playerName && roomState?.room_id) {
+        console.log('[ConnectionScreen] Found persisted session, attempting reconnection...')
+        console.log('[ConnectionScreen] Player ID:', playerId)
+        console.log('[ConnectionScreen] Player Name:', playerName)
+        console.log('[ConnectionScreen] Room ID:', roomState.room_id)
+
+        reconnectionAttempted.current = true
+        setIsReconnecting(true)
+
+        try {
+          // First connect to the server
+          await socketManager.connect(playerName)
+
+          // Then try to rejoin the previous room
+          const reconnected = socketManager.reconnectToGame()
+
+          if (reconnected) {
+            console.log('[ConnectionScreen] Reconnection initiated successfully')
+            addToast({
+              type: 'success',
+              message: 'Reconnecting to your game...',
+              duration: 2000,
+            })
+          } else {
+            console.log('[ConnectionScreen] Reconnection failed - insufficient data')
+            setIsReconnecting(false)
+          }
+        } catch (error) {
+          console.error('[ConnectionScreen] Reconnection error:', error)
+          setIsReconnecting(false)
+          addToast({
+            type: 'warning',
+            message: 'Could not reconnect to previous game',
+            duration: 3000,
+          })
+        }
+      } else {
+        console.log('[ConnectionScreen] No persisted session found')
+      }
+    }
+
+    attemptReconnection()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Only run once on mount
 
   const handleConnect = async () => {
     if (!name.trim()) {
@@ -71,68 +128,90 @@ export default function ConnectionScreen() {
           transition={{ delay: 0.4 }}
           className="bg-slate-800 rounded-xl p-8 shadow-2xl"
         >
-          <div className="mb-6">
-            <label
-              htmlFor="player-name"
-              className="block text-sm font-medium text-slate-300 mb-2"
-            >
-              Enter Your Name
-            </label>
-            <input
-              id="player-name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Your name..."
-              disabled={isConnecting}
-              maxLength={20}
-              className="
-                w-full px-4 py-3 rounded-lg
-                bg-slate-700 text-white
-                border-2 border-slate-600
-                focus:border-blue-500 focus:outline-none
-                transition-colors
-                disabled:opacity-50 disabled:cursor-not-allowed
-              "
-              autoFocus
-            />
-          </div>
+          {isReconnecting ? (
+            // Show reconnection status
+            <div className="text-center py-4">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                className="text-6xl mb-4"
+              >
+                🔄
+              </motion.div>
+              <h3 className="text-white font-semibold text-xl mb-2">
+                Reconnecting to your game...
+              </h3>
+              <p className="text-slate-400 text-sm">
+                Please wait while we restore your session
+              </p>
+            </div>
+          ) : (
+            // Show normal connection form
+            <>
+              <div className="mb-6">
+                <label
+                  htmlFor="player-name"
+                  className="block text-sm font-medium text-slate-300 mb-2"
+                >
+                  Enter Your Name
+                </label>
+                <input
+                  id="player-name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Your name..."
+                  disabled={isConnecting}
+                  maxLength={20}
+                  className="
+                    w-full px-4 py-3 rounded-lg
+                    bg-slate-700 text-white
+                    border-2 border-slate-600
+                    focus:border-blue-500 focus:outline-none
+                    transition-colors
+                    disabled:opacity-50 disabled:cursor-not-allowed
+                  "
+                  autoFocus
+                />
+              </div>
 
-          <button
-            onClick={handleConnect}
-            disabled={isConnecting || !name.trim() || name.trim().length < 2}
-            className="
-              w-full py-3 px-6 rounded-lg
-              bg-gradient-to-r from-blue-600 to-blue-700
-              hover:from-blue-700 hover:to-blue-800
-              text-white font-semibold
-              disabled:opacity-50 disabled:cursor-not-allowed
-              transition-all duration-200
-              transform hover:scale-105 active:scale-95
-              shadow-lg hover:shadow-xl
-            "
-          >
-            {isConnecting ? (
-              <span className="flex items-center justify-center gap-2">
-                <span className="animate-spin">⏳</span>
-                Connecting...
-              </span>
-            ) : connectionStatus === 'error' ? (
-              'Retry Connection'
-            ) : (
-              'Connect to Game'
-            )}
-          </button>
+              <button
+                onClick={handleConnect}
+                disabled={isConnecting || !name.trim() || name.trim().length < 2}
+                className="
+                  w-full py-3 px-6 rounded-lg
+                  bg-gradient-to-r from-blue-600 to-blue-700
+                  hover:from-blue-700 hover:to-blue-800
+                  text-white font-semibold
+                  disabled:opacity-50 disabled:cursor-not-allowed
+                  transition-all duration-200
+                  transform hover:scale-105 active:scale-95
+                  shadow-lg hover:shadow-xl
+                "
+              >
+                {isConnecting ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="animate-spin">⏳</span>
+                    Connecting...
+                  </span>
+                ) : connectionStatus === 'error' ? (
+                  'Retry Connection'
+                ) : (
+                  'Connect to Game'
+                )}
+              </button>
 
-          {connectionStatus === 'error' && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-4 text-center text-red-400 text-sm"
-            >
-              Failed to connect. Please check server status.
-            </motion.div>
+              {connectionStatus === 'error' && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-4 text-center text-red-400 text-sm"
+                >
+                  Failed to connect. Please check server status.
+                </motion.div>
+              )}
+            </>
           )}
         </motion.div>
 

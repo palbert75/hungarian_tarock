@@ -67,6 +67,35 @@ class Room:
 
         return None
 
+    def reconnect_player_by_id(self, player_id: str, new_session_id: str) -> Optional[Player]:
+        """
+        Reconnect an existing player by ID with a new session ID.
+
+        Args:
+            player_id: ID of the player reconnecting
+            new_session_id: New WebSocket session ID
+
+        Returns:
+            The reconnected Player object, or None if player not found
+        """
+        # Find player by ID
+        player = self.game_state.get_player_by_id(player_id)
+
+        if player:
+            # Update session ID
+            old_session = self.player_sessions.get(player.id)
+            self.player_sessions[player.id] = new_session_id
+            # Mark as connected
+            player.is_connected = True
+            print(f"[Room] Reconnected player {player.name} (ID: {player_id})")
+            print(f"[Room]   Old session: {old_session}")
+            print(f"[Room]   New session: {new_session_id}")
+            print(f"[Room]   Position: {player.position}")
+            return player
+
+        print(f"[Room] Failed to reconnect player by ID: {player_id} (not found)")
+        return None
+
     def get_player_by_name(self, player_name: str) -> Optional[Player]:
         """
         Get player by their name.
@@ -188,7 +217,7 @@ class RoomManager:
 
         return room
 
-    def join_room(self, room_id: str, session_id: str, player_name: str) -> Room:
+    def join_room(self, room_id: str, session_id: str, player_name: str, player_id: str = None) -> Room:
         """
         Join an existing room.
 
@@ -196,6 +225,7 @@ class RoomManager:
             room_id: ID of room to join
             session_id: Player's session ID
             player_name: Player's name
+            player_id: Optional player ID for reconnection (more reliable than name)
 
         Returns:
             The joined Room
@@ -207,10 +237,26 @@ class RoomManager:
         if not room:
             raise ValueError(f"Room {room_id} not found")
 
-        # Check if player with this name already exists (reconnection case)
+        # Check for reconnection - try by ID first (more reliable), then by name
+        existing_player = None
+        if player_id:
+            print(f"[RoomManager] Checking for reconnection by ID: {player_id}")
+            existing_player = room.game_state.get_player_by_id(player_id)
+            if existing_player:
+                print(f"[RoomManager] Found existing player by ID, reconnecting...")
+                # This is a reconnection by ID - update session ID
+                player = room.reconnect_player_by_id(player_id, session_id)
+                self.session_to_room[session_id] = room_id
+                return room
+            else:
+                print(f"[RoomManager] No player found with ID: {player_id}")
+
+        # Try to find by name
+        print(f"[RoomManager] Checking for reconnection by name: {player_name}")
         existing_player = room.get_player_by_name(player_name)
         if existing_player:
-            # This is a reconnection - update session ID
+            print(f"[RoomManager] Found existing player by name, reconnecting...")
+            # This is a reconnection by name - update session ID
             player = room.reconnect_player(player_name, session_id)
             self.session_to_room[session_id] = room_id
             return room

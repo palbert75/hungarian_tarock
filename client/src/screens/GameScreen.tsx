@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { useGameStore } from '@/store/gameStore'
+import { socketManager } from '@/services/socketManager'
 import PlayerAvatar from '@/components/PlayerAvatar'
 import Hand from '@/components/Hand'
 import Card from '@/components/Card'
@@ -45,6 +46,28 @@ export default function GameScreen() {
   const playerPosition = useGameStore((state) => state.playerPosition)
   const selectedCards = useGameStore((state) => state.selectedCards)
   const toggleCardSelection = useGameStore((state) => state.toggleCardSelection)
+
+  const handleLeaveRoom = () => {
+    // Confirm before leaving
+    const confirmed = window.confirm('Are you sure you want to leave the room? This will end your game session.')
+    if (confirmed) {
+      // Save player name before clearing
+      const playerName = useGameStore.getState().playerName
+
+      // Leave the room via socket
+      socketManager.leaveRoom()
+
+      // Clear persisted session data
+      useGameStore.persist.clearStorage()
+
+      // Restore player name so user doesn't have to re-enter it
+      if (playerName) {
+        useGameStore.getState().setPlayerInfo('', playerName)
+      }
+
+      console.log('[GameScreen] Left room and cleared session storage')
+    }
+  }
 
   if (!gameState || playerPosition === null) {
     return (
@@ -124,9 +147,16 @@ export default function GameScreen() {
             </span>
           </div>
         </div>
-        <button className="text-white/80 hover:text-white transition-colors">
-          ⚙️ Menu
-        </button>
+        <div className="flex items-center gap-3">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleLeaveRoom}
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors text-sm"
+          >
+            🚪 Leave Room
+          </motion.button>
+        </div>
       </div>
 
       {/* Game Table Layout */}
