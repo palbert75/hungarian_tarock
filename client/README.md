@@ -39,7 +39,7 @@ VITE_SERVER_URL=http://localhost:8000
 npm run dev
 ```
 
-The client will be available at `http://localhost:3000`
+The client will be available at `http://localhost:3003`
 
 ## Building for Production
 

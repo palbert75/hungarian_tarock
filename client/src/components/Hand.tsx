@@ -1,5 +1,7 @@
 import { motion } from 'framer-motion'
+import { useMemo } from 'react'
 import Card from './Card'
+import { sortCards } from '@/utils/cardSorting'
 import type { Card as CardType } from '@/types'
 
 interface HandProps {
@@ -19,7 +21,9 @@ export default function Hand({
   layout = 'fan',
   size = 'md',
 }: HandProps) {
-  const cardCount = cards.length
+  // Sort cards: Tarokks first (descending), then suits (descending)
+  const sortedCards = useMemo(() => sortCards(cards), [cards])
+  const cardCount = sortedCards.length
 
   // Calculate fan spread based on number of cards
   const maxSpread = 40 // Maximum rotation in degrees
@@ -81,7 +85,7 @@ export default function Hand({
           height: layout === 'fan' ? '200px' : 'auto',
         }}
       >
-        {cards.map((card, index) => {
+        {sortedCards.map((card, index) => {
           const isSelected = selectedCards.includes(card.id)
           const isDisabled = isCardDisabled(card.id)
 

@@ -1,12 +1,35 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useGameStore } from '@/store/gameStore'
 import { socketManager } from '@/services/socketManager'
 
 export default function LobbyScreen() {
   const playerName = useGameStore((state) => state.playerName)
+  const addToast = useGameStore((state) => state.addToast)
+  const [roomCode, setRoomCode] = useState('')
 
   const handleCreateRoom = () => {
+    console.log('[Lobby] Creating new room...')
     socketManager.joinRoom() // No room ID = create new
+  }
+
+  const handleJoinRoom = () => {
+    if (!roomCode.trim()) {
+      addToast({
+        type: 'error',
+        message: 'Please enter a room code',
+      })
+      return
+    }
+
+    console.log('[Lobby] Joining room:', roomCode.trim())
+    socketManager.joinRoom(roomCode.trim())
+  }
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleJoinRoom()
+    }
   }
 
   const handleLogout = () => {
@@ -64,10 +87,16 @@ export default function LobbyScreen() {
               <input
                 type="text"
                 placeholder="Room code..."
-                className="flex-1 px-4 py-2 bg-slate-700 text-white rounded-lg border-2 border-slate-600 focus:border-blue-500 focus:outline-none transition-colors"
-                maxLength={6}
+                value={roomCode}
+                onChange={(e) => setRoomCode(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="flex-1 px-4 py-2 bg-slate-700 text-white rounded-lg border-2 border-slate-600 focus:border-blue-500 focus:outline-none transition-colors uppercase"
+                maxLength={36}
               />
-              <button className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors">
+              <button
+                onClick={handleJoinRoom}
+                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
+              >
                 Join
               </button>
             </div>

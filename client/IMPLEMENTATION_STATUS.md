@@ -202,7 +202,7 @@ client/
    ```
 
 3. **Open browser:**
-   Navigate to `http://localhost:3000`
+   Navigate to `http://localhost:3003`
 
 ### What Works Now
 

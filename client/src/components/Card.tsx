@@ -28,7 +28,7 @@ const getSuitColor = (suit: string): string => {
     case 'spades':
       return 'text-slate-900'
     case 'tarokk':
-      return 'text-gold'
+      return 'text-purple-800'
     default:
       return 'text-slate-900'
   }
@@ -100,19 +100,19 @@ export default function Card({
         <div
           className={`
             w-full h-full bg-white rounded-lg border-2
-            ${card.suit === 'tarokk' ? 'border-gold' : 'border-slate-300'}
-            flex flex-col p-2
+            ${card.suit === 'tarokk' ? 'border-purple-700' : 'border-slate-300'}
+            flex flex-col p-1.5
             ${disabled ? 'bg-slate-100' : ''}
           `}
         >
           {/* Top rank and suit */}
-          <div className={`flex flex-col items-center ${suitColor} font-bold leading-tight`}>
-            <div>{displayName}</div>
-            <div className="text-2xl">{suitSymbol}</div>
+          <div className={`flex flex-col items-center ${suitColor} font-bold leading-none`}>
+            <div className="text-sm">{displayName}</div>
+            <div className="text-xl">{suitSymbol}</div>
           </div>
 
           {/* Center suit symbol (larger) */}
-          <div className="flex-1 flex items-center justify-center">
+          <div className="flex-1 flex items-center justify-center min-h-0">
             <div className={`${suitColor} opacity-20`}>
               <div style={{ fontSize: size === 'xl' ? '4rem' : size === 'lg' ? '3rem' : '2rem' }}>
                 {suitSymbol}
@@ -121,9 +121,9 @@ export default function Card({
           </div>
 
           {/* Bottom rank and suit (rotated 180°) */}
-          <div className={`flex flex-col items-center ${suitColor} font-bold leading-tight rotate-180`}>
-            <div>{displayName}</div>
-            <div className="text-2xl">{suitSymbol}</div>
+          <div className={`flex flex-col items-center ${suitColor} font-bold leading-none rotate-180`}>
+            <div className="text-sm">{displayName}</div>
+            <div className="text-xl">{suitSymbol}</div>
           </div>
 
           {/* Point value indicator (if non-zero) */}

@@ -13,27 +13,39 @@ function App() {
 
   // Determine which screen to show
   const getCurrentScreen = () => {
+    console.log('[App] Determining screen...', {
+      connectionStatus,
+      hasRoomState: !!roomState,
+      gameStarted: roomState?.game_started,
+      hasGameState: !!gameState,
+    })
+
     // Not connected? Show connection screen
     if (connectionStatus !== 'connected') {
+      console.log('[App] → ConnectionScreen (not connected)')
       return <ConnectionScreen />
     }
 
     // Connected but no room? Show lobby
     if (!roomState) {
+      console.log('[App] → LobbyScreen (no room)')
       return <LobbyScreen />
     }
 
     // In room, game not started? Show waiting room
     if (roomState && !roomState.game_started) {
+      console.log('[App] → WaitingRoomScreen (game not started)')
       return <WaitingRoomScreen />
     }
 
     // Game started? Show game screen
     if (roomState?.game_started && gameState) {
+      console.log('[App] → GameScreen (game started)')
       return <GameScreen />
     }
 
     // Fallback
+    console.log('[App] → LobbyScreen (fallback)')
     return <LobbyScreen />
   }
 

@@ -33,13 +33,25 @@ room_manager = RoomManager()
 @sio.event
 async def connect(sid: str, environ: dict):
     """Handle client connection."""
+    logger.info("=== CLIENT CONNECTING ===")
     logger.info("client_connected", sid=sid)
-    await sio.emit("connect", {"status": "connected"}, room=sid)
+    logger.info("environ_keys", keys=list(environ.keys()))
+    logger.info("http_method", method=environ.get('REQUEST_METHOD', 'unknown'))
+    logger.info("path_info", path=environ.get('PATH_INFO', 'unknown'))
+    logger.info("query_string", query=environ.get('QUERY_STRING', 'unknown'))
+    logger.info("client_address", address=environ.get('REMOTE_ADDR', 'unknown'))
+    logger.info("user_agent", ua=environ.get('HTTP_USER_AGENT', 'unknown'))
+
+    # Don't emit "connect" - it's a reserved event name!
+    # The Socket.IO client automatically receives the connect event
+    # when the connection is established
+    logger.info("client_connected_successfully", sid=sid)
 
 
 @sio.event
 async def disconnect(sid: str):
     """Handle client disconnection."""
+    logger.info("=== CLIENT DISCONNECTING ===")
     logger.info("client_disconnected", sid=sid)
 
     # Remove player from room

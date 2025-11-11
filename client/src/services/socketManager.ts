@@ -14,40 +14,99 @@ class SocketManager {
     return new Promise((resolve, reject) => {
       useGameStore.getState().setConnectionStatus('connecting')
 
+      console.log('=== Socket.IO Connection Attempt ===')
+      console.log('[Socket] Server URL:', this.serverUrl)
+      console.log('[Socket] Player Name:', playerName)
+      console.log('[Socket] Timestamp:', new Date().toISOString())
+
       this.socket = io(this.serverUrl, {
-        transports: ['websocket'],
+        transports: ['websocket', 'polling'],
+        upgrade: true,
         reconnection: true,
         reconnectionDelay: 1000,
         reconnectionDelayMax: 5000,
         reconnectionAttempts: 5,
+        withCredentials: false,
+        autoConnect: true,
+      })
+
+      console.log('[Socket] Socket.IO client created')
+      console.log('[Socket] Client version:', (io as any).version || 'unknown')
+
+      // Detailed connection lifecycle events
+      this.socket.io.on('open', () => {
+        console.log('[Socket.io.Engine] ✓ Engine opened (underlying connection established)')
+      })
+
+      this.socket.io.on('close', (reason) => {
+        console.log('[Socket.io.Engine] ✗ Engine closed:', reason)
+      })
+
+      this.socket.io.on('error', (error) => {
+        console.error('[Socket.io.Engine] Engine error:', error)
+      })
+
+      this.socket.io.on('packet', (packet) => {
+        console.log('[Socket.io.Engine] Packet received:', packet.type, packet.data)
+      })
+
+      this.socket.io.on('packetCreate', (packet) => {
+        console.log('[Socket.io.Engine] Packet created (sending):', packet.type, packet.data)
       })
 
       // Connection events
       this.socket.on('connect', () => {
-        console.log('[Socket] Connected:', this.socket?.id)
+        console.log('=== Socket.IO Connected Successfully ===')
+        console.log('[Socket] ✓ Socket ID:', this.socket?.id)
+        console.log('[Socket] Transport:', this.socket?.io?.engine?.transport?.name)
+        console.log('[Socket] Connected at:', new Date().toISOString())
         useGameStore.getState().setConnectionStatus('connected')
         useGameStore.getState().setPlayerInfo(this.socket!.id!, playerName)
         resolve()
       })
 
       this.socket.on('connect_error', (error) => {
-        console.error('[Socket] Connection error:', error)
+        console.error('=== Socket.IO Connection Error ===')
+        console.error('[Socket] Error object:', error)
+        console.error('[Socket] Error message:', error.message)
+        console.error('[Socket] Error type:', (error as any).type)
+        console.error('[Socket] Error description:', (error as any).description)
+        console.error('[Socket] Error context:', (error as any).context)
+        console.error('[Socket] Full error:', JSON.stringify(error, null, 2))
         useGameStore.getState().setConnectionStatus('error')
         useGameStore.getState().addToast({
           type: 'error',
-          message: 'Failed to connect to server',
+          message: `Connection failed: ${error.message}`,
         })
         reject(error)
       })
 
       this.socket.on('disconnect', (reason) => {
-        console.log('[Socket] Disconnected:', reason)
+        console.log('=== Socket.IO Disconnected ===')
+        console.log('[Socket] Reason:', reason)
+        console.log('[Socket] Disconnected at:', new Date().toISOString())
         useGameStore.getState().setConnectionStatus('disconnected')
 
         if (reason === 'io server disconnect') {
-          // Server disconnected us, try to reconnect
+          console.log('[Socket] Server initiated disconnect, attempting reconnect...')
           this.socket?.connect()
         }
+      })
+
+      this.socket.on('error', (error) => {
+        console.error('[Socket] Socket error event:', error)
+      })
+
+      this.socket.on('reconnect_attempt', (attemptNumber) => {
+        console.log('[Socket] Reconnection attempt #', attemptNumber)
+      })
+
+      this.socket.on('reconnect_error', (error) => {
+        console.error('[Socket] Reconnection error:', error)
+      })
+
+      this.socket.on('reconnect_failed', () => {
+        console.error('[Socket] Reconnection failed after all attempts')
       })
 
       this.socket.on('reconnect', (attemptNumber) => {
@@ -78,12 +137,29 @@ class SocketManager {
 
       // Game events
       this.socket.on('game_state', (data: GameState) => {
-        console.log('[Socket] Game state:', data)
+        console.log('[Socket] Game state received:', data)
+        console.log('[Socket] My position:', useGameStore.getState().playerPosition)
+        const myPos = useGameStore.getState().playerPosition
+        if (myPos !== null && data.players[myPos]) {
+          console.log('[Socket] My hand:', data.players[myPos].hand)
+          console.log('[Socket] Hand size:', data.players[myPos].hand?.length || 0)
+        }
         useGameStore.getState().setGameState(data)
       })
 
       this.socket.on('game_started', () => {
-        console.log('[Socket] Game started')
+        console.log('[Socket] *** GAME STARTED ***')
+
+        // Update room state to mark game as started
+        const currentRoomState = useGameStore.getState().roomState
+        if (currentRoomState) {
+          useGameStore.getState().setRoomState({
+            ...currentRoomState,
+            game_started: true,
+          })
+          console.log('[Socket] Updated roomState.game_started = true')
+        }
+
         useGameStore.getState().addToast({
           type: 'success',
           message: 'Game started! Good luck!',
@@ -231,11 +307,14 @@ class SocketManager {
   }
 
   placeBid(bidType: string) {
+    console.log('[Socket] Placing bid:', bidType)
     this.socket?.emit('place_bid', { bid_type: bidType })
   }
 
   pass() {
-    this.socket?.emit('pass', {})
+    console.log('[Socket] Passing (bidding)')
+    // Pass is just a bid with null type
+    this.socket?.emit('place_bid', { bid_type: null })
   }
 
   discardCards(cardIds: string[]) {

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { socketManager } from '@/services/socketManager'
+import Hand from '@/components/Hand'
 import type { Bid, GameState } from '@/types'
 
 interface BiddingPhaseProps {
@@ -37,6 +38,14 @@ const getBidDisplayName = (bidType: string | null): string => {
 export default function BiddingPhase({ gameState, playerPosition }: BiddingPhaseProps) {
   const isMyTurn = gameState.current_turn === playerPosition
   const currentPlayer = gameState.players[gameState.current_turn]
+  const myPlayer = gameState.players[playerPosition]
+
+  console.log('[BiddingPhase] Rendering...', {
+    playerPosition,
+    hasHand: !!myPlayer.hand,
+    handSize: myPlayer.hand?.length || 0,
+    hand: myPlayer.hand,
+  })
 
   // Get valid bids - this would come from server in real implementation
   // For now, we allow all bid types that are higher than current highest bid
@@ -177,6 +186,26 @@ export default function BiddingPhase({ gameState, playerPosition }: BiddingPhase
           </div>
         )}
       </motion.div>
+
+      {/* Player's Hand - Always visible during bidding */}
+      {myPlayer.hand && myPlayer.hand.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mt-6 bg-slate-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-2xl"
+        >
+          <h3 className="text-white font-semibold text-center mb-4">Your Hand</h3>
+          <Hand
+            cards={myPlayer.hand}
+            layout="fan"
+            size="md"
+          />
+          <div className="mt-4 text-center text-slate-400 text-sm">
+            {myPlayer.hand.length} cards
+          </div>
+        </motion.div>
+      )}
     </div>
   )
 }
