@@ -33,8 +33,9 @@ export default function DiscardingPhase({ gameState, playerPosition }: Discardin
       .filter((card) => {
         // Cannot discard kings
         if (card.rank === 'K') return false
-        // Cannot discard honours (I, XXI, Škis)
-        if (card.suit === 'tarokk' && ['I', 'XXI', 'Škis'].includes(card.rank)) return false
+        // Cannot discard honours (I, XXI, skiz)
+        // Note: server sends "skiz" in lowercase
+        if (card.suit === 'tarokk' && ['I', 'XXI', 'skiz'].includes(card.rank)) return false
         return true
       })
       .map((card) => card.id)
@@ -127,7 +128,7 @@ export default function DiscardingPhase({ gameState, playerPosition }: Discardin
 
             {/* Info about invalid cards */}
             <div className="mt-4 text-center text-slate-400 text-sm">
-              <p>⚠️ Cannot discard Kings or Honours (I, XXI, Škis)</p>
+              <p>⚠️ Cannot discard Kings or Honours (I, XXI, Skíz)</p>
             </div>
 
             {/* Confirm Button */}

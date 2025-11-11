@@ -21,5 +21,19 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    // Custom plugin to hide scrollbars
+    function({ addUtilities }) {
+      addUtilities({
+        '.scrollbar-hide': {
+          /* Firefox */
+          'scrollbar-width': 'none',
+          /* Safari and Chrome */
+          '&::-webkit-scrollbar': {
+            display: 'none'
+          }
+        }
+      })
+    }
+  ],
 }

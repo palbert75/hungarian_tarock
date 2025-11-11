@@ -6,7 +6,8 @@ import type { Card } from '@/types'
 function romanToInt(roman: string): number {
   // Handle special names
   const lowerRoman = roman.toLowerCase()
-  if (lowerRoman === 'škis' || lowerRoman === 'skis') return 22
+  // Server sends "skiz" (all lowercase)
+  if (lowerRoman === 'škis' || lowerRoman === 'skis' || lowerRoman === 'skiz') return 22
   if (lowerRoman === 'pagát' || lowerRoman === 'pagat') return 1
 
   const romanValues: { [key: string]: number } = {

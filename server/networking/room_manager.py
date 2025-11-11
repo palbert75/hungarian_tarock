@@ -243,26 +243,37 @@ class RoomManager:
             session_id: Session ID of player leaving
 
         Returns:
-            The room they left, or None
+            The room they left, or None if room was deleted
         """
         room = self.get_room_by_session(session_id)
-        if room:
-            player = room.get_player_by_session(session_id)
-            if player:
+        if not room:
+            return None
+
+        player = room.get_player_by_session(session_id)
+        game_not_started = room.game_state.phase == GamePhase.WAITING
+
+        if player:
+            if game_not_started:
+                # Game hasn't started - actually remove player from room
+                room.game_state.players = [p for p in room.game_state.players if p.id != player.id]
+                if player.id in room.player_sessions:
+                    del room.player_sessions[player.id]
+
+                # Update positions of remaining players
+                for i, p in enumerate(room.game_state.players):
+                    p.position = i
+            else:
+                # Game in progress - just mark as disconnected (allow reconnection)
                 room.remove_player(player.id)
 
-            # Clean up session mapping
-            if session_id in self.session_to_room:
-                del self.session_to_room[session_id]
+        # Clean up session mapping
+        if session_id in self.session_to_room:
+            del self.session_to_room[session_id]
 
-            # Remove empty rooms only if game hasn't started
-            # Keep rooms with disconnected players if game is in progress (allow reconnection)
-            all_disconnected = all(not p.is_connected for p in room.game_state.players)
-            game_not_started = room.game_state.phase == GamePhase.WAITING
-
-            if all_disconnected and game_not_started:
-                del self.rooms[room.room_id]
-                return None
+        # Remove empty rooms
+        if len(room.game_state.players) == 0:
+            del self.rooms[room.room_id]
+            return None
 
         return room
 

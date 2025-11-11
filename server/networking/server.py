@@ -167,6 +167,33 @@ async def ready(sid: str, data: dict):
 
 
 @sio.event
+async def leave_room(sid: str, data: dict):
+    """Handle player leaving room."""
+    try:
+        logger.info("leave_room_request", sid=sid)
+
+        room = room_manager.get_room_by_session(sid)
+        if not room:
+            logger.warning("leave_room_not_in_room", sid=sid)
+            return
+
+        room_id = room.room_id
+
+        # Remove player from room
+        room_manager.leave_room(sid)
+
+        # Broadcast updated room state to remaining players (if any)
+        if room_id in room_manager.rooms:
+            await broadcast_room_state(room_id)
+
+        logger.info("player_left_room", sid=sid, room_id=room_id)
+
+    except Exception as e:
+        logger.error("leave_room_error", sid=sid, error=str(e))
+        await sio.emit("error", create_error_message("LEAVE_ROOM_ERROR", str(e)).to_dict(), room=sid)
+
+
+@sio.event
 async def place_bid(sid: str, data: dict):
     """Handle place bid action."""
     try:

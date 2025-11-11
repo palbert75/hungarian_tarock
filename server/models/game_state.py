@@ -303,8 +303,8 @@ class GameState(BaseModel):
         self.phase = GamePhase.ANNOUNCEMENTS
         self.announcement_history.clear()
         self.announcements.clear()
-        # Start with dealer's right
-        self.current_turn = self.dealer_right_position()
+        # Start with declarer (bid winner)
+        self.current_turn = self.declarer_position
 
     def make_announcement(self, announcement: Announcement) -> None:
         """

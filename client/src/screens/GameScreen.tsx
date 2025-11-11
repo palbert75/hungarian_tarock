@@ -105,9 +105,9 @@ export default function GameScreen() {
     gameState.phase === 'announcements'
 
   return (
-    <div className="w-full h-full bg-table-green relative overflow-hidden">
+    <div className="w-full h-full bg-table-green relative overflow-y-auto scrollbar-hide">
       {/* Top Bar */}
-      <div className="absolute top-0 left-0 right-0 bg-slate-900/90 backdrop-blur-sm px-6 py-4 flex items-center justify-between z-10">
+      <div className="sticky top-0 left-0 right-0 bg-slate-900/90 backdrop-blur-sm px-6 py-4 flex items-center justify-between z-10">
         <div className="flex items-center gap-6">
           <div className="text-white font-semibold">
             🎴 Room: {gameState.game_id.substring(0, 8)}
@@ -127,7 +127,7 @@ export default function GameScreen() {
       </div>
 
       {/* Game Table Layout */}
-      <div className="w-full h-full pt-20 pb-4 px-4 flex flex-col">
+      <div className="w-full min-h-full pt-20 pb-4 px-4 flex flex-col">
         {showPhaseOverlay ? (
           /* Phase Overlay (Bidding, Discarding, Announcements) */
           <div className="flex-1 flex flex-col">
