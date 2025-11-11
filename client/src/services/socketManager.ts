@@ -224,7 +224,8 @@ class SocketManager {
                           bidType === 'three' ? 'Three' :
                           bidType === 'two' ? 'Two' :
                           bidType === 'one' ? 'One' :
-                          bidType === 'solo' ? 'Solo' : bidType
+                          bidType === 'solo' ? 'Solo' :
+                          bidType === 'hold' ? 'Hold' : bidType
 
         useGameStore.getState().addToast({
           type: 'info',

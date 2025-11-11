@@ -21,6 +21,8 @@ const getBidColor = (bidType: string): string => {
       return 'bg-orange-600'
     case 'solo':
       return 'bg-red-600'
+    case 'hold':
+      return 'bg-yellow-600'
     default:
       return 'bg-slate-600'
   }
@@ -33,6 +35,7 @@ const getBidDisplayName = (bidType: string | null): string => {
     { value: 'two', label: 'Two' },
     { value: 'one', label: 'One' },
     { value: 'solo', label: 'Solo' },
+    { value: 'hold', label: 'Hold' },
   ]
   return bidTypes.find((b) => b.value === bidType)?.label || bidType
 }

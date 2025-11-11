@@ -14,6 +14,7 @@ const bidTypes = [
   { value: 'two', label: 'Two', description: '2 from talon' },
   { value: 'one', label: 'One', description: '1 from talon' },
   { value: 'solo', label: 'Solo', description: 'No talon' },
+  { value: 'hold', label: 'Hold', description: 'Match highest bid' },
 ]
 
 const getBidColor = (bidType: string): string => {
@@ -26,6 +27,8 @@ const getBidColor = (bidType: string): string => {
       return 'bg-orange-600 hover:bg-orange-700'
     case 'solo':
       return 'bg-red-600 hover:bg-red-700'
+    case 'hold':
+      return 'bg-yellow-600 hover:bg-yellow-700'
     default:
       return 'bg-slate-600'
   }
@@ -33,6 +36,7 @@ const getBidColor = (bidType: string): string => {
 
 const getBidDisplayName = (bidType: string | null): string => {
   if (!bidType || bidType === 'pass') return 'Pass'
+  if (bidType === 'hold') return 'Hold'
   return bidTypes.find((b) => b.value === bidType)?.label || bidType
 }
 
@@ -51,21 +55,35 @@ export default function BiddingPhase({ gameState, playerPosition }: BiddingPhase
   // Get valid bids - this would come from server in real implementation
   // For now, we allow all bid types that are higher than current highest bid
   const getValidBids = (): string[] => {
-    if (gameState.bid_history.length === 0) {
-      return bidTypes.map((b) => b.value)
-    }
+    const validBids: string[] = []
 
+    // Get the highest bid (excluding pass and hold)
     const highestBid = gameState.bid_history
-      .filter((b) => b.bid_type !== null && b.bid_type !== 'pass')
+      .filter((b) => b.bid_type !== null && b.bid_type !== 'pass' && b.bid_type !== 'hold')
       .slice(-1)[0]
 
+    // If no bids yet, can bid anything except hold
     if (!highestBid || !highestBid.bid_type) {
-      return bidTypes.map((b) => b.value)
+      return bidTypes.filter(b => b.value !== 'hold').map((b) => b.value)
     }
 
+    // Can bid higher than current highest
     const bidOrder = ['three', 'two', 'one', 'solo']
     const highestIndex = bidOrder.indexOf(highestBid.bid_type)
-    return bidOrder.slice(highestIndex + 1)
+    validBids.push(...bidOrder.slice(highestIndex + 1))
+
+    // Can hold if player has already made a bid (not just passed)
+    const playerHasBid = gameState.bid_history.some(
+      (b) => b.player_position === playerPosition &&
+             b.bid_type !== null &&
+             b.bid_type !== 'pass' &&
+             b.bid_type !== 'hold'
+    )
+    if (playerHasBid) {
+      validBids.push('hold')
+    }
+
+    return validBids
   }
 
   const validBids = getValidBids()
@@ -102,9 +120,9 @@ export default function BiddingPhase({ gameState, playerPosition }: BiddingPhase
         {/* Bid Buttons */}
         {isMyTurn && (
           <div className="space-y-4">
-            {/* Bid Type Grid */}
+            {/* Bid Type Grid - First 4 bids */}
             <div className="grid grid-cols-2 gap-3">
-              {bidTypes.map((bid) => {
+              {bidTypes.slice(0, 4).map((bid) => {
                 const isValid = validBids.includes(bid.value)
                 return (
                   <motion.button
@@ -126,6 +144,29 @@ export default function BiddingPhase({ gameState, playerPosition }: BiddingPhase
                 )
               })}
             </div>
+
+            {/* Hold Button - Full width */}
+            {(() => {
+              const holdBid = bidTypes.find(b => b.value === 'hold')
+              const isValid = holdBid && validBids.includes(holdBid.value)
+              return holdBid && (
+                <motion.button
+                  whileHover={isValid ? { scale: 1.02 } : undefined}
+                  whileTap={isValid ? { scale: 0.98 } : undefined}
+                  onClick={() => isValid && handleBid(holdBid.value)}
+                  disabled={!isValid}
+                  className={`
+                    w-full px-4 py-3 rounded-xl font-semibold text-white
+                    transition-all duration-200
+                    ${isValid ? getBidColor(holdBid.value) : 'bg-slate-700 text-slate-500 cursor-not-allowed'}
+                    ${isValid ? 'shadow-lg' : ''}
+                  `}
+                >
+                  <div className="text-base">{holdBid.label}</div>
+                  <div className="text-xs opacity-80 mt-0.5">{holdBid.description}</div>
+                </motion.button>
+              )
+            })()}
 
             {/* Pass Button */}
             <motion.button
