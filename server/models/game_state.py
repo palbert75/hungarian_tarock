@@ -492,6 +492,8 @@ class GameState(BaseModel):
             "current_turn": self.current_turn,
             "bid_history": [b.to_dict() for b in self.bid_history],
             "declarer_position": self.declarer_position,
+            # Only reveal partner position after the called card is played
+            "partner_position": self.partner_position if self.partner_revealed else None,
             "partner_revealed": self.partner_revealed,
             "trick_number": self.trick_number,
             "current_trick": [{"player": pos, "card": card.to_dict()} for pos, card in self.current_trick],

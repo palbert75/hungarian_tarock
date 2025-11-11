@@ -891,6 +891,11 @@ async def handle_game_over(room):
     """Handle game over."""
     game_state = room.game_state
 
+    # Reveal partner at game end (if not already revealed)
+    if not game_state.partner_revealed and game_state.partner_position is not None:
+        game_state.partner_revealed = True
+        game_state.players[game_state.partner_position].partner_revealed = True
+
     # Calculate scores
     declarer_points, opponent_points = game_state.calculate_scores()
     winner = "declarer_team" if game_state.declarer_team_wins() else "opponent_team"
@@ -907,7 +912,7 @@ async def handle_game_over(room):
         "payments": {}
     })
 
-    # Reset game state
+    # Change phase to game end
     game_state.phase = GamePhase.GAME_END
 
 

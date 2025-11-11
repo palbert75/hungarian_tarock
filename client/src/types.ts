@@ -61,6 +61,7 @@ export interface Player {
   is_declarer: boolean
   is_partner?: boolean
   total_points: number
+  tricks_won_count: number
   hand?: Card[] // Only visible for your own hand
 }
 
@@ -77,6 +78,7 @@ export interface GameState {
   current_turn: number
   bid_history: Bid[]
   declarer_position: number | null
+  partner_position: number | null
   partner_revealed: boolean
   trick_number: number
   current_trick: TrickCard[]

@@ -178,6 +178,7 @@ class Player(BaseModel):
             "is_ready": self.is_ready,
             "is_declarer": self.is_declarer,
             "total_points": self.get_total_points(),
+            "tricks_won_count": len(self.tricks_won) // 4,  # Each trick has 4 cards
         }
 
         # Only reveal partner status if partner has been revealed

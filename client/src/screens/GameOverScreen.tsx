@@ -11,10 +11,16 @@ interface GameOverScreenProps {
 export default function GameOverScreen({ gameState, playerPosition }: GameOverScreenProps) {
   const myPlayer = gameState.players[playerPosition]
 
-  // Determine winner
-  const declarerTeamScore = gameState.scores?.declarer_team || 0
-  const opponentTeamScore = gameState.scores?.opponent_team || 0
-  const declarerWon = declarerTeamScore > opponentTeamScore
+  // Calculate team scores (server already calculated total_points per player)
+  const declarerTeamScore = gameState.players
+    .filter((p, idx) => idx === gameState.declarer_position || (gameState.partner_revealed && idx === gameState.partner_position))
+    .reduce((sum, p) => sum + p.total_points, 0)
+
+  const opponentTeamScore = gameState.players
+    .filter((p, idx) => idx !== gameState.declarer_position && !(gameState.partner_revealed && idx === gameState.partner_position))
+    .reduce((sum, p) => sum + p.total_points, 0)
+
+  const declarerWon = declarerTeamScore >= 48 // Need 48+ points to win
 
   // Am I on the winning team?
   const amIWinner = myPlayer.is_declarer || myPlayer.is_partner ? declarerWon : !declarerWon
@@ -23,25 +29,33 @@ export default function GameOverScreen({ gameState, playerPosition }: GameOverSc
   const declarer = gameState.players.find((p) => p.is_declarer)
   const partner = gameState.players.find((p) => p.is_partner)
 
-  // Get final scores
-  const finalScores = gameState.players.map((player) => ({
+  // Get player stats
+  const playerStats = gameState.players.map((player, idx) => ({
     name: player.name,
-    score: player.score || 0,
-    isMe: player.id === myPlayer.id,
+    cardPoints: player.total_points, // Server already calculated this
+    tricksWon: player.tricks_won_count || 0,
+    isMe: idx === playerPosition,
     isDeclarer: player.is_declarer,
     isPartner: player.is_partner,
   }))
 
-  // Sort by score descending
-  finalScores.sort((a, b) => b.score - a.score)
-
   const handlePlayAgain = () => {
     // Would need server support to restart game in same room
+    const playerName = useGameStore.getState().playerName
     socketManager.leaveRoom()
+    useGameStore.persist.clearStorage()
+    if (playerName) {
+      useGameStore.getState().setPlayerInfo('', playerName)
+    }
   }
 
   const handleReturnToLobby = () => {
+    const playerName = useGameStore.getState().playerName
     socketManager.leaveRoom()
+    useGameStore.persist.clearStorage()
+    if (playerName) {
+      useGameStore.getState().setPlayerInfo('', playerName)
+    }
   }
 
   return (
@@ -120,16 +134,16 @@ export default function GameOverScreen({ gameState, playerPosition }: GameOverSc
           </div>
         </motion.div>
 
-        {/* Final Scores Table */}
+        {/* Player Stats Table */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
           className="bg-slate-800 rounded-2xl p-6 mb-8"
         >
-          <h3 className="text-white font-semibold mb-4 text-center">Final Scores</h3>
+          <h3 className="text-white font-semibold mb-4 text-center">Player Statistics</h3>
           <div className="space-y-2">
-            {finalScores.map((player, index) => (
+            {playerStats.map((player, index) => (
               <motion.div
                 key={player.name}
                 initial={{ opacity: 0, x: -20 }}
@@ -137,11 +151,10 @@ export default function GameOverScreen({ gameState, playerPosition }: GameOverSc
                 transition={{ delay: 0.5 + index * 0.1 }}
                 className={`
                   flex items-center justify-between px-4 py-3 rounded-lg
-                  ${player.isMe ? 'bg-blue-600' : 'bg-slate-700/50'}
+                  ${player.isMe ? 'bg-blue-900/50 border-2 border-blue-500' : 'bg-slate-700/50'}
                 `}
               >
                 <div className="flex items-center gap-3">
-                  <div className="text-2xl font-bold text-slate-400">#{index + 1}</div>
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="text-white font-semibold">{player.name}</span>
@@ -151,7 +164,7 @@ export default function GameOverScreen({ gameState, playerPosition }: GameOverSc
                     </div>
                     <div className="flex gap-2 text-xs mt-1">
                       {player.isDeclarer && (
-                        <span className="text-gold">👑 Declarer</span>
+                        <span className="text-yellow-400">👑 Declarer</span>
                       )}
                       {player.isPartner && (
                         <span className="text-blue-400">🤝 Partner</span>
@@ -159,8 +172,15 @@ export default function GameOverScreen({ gameState, playerPosition }: GameOverSc
                     </div>
                   </div>
                 </div>
-                <div className={`text-2xl font-bold ${player.score > 0 ? 'text-green-400' : player.score < 0 ? 'text-red-400' : 'text-slate-400'}`}>
-                  {player.score > 0 ? '+' : ''}{player.score}
+                <div className="flex items-center gap-6">
+                  <div className="text-center">
+                    <div className="text-xs text-slate-400">Tricks</div>
+                    <div className="text-lg font-bold text-white">{player.tricksWon}</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-xs text-slate-400">Points</div>
+                    <div className="text-2xl font-bold text-green-400">{player.cardPoints}</div>
+                  </div>
                 </div>
               </motion.div>
             ))}
@@ -168,34 +188,32 @@ export default function GameOverScreen({ gameState, playerPosition }: GameOverSc
         </motion.div>
 
         {/* Game Statistics */}
-        {gameState.tricks_completed && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-            className="bg-slate-800 rounded-2xl p-6 mb-8"
-          >
-            <h3 className="text-white font-semibold mb-4 text-center">Game Statistics</h3>
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <div className="text-slate-400 text-sm mb-1">Tricks Played</div>
-                <div className="text-2xl font-bold text-white">{gameState.tricks_completed}</div>
-              </div>
-              <div>
-                <div className="text-slate-400 text-sm mb-1">Winning Bid</div>
-                <div className="text-2xl font-bold text-white capitalize">
-                  {gameState.current_bid?.bid_type || 'None'}
-                </div>
-              </div>
-              <div>
-                <div className="text-slate-400 text-sm mb-1">Announcements</div>
-                <div className="text-2xl font-bold text-white">
-                  {gameState.announcements?.length || 0}
-                </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+          className="bg-slate-800 rounded-2xl p-6 mb-8"
+        >
+          <h3 className="text-white font-semibold mb-4 text-center">Game Summary</h3>
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div>
+              <div className="text-slate-400 text-sm mb-1">Total Tricks</div>
+              <div className="text-2xl font-bold text-white">{gameState.trick_number || 12}</div>
+            </div>
+            <div>
+              <div className="text-slate-400 text-sm mb-1">Winning Bid</div>
+              <div className="text-2xl font-bold text-white capitalize">
+                {gameState.bid_history?.find(b => b.bid_type !== 'pass' && b.bid_type !== null)?.bid_type || 'None'}
               </div>
             </div>
-          </motion.div>
-        )}
+            <div>
+              <div className="text-slate-400 text-sm mb-1">Announcements</div>
+              <div className="text-2xl font-bold text-white">
+                {gameState.announcements?.length || 0}
+              </div>
+            </div>
+          </div>
+        </motion.div>
 
         {/* Action Buttons */}
         <motion.div

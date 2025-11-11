@@ -78,7 +78,7 @@ export default function GameScreen() {
   }
 
   // Show game over screen if game is complete
-  if (gameState.phase === 'complete') {
+  if (gameState.phase === 'game_end') {
     return <GameOverScreen gameState={gameState} playerPosition={playerPosition} />
   }
 
@@ -123,7 +123,7 @@ export default function GameScreen() {
   const showFullTable =
     gameState.phase === 'playing' ||
     gameState.phase === 'waiting' ||
-    gameState.phase === 'complete'
+    gameState.phase === 'game_end'
   const showPhaseOverlay =
     gameState.phase === 'bidding' ||
     gameState.phase === 'discarding' ||
@@ -322,6 +322,75 @@ export default function GameScreen() {
                 </span>
               </motion.div>
             ))}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Announcement History - Bottom Left Corner (during announcements and playing phases) */}
+      {(gameState.phase === 'announcements' || gameState.phase === 'playing') &&
+       gameState.announcements && gameState.announcements.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          className="absolute bottom-4 left-4 bg-slate-800/95 backdrop-blur-sm rounded-xl p-4 shadow-2xl z-20 max-w-xs"
+        >
+          <h3 className="text-white font-semibold mb-3 text-sm flex items-center gap-2">
+            <span>📢</span> Announcements
+          </h3>
+          <div className="space-y-2 max-h-64 overflow-y-auto pr-2" style={{ scrollbarWidth: 'thin', scrollbarColor: '#475569 #334155' }}>
+            {gameState.announcements.map((announcement: any, index: number) => {
+              const announcementTypes = [
+                { value: 'trull', label: 'Trull', icon: '🎯' },
+                { value: 'four_kings', label: 'Four Kings', icon: '👑' },
+                { value: 'double_game', label: 'Double', icon: '2️⃣' },
+                { value: 'volat', label: 'Volat', icon: '💯' },
+                { value: 'pagat_ultimo', label: 'Pagát Ult.', icon: '🎴' },
+                { value: 'xxi_catch', label: 'XXI Catch', icon: '🎣' },
+              ]
+              const announcementInfo = announcementTypes.find(a => a.value === announcement.announcement_type)
+
+              return (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="bg-slate-700/50 rounded-lg p-2"
+                >
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="text-slate-300 text-xs truncate">
+                      {gameState.players[announcement.player_position]?.name}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      {announcement.announced ? (
+                        <span className="text-[10px] bg-yellow-600/80 px-1.5 py-0.5 rounded text-white">📢</span>
+                      ) : (
+                        <span className="text-[10px] bg-slate-600/80 px-1.5 py-0.5 rounded text-white">🤫</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1">
+                      <span className="text-sm">{announcementInfo?.icon}</span>
+                      <span className="text-white text-xs font-semibold">{announcementInfo?.label}</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      {announcement.contra && (
+                        <span className="text-[9px] bg-red-600 px-1.5 py-0.5 rounded text-white font-semibold">
+                          Contra
+                        </span>
+                      )}
+                      {announcement.recontra && (
+                        <span className="text-[9px] bg-orange-600 px-1.5 py-0.5 rounded text-white font-semibold">
+                          Recontra
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              )
+            })}
           </div>
         </motion.div>
       )}

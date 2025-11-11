@@ -33,52 +33,67 @@ export default function PlayingPhase({ gameState, playerPosition }: PlayingPhase
 
   const canPlayCard = selectedCards.length === 1 && validCards.includes(selectedCards[0])
 
-  // Get scores for display
-  const getTeamScores = () => {
-    const declarerScore = gameState.scores?.declarer_team || 0
-    const opponentScore = gameState.scores?.opponent_team || 0
-    return { declarerScore, opponentScore }
+  // Calculate tricks won (trick_number is 0-indexed, shows completed tricks)
+  const tricksCompleted = gameState.trick_number || 0
+  const totalTricks = 9 // Hungarian Tarokk has 9 tricks (36 cards / 4 players = 9 tricks each)
+
+  // Get tricks won by each player (server sends tricks_won_count)
+  const getPlayerTricksWon = (player: any) => {
+    return player.tricks_won_count || 0
   }
-
-  const { declarerScore, opponentScore } = getTeamScores()
-
-  // Calculate tricks won
-  const tricksCompleted = gameState.tricks_completed || 0
-  const totalTricks = 12 // Hungarian Tarokk has 12 tricks
 
   return (
     <div className="w-full max-w-5xl mx-auto">
-      {/* Score & Progress Bar */}
+      {/* Trick Progress Bar */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="bg-slate-800/90 backdrop-blur-sm rounded-2xl p-4 mb-4 shadow-xl"
       >
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex-1">
-            <div className="text-slate-400 text-xs mb-1">Declarer Team</div>
-            <div className="text-2xl font-bold text-blue-400">{declarerScore}</div>
+        <div className="flex items-center justify-center gap-4 mb-3">
+          <div className="text-slate-400 text-sm">Trick Progress</div>
+          <div className="text-xl font-bold text-white">
+            {tricksCompleted} / {totalTricks}
           </div>
+        </div>
+        <div className="w-full bg-slate-700 rounded-full h-3">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${(tricksCompleted / totalTricks) * 100}%` }}
+            className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full"
+            transition={{ duration: 0.5 }}
+          />
+        </div>
 
-          <div className="flex-1 text-center">
-            <div className="text-slate-400 text-xs mb-1">Trick Progress</div>
-            <div className="text-xl font-bold text-white">
-              {tricksCompleted} / {totalTricks}
-            </div>
-            <div className="w-full bg-slate-700 rounded-full h-2 mt-2">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${(tricksCompleted / totalTricks) * 100}%` }}
-                className="bg-blue-500 h-2 rounded-full"
-                transition={{ duration: 0.5 }}
-              />
-            </div>
-          </div>
+        {/* Player Tricks Won */}
+        <div className="grid grid-cols-4 gap-2 mt-4">
+          {gameState.players.map((player, idx) => {
+            const tricksWon = getPlayerTricksWon(player)
+            const isMe = idx === playerPosition
+            const isDeclarer = idx === gameState.declarer_position
+            const isPartner = gameState.partner_revealed && idx === gameState.partner_position
+            const isDealer = idx === gameState.dealer_position
 
-          <div className="flex-1 text-right">
-            <div className="text-slate-400 text-xs mb-1">Opponent Team</div>
-            <div className="text-2xl font-bold text-red-400">{opponentScore}</div>
-          </div>
+            return (
+              <div
+                key={idx}
+                className={`
+                  text-center p-2 rounded-lg
+                  ${isMe ? 'bg-blue-900/50 border-2 border-blue-500' : 'bg-slate-700/50'}
+                `}
+              >
+                <div className="text-xs text-slate-400 truncate">
+                  {player.name}
+                  {isDealer && ' 🃏'}
+                  {isDeclarer && ' 👑'}
+                  {isPartner && ' 🤝'}
+                </div>
+                <div className="text-lg font-bold text-white">
+                  {tricksWon} tricks
+                </div>
+              </div>
+            )
+          })}
         </div>
       </motion.div>
 
@@ -90,7 +105,7 @@ export default function PlayingPhase({ gameState, playerPosition }: PlayingPhase
       >
         <div className="text-center mb-6">
           <h2 className="text-2xl font-bold text-white mb-2">
-            Trick #{(gameState.current_trick_number || 0) + 1}
+            Trick #{(gameState.trick_number || 0) + 1}
           </h2>
           <p className="text-slate-300">
             {isMyTurn ? (
