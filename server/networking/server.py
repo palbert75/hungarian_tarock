@@ -487,6 +487,153 @@ async def pass_announcement(sid: str, data: dict):
 
 
 @sio.event
+async def contra_announcement(sid: str, data: dict):
+    """Handle contra on an announcement."""
+    try:
+        room = room_manager.get_room_by_session(sid)
+        if not room:
+            raise ValueError("Not in a room")
+
+        player = room.get_player_by_session(sid)
+        if not player:
+            raise ValueError("Player not found")
+
+        game_state = room.game_state
+
+        if game_state.phase != GamePhase.ANNOUNCEMENTS:
+            raise ValueError("Not in announcement phase")
+
+        if game_state.current_turn != player.position:
+            raise ValueError("Not your turn")
+
+        announcement_type_str = data.get("announcement_type")
+        if not announcement_type_str:
+            raise ValueError("Must specify announcement type")
+
+        # Find the announcement
+        announcement = next(
+            (a for a in game_state.announcements if a.announcement_type.value == announcement_type_str),
+            None
+        )
+        if not announcement:
+            raise ValueError(f"No announcement of type {announcement_type_str} found")
+
+        if announcement.contra:
+            raise ValueError("This announcement has already been contra'd")
+
+        # Check if player is on opposing team
+        is_declarer_team = player.position == game_state.declarer_position or player.position == game_state.partner_position
+        is_announcement_by_declarer_team = (
+            announcement.player_position == game_state.declarer_position or
+            announcement.player_position == game_state.partner_position
+        )
+
+        if is_declarer_team == is_announcement_by_declarer_team:
+            raise ValueError("Can only contra opponent announcements")
+
+        # Apply contra
+        announcement.contra = True
+        announcement.contra_by = player.position
+
+        # Add to announcement history
+        game_state.player_pass_announcement(player.position)  # Move turn forward
+
+        # Notify all players
+        await broadcast_to_room(room.room_id, MessageType.CONTRA_MADE, {
+            "player_position": player.position,
+            "announcement_type": announcement_type_str
+        })
+
+        # Check if announcement phase is complete
+        if game_state.is_announcement_phase_complete():
+            await broadcast_to_room(room.room_id, MessageType.ANNOUNCEMENTS_COMPLETE, {})
+            await start_trick_taking(room)
+        else:
+            await send_your_turn(room, game_state.current_turn)
+
+        await broadcast_game_state(room.room_id)
+
+    except Exception as e:
+        logger.error("contra_announcement_error", sid=sid, error=str(e))
+        await sio.emit("error", create_error_message("CONTRA_ERROR", str(e)).to_dict(), room=sid)
+
+
+@sio.event
+async def recontra_announcement(sid: str, data: dict):
+    """Handle recontra on a contra'd announcement."""
+    try:
+        room = room_manager.get_room_by_session(sid)
+        if not room:
+            raise ValueError("Not in a room")
+
+        player = room.get_player_by_session(sid)
+        if not player:
+            raise ValueError("Player not found")
+
+        game_state = room.game_state
+
+        if game_state.phase != GamePhase.ANNOUNCEMENTS:
+            raise ValueError("Not in announcement phase")
+
+        if game_state.current_turn != player.position:
+            raise ValueError("Not your turn")
+
+        announcement_type_str = data.get("announcement_type")
+        if not announcement_type_str:
+            raise ValueError("Must specify announcement type")
+
+        # Find the announcement
+        announcement = next(
+            (a for a in game_state.announcements if a.announcement_type.value == announcement_type_str),
+            None
+        )
+        if not announcement:
+            raise ValueError(f"No announcement of type {announcement_type_str} found")
+
+        if not announcement.contra:
+            raise ValueError("Can only recontra a contra'd announcement")
+
+        if announcement.recontra:
+            raise ValueError("This announcement has already been recontra'd")
+
+        # Check if player is on the same team as the original announcer
+        is_declarer_team = player.position == game_state.declarer_position or player.position == game_state.partner_position
+        is_announcement_by_declarer_team = (
+            announcement.player_position == game_state.declarer_position or
+            announcement.player_position == game_state.partner_position
+        )
+
+        if is_declarer_team != is_announcement_by_declarer_team:
+            raise ValueError("Can only recontra your own team's announcements")
+
+        # Apply recontra
+        announcement.recontra = True
+        announcement.recontra_by = player.position
+
+        # Add to announcement history
+        game_state.player_pass_announcement(player.position)  # Move turn forward
+
+        # Notify all players
+        await broadcast_to_room(room.room_id, MessageType.RECONTRA_MADE, {
+            "player_position": player.position,
+            "announcement_type": announcement_type_str
+        })
+
+        # Check if announcement phase is complete
+        if game_state.is_announcement_phase_complete():
+            await broadcast_to_room(room.room_id, MessageType.ANNOUNCEMENTS_COMPLETE, {})
+            await start_trick_taking(room)
+        else:
+            await send_your_turn(room, game_state.current_turn)
+
+        await broadcast_game_state(room.room_id)
+
+    except Exception as e:
+        logger.error("recontra_announcement_error", sid=sid, error=str(e))
+        await sio.emit("error", create_error_message("RECONTRA_ERROR", str(e)).to_dict(), room=sid)
+
+
+@sio.event
 async def play_card(sid: str, data: dict):
     """Handle play card action."""
     try:

@@ -19,7 +19,10 @@ export default function PlayingPhase({ gameState, playerPosition }: PlayingPhase
   const isMyTurn = gameState.current_turn === playerPosition
 
   // Get valid cards to play (would come from server in real implementation)
-  const validCards = gameState.valid_cards || []
+  // If server doesn't provide valid cards, allow all cards in hand
+  const validCards = gameState.valid_cards && gameState.valid_cards.length > 0
+    ? gameState.valid_cards
+    : (myPlayer.hand?.map(card => card.id) || [])
 
   const handlePlayCard = () => {
     if (selectedCards.length === 1 && validCards.includes(selectedCards[0])) {
@@ -107,28 +110,32 @@ export default function PlayingPhase({ gameState, playerPosition }: PlayingPhase
         <AnimatePresence mode="popLayout">
           {gameState.current_trick && gameState.current_trick.length > 0 ? (
             <div className="flex justify-center items-center gap-6 min-h-[180px]">
-              {gameState.current_trick.map((trickCard, index) => (
-                <motion.div
-                  key={`${trickCard.player_position}-${index}`}
-                  initial={{ scale: 0, rotate: -180, opacity: 0 }}
-                  animate={{ scale: 1, rotate: 0, opacity: 1 }}
-                  exit={{ scale: 0, rotate: 180, opacity: 0 }}
-                  transition={{
-                    type: 'spring',
-                    stiffness: 260,
-                    damping: 20,
-                    delay: index * 0.1,
-                  }}
-                  className="flex flex-col items-center gap-3"
-                >
-                  <Card card={trickCard.card} size="lg" />
-                  <div className="bg-slate-700 px-3 py-1 rounded-lg">
-                    <span className="text-white text-sm font-semibold">
-                      {gameState.players[trickCard.player_position].name}
-                    </span>
-                  </div>
-                </motion.div>
-              ))}
+              {gameState.current_trick.map((trickCard, index) => {
+                const player = gameState.players[trickCard.player_position]
+                const playerName = player && player.name ? player.name : `Player ${trickCard.player_position + 1}`
+                return (
+                  <motion.div
+                    key={`${trickCard.player_position}-${index}`}
+                    initial={{ scale: 0, rotate: -180, opacity: 0 }}
+                    animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                    exit={{ scale: 0, rotate: 180, opacity: 0 }}
+                    transition={{
+                      type: 'spring',
+                      stiffness: 260,
+                      damping: 20,
+                      delay: index * 0.1,
+                    }}
+                    className="flex flex-col items-center gap-3"
+                  >
+                    <Card card={trickCard.card} size="lg" />
+                    <div className="bg-slate-700 px-3 py-1 rounded-lg">
+                      <span className="text-white text-sm font-semibold">
+                        {playerName}
+                      </span>
+                    </div>
+                  </motion.div>
+                )
+              })}
             </div>
           ) : (
             <div className="flex items-center justify-center min-h-[180px]">
@@ -147,14 +154,19 @@ export default function PlayingPhase({ gameState, playerPosition }: PlayingPhase
         </AnimatePresence>
 
         {/* Leader indicator */}
-        {gameState.current_trick && gameState.current_trick.length > 0 && (
-          <div className="text-center mt-4 text-slate-400 text-sm">
-            <span className="text-yellow-400 font-semibold">
-              {gameState.players[gameState.current_trick[0].player_position].name}
-            </span>{' '}
-            leads this trick
-          </div>
-        )}
+        {gameState.current_trick && gameState.current_trick.length > 0 && (() => {
+          const leaderPosition = gameState.current_trick[0].player_position
+          const leader = gameState.players[leaderPosition]
+          const leaderName = leader && leader.name ? leader.name : `Player ${leaderPosition + 1}`
+          return (
+            <div className="text-center mt-4 text-slate-400 text-sm">
+              <span className="text-yellow-400 font-semibold">
+                {leaderName}
+              </span>{' '}
+              leads this trick
+            </div>
+          )
+        })()}
       </motion.div>
 
       {/* Player's Hand - Always visible */}

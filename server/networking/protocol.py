@@ -43,6 +43,10 @@ class MessageType(str, Enum):
     MAKE_ANNOUNCEMENT = "make_announcement"
     ANNOUNCEMENT_MADE = "announcement_made"
     PASS_ANNOUNCEMENT = "pass_announcement"
+    CONTRA_ANNOUNCEMENT = "contra_announcement"
+    CONTRA_MADE = "contra_made"
+    RECONTRA_ANNOUNCEMENT = "recontra_announcement"
+    RECONTRA_MADE = "recontra_made"
     ANNOUNCEMENTS_COMPLETE = "announcements_complete"
 
     # Trick-taking

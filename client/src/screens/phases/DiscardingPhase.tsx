@@ -154,18 +154,31 @@ export default function DiscardingPhase({ gameState, playerPosition }: Discardin
           </>
         ) : (
           /* Waiting Message */
-          <div className="text-center py-8">
-            <motion.div
-              animate={{ scale: [1, 1.1, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="text-6xl mb-4"
-            >
-              ⏳
-            </motion.div>
-            <p className="text-slate-400">
-              Waiting for {gameState.players[gameState.current_turn]?.name} to discard...
-            </p>
-          </div>
+          <>
+            <div className="text-center py-4">
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="text-4xl mb-2"
+              >
+                ⏳
+              </motion.div>
+              <p className="text-slate-400 text-sm">
+                Waiting for {gameState.players[gameState.current_turn]?.name} to discard...
+              </p>
+            </div>
+
+            {/* Show player's hand (view-only when not their turn) */}
+            {myPlayer.hand && myPlayer.hand.length > 0 && (
+              <div className="mt-4">
+                <Hand
+                  cards={myPlayer.hand}
+                  layout="fan"
+                  size="md"
+                />
+              </div>
+            )}
+          </>
         )}
       </motion.div>
     </div>

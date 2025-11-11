@@ -136,46 +136,79 @@ export default function AnnouncementsPhase({
           <div className="mb-3 bg-slate-700/50 rounded-xl p-2">
             <h3 className="text-white font-semibold mb-2 text-xs">Announcements Made</h3>
             <div className="space-y-2">
-              {gameState.announcements.map((announcement: Announcement, index: number) => {
+              {gameState.announcements.map((announcement: any, index: number) => {
                 const announcementInfo = announcementTypes.find(
                   (a) => a.value === announcement.announcement_type
                 )
+
+                // Check if current player can contra or recontra
+                const isDeclarerTeam = playerPosition === gameState.declarer_position || playerPosition === gameState.partner_position
+                const isAnnouncementByDeclarerTeam =
+                  announcement.player_position === gameState.declarer_position ||
+                  announcement.player_position === gameState.partner_position
+
+                const canContra = isMyTurn && !announcement.contra && isDeclarerTeam !== isAnnouncementByDeclarerTeam
+                const canRecontra = isMyTurn && announcement.contra && !announcement.recontra && isDeclarerTeam === isAnnouncementByDeclarerTeam
+
                 return (
                   <motion.div
                     key={index}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    className="flex items-center justify-between text-sm bg-slate-600/50 rounded-lg p-3"
+                    className="bg-slate-600/50 rounded-lg p-2"
                   >
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl">{announcementInfo?.icon}</span>
-                      <div>
-                        <div className="text-white font-semibold">
-                          {announcementInfo?.label}
-                        </div>
-                        <div className="text-slate-400 text-xs">
-                          {gameState.players[announcement.player_position]?.name}
+                    <div className="flex items-center justify-between gap-2">
+                      {/* Left side - Announcement info */}
+                      <div className="flex items-center gap-2 flex-1">
+                        <span className="text-xl">{announcementInfo?.icon}</span>
+                        <div className="flex-1">
+                          <div className="text-white font-semibold text-sm">
+                            {announcementInfo?.label}
+                          </div>
+                          <div className="text-slate-400 text-xs">
+                            {gameState.players[announcement.player_position]?.name}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <div
-                        className={`font-semibold ${
-                          announcement.announced ? 'text-yellow-400' : 'text-slate-400'
-                        }`}
-                      >
-                        {announcement.announced ? 'Announced' : 'Silent'}
-                      </div>
-                      {announcementInfo && (
-                        <div className="text-slate-400 text-xs">
-                          +
-                          {announcement.announced
-                            ? announcementInfo.points.announced
-                            : announcementInfo.points.silent}{' '}
-                          pts
+
+                      {/* Right side - Status and buttons */}
+                      <div className="flex items-center gap-2">
+                        {/* Status badges */}
+                        <div className="flex flex-col gap-1">
+                          <div className={`text-xs font-semibold px-2 py-0.5 rounded ${announcement.announced ? 'bg-yellow-600' : 'bg-slate-500'}`}>
+                            {announcement.announced ? '📢' : '🤫'}
+                          </div>
+                          {announcement.contra && (
+                            <div className="text-xs font-semibold px-2 py-0.5 rounded bg-red-600 text-white">
+                              Contra
+                            </div>
+                          )}
+                          {announcement.recontra && (
+                            <div className="text-xs font-semibold px-2 py-0.5 rounded bg-orange-600 text-white">
+                              Recontra
+                            </div>
+                          )}
                         </div>
-                      )}
+
+                        {/* Contra/Recontra buttons */}
+                        {canContra && (
+                          <button
+                            onClick={() => socketManager.contraAnnouncement(announcement.announcement_type)}
+                            className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded transition-colors"
+                          >
+                            Contra
+                          </button>
+                        )}
+                        {canRecontra && (
+                          <button
+                            onClick={() => socketManager.recontraAnnouncement(announcement.announcement_type)}
+                            className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold rounded transition-colors"
+                          >
+                            Recontra
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </motion.div>
                 )

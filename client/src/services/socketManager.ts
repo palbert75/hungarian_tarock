@@ -282,6 +282,28 @@ class SocketManager {
         })
       })
 
+      this.socket.on('contra_made', (data) => {
+        console.log('[Socket] Contra made:', data)
+        const playerName = useGameStore
+          .getState()
+          .gameState?.players[data.player_position]?.name
+        useGameStore.getState().addToast({
+          type: 'warning',
+          message: `${playerName} contra'd ${data.announcement_type}!`,
+        })
+      })
+
+      this.socket.on('recontra_made', (data) => {
+        console.log('[Socket] Recontra made:', data)
+        const playerName = useGameStore
+          .getState()
+          .gameState?.players[data.player_position]?.name
+        useGameStore.getState().addToast({
+          type: 'warning',
+          message: `${playerName} recontra'd ${data.announcement_type}!`,
+        })
+      })
+
       this.socket.on('announcements_complete', () => {
         console.log('[Socket] Announcements complete')
         useGameStore.getState().addToast({
@@ -301,12 +323,23 @@ class SocketManager {
 
       this.socket.on('trick_complete', (data) => {
         console.log('[Socket] Trick complete:', data)
-        const winnerName = useGameStore
-          .getState()
-          .gameState?.players[data.winner]?.name
+        const gameState = useGameStore.getState().gameState
+
+        // Safely get winner name
+        let winnerName = 'Unknown Player'
+        if (data.winner !== undefined && data.winner !== null && gameState?.players) {
+          const winner = gameState.players[data.winner]
+          winnerName = winner && winner.name ? winner.name : `Player ${data.winner + 1}`
+        }
+
+        // Safely get trick number
+        const trickNumber = data.trick_number !== undefined && data.trick_number !== null
+          ? data.trick_number
+          : '?'
+
         useGameStore.getState().addToast({
           type: 'success',
-          message: `${winnerName} won trick ${data.trick_number}!`,
+          message: `${winnerName} won trick ${trickNumber}!`,
         })
       })
 
@@ -384,6 +417,18 @@ class SocketManager {
 
   passAnnouncement() {
     this.socket?.emit('pass_announcement', {})
+  }
+
+  contraAnnouncement(announcementType: string) {
+    this.socket?.emit('contra_announcement', {
+      announcement_type: announcementType,
+    })
+  }
+
+  recontraAnnouncement(announcementType: string) {
+    this.socket?.emit('recontra_announcement', {
+      announcement_type: announcementType,
+    })
   }
 
   playCard(cardId: string) {

@@ -23,17 +23,25 @@ class Announcement(BaseModel):
         player_position: Position (0-3) of the player making the announcement
         announcement_type: Type of announcement
         announced: Whether it was announced (True) or silent (False)
-        points: Points value for this announcement
+        contra: Whether opponent has contra'd (doubles points)
+        recontra: Whether announcing team has recontra'd (doubles again)
+        contra_by: Position of player who contra'd (if any)
+        recontra_by: Position of player who recontra'd (if any)
     """
     player_position: int
     announcement_type: AnnouncementType
     announced: bool = True  # True = announced, False = silent
+    contra: bool = False
+    recontra: bool = False
+    contra_by: Optional[int] = None
+    recontra_by: Optional[int] = None
 
     def get_points(self) -> int:
         """
         Get the point value for this announcement.
 
         Points are higher if announced vs silent.
+        Contra doubles the points, recontra doubles again (4x total).
         """
         points_map = {
             AnnouncementType.TRULL: 2 if self.announced else 1,
@@ -43,7 +51,14 @@ class Announcement(BaseModel):
             AnnouncementType.PAGAT_ULTIMO: 10 if self.announced else 5,
             AnnouncementType.XXI_CATCH: 42 if self.announced else 21,
         }
-        return points_map.get(self.announcement_type, 0)
+        base_points = points_map.get(self.announcement_type, 0)
+
+        # Apply contra/recontra multipliers
+        if self.recontra:
+            return base_points * 4  # Recontra = 4x
+        elif self.contra:
+            return base_points * 2  # Contra = 2x
+        return base_points
 
     def get_multiplier(self) -> int:
         """
@@ -64,6 +79,10 @@ class Announcement(BaseModel):
             "player_position": self.player_position,
             "announcement_type": self.announcement_type.value,
             "announced": self.announced,
+            "contra": self.contra,
+            "recontra": self.recontra,
+            "contra_by": self.contra_by,
+            "recontra_by": self.recontra_by,
             "points": self.get_points(),
             "multiplier": self.get_multiplier(),
         }

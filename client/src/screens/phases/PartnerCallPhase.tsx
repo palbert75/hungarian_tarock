@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { socketManager } from '@/services/socketManager'
+import Hand from '@/components/Hand'
+import PlayerAvatar from '@/components/PlayerAvatar'
 import type { GameState } from '@/types'
 
 interface PartnerCallPhaseProps {
@@ -148,19 +150,19 @@ export default function PartnerCallPhase({ gameState, playerPosition }: PartnerC
           </>
         ) : (
           /* Waiting Screen for Non-Declarers */
-          <div className="text-center py-12">
+          <div className="text-center py-6">
             <motion.div
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="text-6xl mb-6"
+              className="text-4xl mb-3"
             >
               ⏳
             </motion.div>
-            <p className="text-slate-400 mb-4">
+            <p className="text-slate-400 mb-3 text-sm">
               {declarer?.name} is selecting their partner...
             </p>
-            <div className="bg-slate-700/50 rounded-xl p-6 max-w-md mx-auto">
-              <p className="text-slate-300 text-sm">
+            <div className="bg-slate-700/50 rounded-xl p-4 max-w-md mx-auto">
+              <p className="text-slate-300 text-xs">
                 The partner will remain secret until they play the called card during the game.
               </p>
             </div>
@@ -182,6 +184,32 @@ export default function PartnerCallPhase({ gameState, playerPosition }: PartnerC
           </motion.div>
         )}
       </motion.div>
+
+      {/* Player's Hand - Always visible */}
+      {myPlayer.hand && myPlayer.hand.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mt-4 bg-slate-800/90 backdrop-blur-sm rounded-2xl px-4 py-2 shadow-2xl relative"
+        >
+          {/* Player Avatar in upper left corner */}
+          <div className="absolute top-2 left-2 z-10">
+            <PlayerAvatar
+              player={myPlayer}
+              isCurrentTurn={gameState.current_turn === playerPosition}
+              position={playerPosition as 0 | 1 | 2 | 3}
+              isLocalPlayer={true}
+            />
+          </div>
+
+          <Hand
+            cards={myPlayer.hand}
+            layout="fan"
+            size="md"
+          />
+        </motion.div>
+      )}
     </div>
   )
 }
