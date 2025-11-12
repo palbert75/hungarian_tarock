@@ -74,6 +74,7 @@ export interface CompletedTrick {
   trick_number: number
   cards: TrickCard[]
   winner: number
+  winner_name: string
   lead_suit: string | null
 }
 

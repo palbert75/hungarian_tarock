@@ -100,17 +100,50 @@ class PersistenceManager:
             Number of rooms loaded
         """
         try:
+            logger.info("persistence_load_starting")
+
             # Mark all players as disconnected on startup
             self.db.mark_all_players_disconnected()
+            logger.info("marked_all_players_disconnected")
 
             # Load room data from database
             rooms_data = self.db.load_all_rooms()
+            logger.info("database_rooms_found", count=len(rooms_data))
 
             loaded_count = 0
             for room_data in rooms_data:
                 try:
+                    room_id = room_data.get('room_id', 'unknown')
+                    logger.info("loading_room",
+                               room_id=room_id,
+                               players_count=len(room_data.get('players', [])),
+                               has_game_state=room_data.get('game_state') is not None,
+                               chat_messages=len(room_data.get('chat_messages', [])))
+
                     # Reconstruct Room object
                     room = self._reconstruct_room(room_data)
+
+                    # Log reconstructed room details
+                    player_details = [
+                        {
+                            'name': p.name,
+                            'position': p.position,
+                            'hand_size': len(p.hand),
+                            'tricks_won': len(p.tricks_won),
+                            'discards': len(p.discard_pile)
+                        }
+                        for p in room.game_state.players
+                    ]
+
+                    logger.info("room_reconstructed",
+                              room_id=room.room_id,
+                              phase=room.game_state.phase.value,
+                              trick_number=room.game_state.trick_number,
+                              current_turn=room.game_state.current_turn,
+                              players=player_details,
+                              talon_size=len(room.game_state.talon),
+                              current_trick_size=len(room.game_state.current_trick),
+                              bid_history_size=len(room.game_state.bid_history))
 
                     # Add to room manager
                     room_manager.rooms[room.room_id] = room
@@ -118,7 +151,7 @@ class PersistenceManager:
                     # Note: session_to_room mappings will be rebuilt as players reconnect
 
                     loaded_count += 1
-                    logger.info("room_loaded",
+                    logger.info("room_loaded_successfully",
                               room_id=room.room_id,
                               players=len(room.game_state.players),
                               phase=room.game_state.phase.value)
@@ -126,14 +159,26 @@ class PersistenceManager:
                 except Exception as e:
                     logger.error("load_room_error",
                                room_id=room_data.get('room_id', 'unknown'),
-                               error=str(e))
+                               error=str(e),
+                               error_type=type(e).__name__,
+                               traceback=True)
+                    import traceback
+                    logger.error("load_room_traceback",
+                               traceback=traceback.format_exc())
                     continue
 
-            logger.info("rooms_loaded_from_database", count=loaded_count)
+            logger.info("persistence_load_complete",
+                       rooms_loaded=loaded_count,
+                       rooms_in_database=len(rooms_data))
             return loaded_count
 
         except Exception as e:
-            logger.error("load_all_rooms_error", error=str(e))
+            logger.error("load_all_rooms_error",
+                        error=str(e),
+                        error_type=type(e).__name__)
+            import traceback
+            logger.error("load_all_rooms_traceback",
+                        traceback=traceback.format_exc())
             return 0
 
     def _reconstruct_room(self, room_data: Dict[str, Any]) -> Room:
@@ -146,32 +191,46 @@ class PersistenceManager:
         Returns:
             Reconstructed Room object
         """
-        # Create room
-        room = Room(room_id=room_data['room_id'])
+        room_id = room_data['room_id']
+        logger.debug("reconstructing_room", room_id=room_id)
 
-        # Reconstruct game state
+        # Create room
+        room = Room(room_id=room_id)
+
+        # Reconstruct game state (includes players with all their cards)
         game_state_dict = room_data.get('game_state')
         if game_state_dict:
+            logger.debug("reconstructing_game_state",
+                        room_id=room_id,
+                        phase=game_state_dict.get('phase'),
+                        players_in_json=len(game_state_dict.get('players', [])))
             room.game_state = self._reconstruct_game_state(game_state_dict)
+            logger.debug("game_state_reconstructed",
+                        room_id=room_id,
+                        players_loaded=len(room.game_state.players))
         else:
             # No game state saved, create fresh one
+            logger.warning("no_game_state_in_database", room_id=room_id)
             room.game_state = GameState()
 
-        # Add players to game state
+        # Update player connection status from players table (all disconnected after restart)
         for player_data in room_data.get('players', []):
-            player = self._reconstruct_player(player_data, room.game_state)
-
-            # Ensure player is in game state if not already
-            existing = room.game_state.get_player_by_id(player.id)
-            if not existing:
-                room.game_state.players.append(player)
-
-            # Note: Don't map session_id yet - players need to reconnect
-            # Mark as disconnected
-            player.is_connected = False
+            player = room.game_state.get_player_by_id(player_data['id'])
+            if player:
+                # Update connection status (should be False after restart)
+                player.is_connected = False
+                player.is_ready = player_data.get('is_ready', False)
+                logger.debug("player_connection_updated",
+                           room_id=room_id,
+                           player_id=player_data['id'],
+                           player_name=player.name,
+                           is_ready=player.is_ready)
 
         # Restore chat history
         room.chat_messages = room_data.get('chat_messages', [])
+        logger.debug("chat_history_restored",
+                    room_id=room_id,
+                    message_count=len(room.chat_messages))
 
         return room
 
@@ -185,6 +244,10 @@ class PersistenceManager:
         Returns:
             Reconstructed GameState object
         """
+        logger.debug("reconstructing_game_state_start",
+                    game_id=game_state_dict.get('game_id'),
+                    phase=game_state_dict.get('phase'))
+
         game_state = GameState()
 
         # Basic fields
@@ -200,9 +263,15 @@ class PersistenceManager:
         game_state.trick_leader = game_state_dict.get('trick_leader')
         game_state.previous_trick_winner = game_state_dict.get('previous_trick_winner')
 
+        logger.debug("game_state_basic_fields_set",
+                    phase=game_state.phase.value,
+                    trick_number=game_state.trick_number,
+                    current_turn=game_state.current_turn,
+                    declarer=game_state.declarer_position,
+                    partner=game_state.partner_position)
+
         # Lists
         game_state.players_who_discarded = game_state_dict.get('players_who_discarded', [])
-        game_state.announcement_passes = game_state_dict.get('announcement_passes', [])
 
         # Reconstruct bid history
         game_state.bid_history = []
@@ -267,8 +336,63 @@ class PersistenceManager:
 
         # Reconstruct trick history
         game_state.trick_history = game_state_dict.get('trick_history', [])
+        logger.debug("trick_history_loaded", tricks=len(game_state.trick_history))
 
-        # Note: Players are reconstructed separately and added to game_state.players
+        # Reconstruct players with their cards
+        logger.debug("reconstructing_players",
+                    player_count=len(game_state_dict.get('players', [])))
+
+        game_state.players = []
+        for idx, player_dict in enumerate(game_state_dict.get('players', [])):
+            logger.debug("reconstructing_player",
+                        player_index=idx,
+                        player_id=player_dict.get('id'),
+                        player_name=player_dict.get('name'),
+                        position=player_dict.get('position'),
+                        hand_cards_in_dict=len(player_dict.get('hand', [])),
+                        tricks_cards_in_dict=len(player_dict.get('tricks_won', [])),
+                        discard_cards_in_dict=len(player_dict.get('discard_pile', [])))
+
+            # Reconstruct hand
+            hand = [self._reconstruct_card(card_dict) for card_dict in player_dict.get('hand', [])]
+            logger.debug("player_hand_reconstructed",
+                        player_name=player_dict['name'],
+                        hand_size=len(hand),
+                        first_card=hand[0].rank if hand else None)
+
+            # Reconstruct tricks_won
+            tricks_won = [self._reconstruct_card(card_dict) for card_dict in player_dict.get('tricks_won', [])]
+
+            # Reconstruct discard_pile
+            discard_pile = [self._reconstruct_card(card_dict) for card_dict in player_dict.get('discard_pile', [])]
+
+            # Create player
+            player = Player(
+                name=player_dict['name'],
+                position=player_dict['position'],
+                hand=hand,
+                tricks_won=tricks_won,
+                discard_pile=discard_pile,
+                is_connected=player_dict.get('is_connected', False),
+                is_ready=player_dict.get('is_ready', False),
+                is_declarer=player_dict.get('is_declarer', False),
+                is_partner=player_dict.get('is_partner', False),
+                partner_revealed=player_dict.get('partner_revealed', False)
+            )
+            player.id = player_dict['id']
+            game_state.players.append(player)
+
+            logger.debug("player_reconstructed",
+                        player_id=player.id,
+                        player_name=player.name,
+                        position=player.position,
+                        hand_size=len(player.hand),
+                        tricks_won_size=len(player.tricks_won),
+                        discard_pile_size=len(player.discard_pile),
+                        is_declarer=player.is_declarer,
+                        is_partner=player.is_partner)
+
+        logger.debug("all_players_reconstructed", total_players=len(game_state.players))
 
         return game_state
 

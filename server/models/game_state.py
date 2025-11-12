@@ -421,6 +421,7 @@ class GameState(BaseModel):
                 for pos, card in self.current_trick
             ],
             "winner": winner_pos,
+            "winner_name": self.players[winner_pos].name,
             "lead_suit": lead_suit.value if lead_suit else None
         })
 

@@ -105,7 +105,7 @@ export default function PlayingPhase({ gameState, playerPosition }: PlayingPhase
       >
         <div className="text-center mb-6">
           <h2 className="text-2xl font-bold text-white mb-2">
-            Trick #{(gameState.trick_number || 0) + 1}
+            Trick #{gameState.trick_number || 0}
           </h2>
           <p className="text-slate-300">
             {isMyTurn ? (

@@ -4,6 +4,7 @@ import uvicorn
 import structlog
 import asyncio
 from contextlib import asynccontextmanager
+from datetime import datetime
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import socketio
@@ -34,16 +35,23 @@ logger = structlog.get_logger()
 async def lifespan(app: FastAPI):
     """Lifecycle manager for startup and shutdown."""
     # Startup
-    logger.info("server_lifecycle_starting")
-    await init_persistence()
-    logger.info("server_lifecycle_started")
+    logger.info("server_lifecycle_starting", timestamp=datetime.now().isoformat())
+
+    logger.info("initializing_persistence_system")
+    persistence_result = await init_persistence()
+    if persistence_result:
+        logger.info("persistence_system_initialized_successfully")
+    else:
+        logger.warning("persistence_system_initialization_failed_continuing_without_persistence")
+
+    logger.info("server_lifecycle_started", timestamp=datetime.now().isoformat())
 
     yield
 
     # Shutdown
-    logger.info("server_lifecycle_shutting_down")
+    logger.info("server_lifecycle_shutting_down", timestamp=datetime.now().isoformat())
     await shutdown_persistence()
-    logger.info("server_lifecycle_shutdown_complete")
+    logger.info("server_lifecycle_shutdown_complete", timestamp=datetime.now().isoformat())
 
 
 # Create FastAPI app

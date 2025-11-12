@@ -188,6 +188,10 @@ class Player(BaseModel):
         # Include actual hand cards only if not hiding
         if not hide_hand:
             data["hand"] = [card.to_dict() for card in self.hand]
+            # Also include tricks_won and discard_pile for persistence
+            data["tricks_won"] = [card.to_dict() for card in self.tricks_won]
+            data["discard_pile"] = [card.to_dict() for card in self.discard_pile]
+            data["partner_revealed"] = self.partner_revealed
 
         return data
 
