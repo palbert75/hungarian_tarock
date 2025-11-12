@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  tarokk-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tarokk-server
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - DEBUG=False
+      - LOG_LEVEL=INFO
+      - CORS_ORIGINS=*
+      - DATABASE_PATH=data/tarokk_game.db
+    volumes:
+      # Persist database
+      - tarokk-data:/app/data
+      # Mount code for development (optional, comment out for production)
+      # - .:/app:ro
+    restart: unless-stopped
+    networks:
+      - tarokk-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  tarokk-data:
+    driver: local
+
+networks:
+  tarokk-network:
+    driver: bridge

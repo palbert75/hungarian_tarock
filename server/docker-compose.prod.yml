@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  tarokk-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tarokk-server-prod
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - DEBUG=False
+      - LOG_LEVEL=INFO
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
+      - DATABASE_PATH=data/tarokk_game.db
+      - MAX_ROOMS=100
+      - ROOM_TIMEOUT_MINUTES=60
+      - CLEANUP_INACTIVE_DAYS=7
+    volumes:
+      # Persist database
+      - tarokk-data:/app/data
+      # Backup location
+      - ./backups:/app/backups:rw
+    restart: always
+    networks:
+      - tarokk-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # Optional: Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: tarokk-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - tarokk-server
+    restart: always
+    networks:
+      - tarokk-network
+
+  # Optional: Database backup service
+  backup:
+    image: alpine:latest
+    container_name: tarokk-backup
+    volumes:
+      - tarokk-data:/data:ro
+      - ./backups:/backups:rw
+    entrypoint: /bin/sh
+    command: >
+      -c "while true; do
+        echo 'Creating backup...'
+        cp /data/tarokk_game.db /backups/tarokk_game_$$(date +%Y%m%d_%H%M%S).db
+        echo 'Cleaning old backups (keeping last 7 days)...'
+        find /backups -name 'tarokk_game_*.db' -mtime +7 -delete
+        echo 'Backup complete. Sleeping for 6 hours...'
+        sleep 21600
+      done"
+    restart: always
+    networks:
+      - tarokk-network
+
+volumes:
+  tarokk-data:
+    driver: local
+
+networks:
+  tarokk-network:
+    driver: bridge
