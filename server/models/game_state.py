@@ -495,18 +495,19 @@ class GameState(BaseModel):
         declarer_points, _ = self.calculate_scores()
         return declarer_points >= 48
 
-    def to_dict(self, player_id: Optional[str] = None) -> dict:
+    def to_dict(self, player_id: Optional[str] = None, include_all_hands: bool = False) -> dict:
         """
         Convert game state to dictionary for JSON serialization.
 
         Args:
-            player_id: If provided, hide other players' hands
+            player_id: If provided, hide other players' hands (ignored if include_all_hands=True)
+            include_all_hands: If True, include all players' hands (for persistence)
 
         Returns:
             Dictionary representation
         """
         player_pos = None
-        if player_id:
+        if player_id and not include_all_hands:
             player = self.get_player_by_id(player_id)
             if player:
                 player_pos = player.position
@@ -515,21 +516,32 @@ class GameState(BaseModel):
             "game_id": self.game_id,
             "phase": self.phase.value,
             "players": [
-                p.to_dict(hide_hand=(player_pos is not None and p.position != player_pos))
+                p.to_dict(hide_hand=(not include_all_hands and player_pos is not None and p.position != player_pos))
                 for p in self.players
             ],
             "dealer_position": self.dealer_position,
             "current_turn": self.current_turn,
             "bid_history": [b.to_dict() for b in self.bid_history],
             "declarer_position": self.declarer_position,
-            # Only reveal partner position after the called card is played
-            "partner_position": self.partner_position if self.partner_revealed else None,
+            # Only reveal partner position after the called card is played (unless include_all_hands for persistence)
+            "partner_position": self.partner_position if (self.partner_revealed or include_all_hands) else None,
             "partner_revealed": self.partner_revealed,
+            "called_card_rank": self.called_card_rank,
             "trick_number": self.trick_number,
+            "trick_leader": self.trick_leader,
+            "previous_trick_winner": self.previous_trick_winner,
             "current_trick": [{"player_position": pos, "card": card.to_dict()} for pos, card in self.current_trick],
             "talon": [card.to_dict() for card in self.talon],
             "announcements": [a.to_dict() for a in self.announcements],
             "trick_history": self.trick_history,  # Full history of completed tricks
+            "players_who_discarded": self.players_who_discarded,
+            "announcement_history": [a.to_dict() if a else None for a in self.announcement_history],
         }
+
+        # Add winning bid if it exists
+        if self.winning_bid:
+            result["winning_bid"] = self.winning_bid.to_dict()
+        else:
+            result["winning_bid"] = None
 
         return result

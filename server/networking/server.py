@@ -2,7 +2,7 @@
 
 import asyncio
 import socketio
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 import structlog
 
 from networking.protocol import (
@@ -29,6 +29,9 @@ sio = socketio.AsyncServer(
 
 # Room manager instance
 room_manager = RoomManager()
+
+# Persistence manager instance (will be initialized in init_persistence)
+persistence_manager: Optional[Any] = None
 
 
 @sio.event
@@ -148,6 +151,9 @@ async def join_room(sid: str, data: dict):
         if room.game_state.phase != GamePhase.WAITING:
             await broadcast_game_state(room.room_id)
 
+        # Auto-save room
+        await auto_save_room(room)
+
     except Exception as e:
         logger.error("join_room_error", sid=sid, error=str(e))
         await sio.emit("error", create_error_message("JOIN_ROOM_ERROR", str(e)).to_dict(), room=sid)
@@ -175,6 +181,9 @@ async def ready(sid: str, data: dict):
         # Start game if all ready
         if room.can_start_game():
             await start_game(room)
+        else:
+            # Save room state when player marks ready
+            await auto_save_room(room)
 
     except Exception as e:
         logger.error("ready_error", sid=sid, error=str(e))
@@ -281,6 +290,9 @@ async def place_bid(sid: str, data: dict):
         # Broadcast game state
         await broadcast_game_state(room.room_id)
 
+        # Auto-save after bid
+        await auto_save_room(room)
+
     except Exception as e:
         logger.error("place_bid_error", sid=sid, error=str(e))
         await sio.emit("error", create_error_message("BID_ERROR", str(e)).to_dict(), room=sid)
@@ -347,6 +359,9 @@ async def discard_cards(sid: str, data: dict):
             await send_your_turn(room, game_state.current_turn)
 
         await broadcast_game_state(room.room_id)
+
+        # Auto-save after discard
+        await auto_save_room(room)
 
     except Exception as e:
         logger.error("discard_cards_error", sid=sid, error=str(e))
@@ -739,6 +754,9 @@ async def play_card(sid: str, data: dict):
 
         await broadcast_game_state(room.room_id)
 
+        # Auto-save after play card
+        await auto_save_room(room)
+
     except Exception as e:
         logger.error("play_card_error", sid=sid, error=str(e))
         await sio.emit("error", create_error_message("PLAY_CARD_ERROR", str(e)).to_dict(), room=sid)
@@ -781,6 +799,10 @@ async def send_chat_message(sid: str, data: dict):
         # Store in room history
         room.add_chat_message(chat_message)
 
+        # Save chat message to persistence
+        if persistence_manager:
+            persistence_manager.save_chat_message(room.room_id, chat_message)
+
         # Broadcast chat message to all players in room
         await sio.emit("chat_message", chat_message, room=room.room_id)
 
@@ -790,6 +812,11 @@ async def send_chat_message(sid: str, data: dict):
 
 
 # Helper functions
+
+async def auto_save_room(room):
+    """Auto-save room state to database."""
+    if persistence_manager:
+        await persistence_manager.save_room_complete(room)
 
 async def broadcast_room_state(room_id: str):
     """Broadcast room state to all players in room."""
@@ -984,6 +1011,54 @@ async def handle_game_over(room):
                 room_id=room.room_id,
                 winner=scoring_result["winner"],
                 scores=scoring_result["player_scores"])
+
+    # Auto-save after game over
+    await auto_save_room(room)
+
+
+async def init_persistence(db_path: str = "data/tarokk_game.db"):
+    """
+    Initialize persistence system and load persisted rooms.
+
+    Args:
+        db_path: Path to SQLite database
+    """
+    global persistence_manager
+
+    try:
+        from persistence.persistence_manager import PersistenceManager
+
+        persistence_manager = PersistenceManager(db_path)
+        logger.info("persistence_initialized", db_path=db_path)
+
+        # Load persisted rooms
+        loaded_count = await persistence_manager.load_all_rooms(room_manager)
+        logger.info("rooms_loaded_on_startup", count=loaded_count)
+
+        return persistence_manager
+
+    except Exception as e:
+        logger.error("persistence_init_error", error=str(e))
+        return None
+
+
+async def shutdown_persistence():
+    """Shutdown persistence system and save all rooms."""
+    global persistence_manager
+
+    if persistence_manager:
+        try:
+            # Save all active rooms
+            for room_id, room in room_manager.rooms.items():
+                await persistence_manager.save_room_complete(room)
+                logger.info("room_saved_on_shutdown", room_id=room_id)
+
+            # Close database connection
+            persistence_manager.close()
+            logger.info("persistence_shutdown_complete")
+
+        except Exception as e:
+            logger.error("persistence_shutdown_error", error=str(e))
 
 
 # Export the Socket.IO app

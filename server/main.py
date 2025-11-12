@@ -2,12 +2,14 @@
 
 import uvicorn
 import structlog
+import asyncio
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import socketio
 import time
 
-from networking.server import sio
+from networking.server import sio, init_persistence, shutdown_persistence
 from config import settings
 
 # Configure structured logging
@@ -27,12 +29,30 @@ structlog.configure(
 
 logger = structlog.get_logger()
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifecycle manager for startup and shutdown."""
+    # Startup
+    logger.info("server_lifecycle_starting")
+    await init_persistence()
+    logger.info("server_lifecycle_started")
+
+    yield
+
+    # Shutdown
+    logger.info("server_lifecycle_shutting_down")
+    await shutdown_persistence()
+    logger.info("server_lifecycle_shutdown_complete")
+
+
 # Create FastAPI app
 fastapi_app = FastAPI(
     title="Hungarian Tarokk Server",
     description="WebSocket server for Hungarian Tarokk card game",
     version="1.0.0",
-    debug=settings.debug
+    debug=settings.debug,
+    lifespan=lifespan
 )
 
 # Add request logging middleware
