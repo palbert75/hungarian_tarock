@@ -26,20 +26,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     sqlite3 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy Python dependencies from builder
-COPY --from=builder /root/.local /root/.local
+# Create non-root user for security first
+RUN useradd -m -u 1000 tarokk
 
-# Make sure scripts in .local are usable
-ENV PATH=/root/.local/bin:$PATH
+# Copy Python dependencies from builder to a shared location
+COPY --from=builder /root/.local /usr/local
 
 # Copy application code
 COPY . .
 
-# Create data directory for SQLite database
-RUN mkdir -p data && chmod 755 data
-
-# Create non-root user for security
-RUN useradd -m -u 1000 tarokk && \
+# Create data directory for SQLite database and set permissions
+RUN mkdir -p data && \
     chown -R tarokk:tarokk /app
 
 # Switch to non-root user
