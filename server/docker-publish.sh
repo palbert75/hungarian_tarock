@@ -65,7 +65,7 @@ build_image() {
     print_info "Building Docker image..."
     print_info "Image: $FULL_IMAGE_NAME:latest"
 
-    if ! docker build -t "$FULL_IMAGE_NAME:latest" "$DOCKERFILE_PATH"; then
+    if ! docker build --platform linux/amd64 -t "$FULL_IMAGE_NAME:latest" "$DOCKERFILE_PATH"; then
         print_error "Docker build failed"
         exit 1
     fi
@@ -157,6 +157,8 @@ push_image() {
         docker push "$FULL_IMAGE_NAME:v$version"
         print_success "Pushed version v$version"
     fi
+
+    kubectl delete pod -n tarokk --all 
 }
 
 # Display image info

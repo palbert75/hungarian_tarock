@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  labels:
+    app: app
+  name: app
+  namespace: tarokk
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: tarokk.onbased.cloud
+    http:
+      paths:
+      - backend:
+          service:
+            name: app
+            port:
+              number: 80
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - tarokk.onbased.cloud
+    secretName: app-cert

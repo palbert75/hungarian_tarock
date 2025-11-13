@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: app
+  name: app
+  namespace: tarokk
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: app
+    spec:
+      automountServiceAccountToken: true
+      containers:
+      - image: palbert75/hungarian-tarokk-server
+        imagePullPolicy: Always
+        name: app
+        ports:
+        - containerPort: 8000
+          protocol: TCP
+      restartPolicy: Always
