@@ -8,7 +8,7 @@ class SocketManager {
 
   constructor() {
     // @ts-ignore - Vite environment variable
-    this.serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:8000'
+    this.serverUrl = import.meta.env.VITE_SERVER_URL || 'https://tarokk.onbased.cloud/'
   }
 
   connect(playerName: string): Promise<void> {
