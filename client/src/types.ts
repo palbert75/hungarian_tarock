@@ -80,6 +80,14 @@ export interface CompletedTrick {
   lead_suit: string | null
 }
 
+export interface TrickWinnerAnimation {
+  winner_position: number
+  winner_name: string
+  cards: TrickCard[]
+  winning_card_index: number
+  trick_number: number
+}
+
 export interface GameState {
   game_id: string
   phase: GamePhase

@@ -10,6 +10,7 @@ import type {
   ModalType,
   ToastMessage,
   ChatMessage,
+  TrickWinnerAnimation,
 } from '@/types'
 
 interface GameStore {
@@ -36,6 +37,7 @@ interface GameStore {
   soundEnabled: boolean
   musicEnabled: boolean
   chatMessages: ChatMessage[]
+  trickWinnerAnimation: TrickWinnerAnimation | null
 
   // Actions - Connection
   setConnectionStatus: (status: ConnectionStatus) => void
@@ -64,6 +66,10 @@ interface GameStore {
   // Actions - Chat
   addChatMessage: (message: ChatMessage) => void
   clearChatMessages: () => void
+
+  // Actions - Trick Animation
+  setTrickWinnerAnimation: (animation: TrickWinnerAnimation | null) => void
+  clearTrickWinnerAnimation: () => void
 
   // Helpers
   getMyHand: () => Card[]
@@ -96,6 +102,7 @@ export const useGameStore = create<GameStore>()(
       soundEnabled: true,
       musicEnabled: false,
       chatMessages: [],
+      trickWinnerAnimation: null,
 
   // Connection actions
   setConnectionStatus: (status) => set({ connectionStatus: status }),
@@ -172,6 +179,15 @@ export const useGameStore = create<GameStore>()(
 
   clearChatMessages: () => {
     set({ chatMessages: [] })
+  },
+
+  // Trick animation actions
+  setTrickWinnerAnimation: (animation) => {
+    set({ trickWinnerAnimation: animation })
+  },
+
+  clearTrickWinnerAnimation: () => {
+    set({ trickWinnerAnimation: null })
   },
 
   // Helpers
