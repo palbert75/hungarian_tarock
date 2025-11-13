@@ -87,31 +87,49 @@ test_image() {
 
     # Start test container
     local container_id=$(docker run -d -p 8001:8000 "$FULL_IMAGE_NAME:latest")
+    print_info "Started test container: ${container_id:0:12}"
 
     # Wait for container to start
+    print_info "Waiting for container to initialize..."
     sleep 5
 
-    # Check if container is running
-    if ! docker ps | grep -q "$container_id"; then
-        print_error "Container failed to start"
+    # Check if container is still running (using inspect for accurate status)
+    local container_state=$(docker inspect -f '{{.State.Running}}' "$container_id" 2>/dev/null)
+    if [ "$container_state" != "true" ]; then
+        print_error "Container failed to start or exited"
+        print_info "Container logs:"
         docker logs "$container_id"
         docker rm -f "$container_id" 2>/dev/null || true
         exit 1
     fi
+    print_success "Container is running"
 
     # Test health endpoint
-    if curl -f http://localhost:8001/health > /dev/null 2>&1; then
-        print_success "Health check passed"
-    else
-        print_error "Health check failed"
-        docker logs "$container_id"
-        docker rm -f "$container_id" 2>/dev/null || true
-        exit 1
-    fi
+    print_info "Testing health endpoint..."
+    local retry_count=0
+    local max_retries=10
+
+    while [ $retry_count -lt $max_retries ]; do
+        if curl -f -s http://localhost:8001/health > /dev/null 2>&1; then
+            print_success "Health check passed"
+            break
+        fi
+        retry_count=$((retry_count + 1))
+        if [ $retry_count -lt $max_retries ]; then
+            sleep 1
+        else
+            print_error "Health check failed after $max_retries attempts"
+            print_info "Container logs:"
+            docker logs "$container_id"
+            docker rm -f "$container_id" 2>/dev/null || true
+            exit 1
+        fi
+    done
 
     # Cleanup
-    docker stop "$container_id" > /dev/null
-    docker rm "$container_id" > /dev/null
+    print_info "Cleaning up test container..."
+    docker stop "$container_id" > /dev/null 2>&1
+    docker rm "$container_id" > /dev/null 2>&1
     print_success "Test completed successfully"
 }
 
