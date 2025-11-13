@@ -24,6 +24,18 @@ The server will be available at:
 - `http://localhost` (via nginx reverse proxy)
 - `http://localhost:8000` (direct access)
 
+### Using Pre-built Image
+
+Instead of building locally, you can use the public Docker image:
+
+```bash
+# Pull and run the latest version
+docker pull palbert75/hungarian-tarokk-server:latest
+docker run -d -p 8000:8000 -v tarokk-data:/app/data palbert75/hungarian-tarokk-server:latest
+```
+
+**Docker Hub:** https://hub.docker.com/r/palbert75/hungarian-tarokk-server
+
 ## Files Overview
 
 ### Dockerfile
@@ -62,6 +74,30 @@ Optimizes build context by excluding:
 - Git repository
 - Logs and temporary files
 - Database files (persisted in volumes)
+
+### docker-publish.sh
+
+Automated script for building and publishing Docker images to Docker Hub:
+- Validates Docker is running and user is authenticated
+- Builds the image with multi-arch support
+- Runs automated tests (health check)
+- Tags with version numbers (optional)
+- Pushes to Docker Hub registry
+- Provides detailed success/error feedback
+
+**Usage:**
+```bash
+# Build and push with latest tag only
+./docker-publish.sh
+
+# Build and push with version tags
+./docker-publish.sh 1.0.0
+# Creates tags: latest, 1.0.0, v1.0.0
+```
+
+### DOCKER_HUB_OVERVIEW.md
+
+Comprehensive documentation for the Docker Hub repository page. Copy this content to your Docker Hub repository's "Overview" tab for users who find your image on Docker Hub.
 
 ## Running the Server
 
