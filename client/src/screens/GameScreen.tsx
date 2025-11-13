@@ -3,8 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '@/store/gameStore'
 import { socketManager } from '@/services/socketManager'
 import PlayerAvatar from '@/components/PlayerAvatar'
-import Hand from '@/components/Hand'
-import Card from '@/components/Card'
 import Chat from '@/components/Chat'
 import BiddingPhase from './phases/BiddingPhase'
 import DiscardingPhase from './phases/DiscardingPhase'
@@ -47,8 +45,6 @@ export default function GameScreen() {
   const [showChat, setShowChat] = useState(false)
   const gameState = useGameStore((state) => state.gameState)
   const playerPosition = useGameStore((state) => state.playerPosition)
-  const selectedCards = useGameStore((state) => state.selectedCards)
-  const toggleCardSelection = useGameStore((state) => state.toggleCardSelection)
 
   const handleLeaveRoom = () => {
     // Confirm before leaving
@@ -84,8 +80,6 @@ export default function GameScreen() {
   if (gameState.phase === 'game_end') {
     return <GameOverScreen gameState={gameState} playerPosition={playerPosition} />
   }
-
-  const myPlayer = gameState.players[playerPosition]
 
   // Get player positions relative to local player (always show self at bottom)
   const getRelativePosition = (absolutePosition: number): 0 | 1 | 2 | 3 => {
@@ -125,8 +119,7 @@ export default function GameScreen() {
 
   const showFullTable =
     gameState.phase === 'playing' ||
-    gameState.phase === 'waiting' ||
-    gameState.phase === 'game_end'
+    gameState.phase === 'waiting'
   const showPhaseOverlay =
     gameState.phase === 'bidding' ||
     gameState.phase === 'discarding' ||

@@ -52,12 +52,6 @@ export default function Hand({
     }
   }
 
-  const isCardValid = (cardId: string): boolean => {
-    // If validCards is not provided, all cards are valid
-    if (!validCards) return true
-    return validCards.includes(cardId)
-  }
-
   const isCardDisabled = (cardId: string): boolean => {
     // If validCards is provided and card is not in it, it's disabled
     if (validCards && !validCards.includes(cardId)) return true

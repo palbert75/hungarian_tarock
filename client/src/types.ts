@@ -63,6 +63,8 @@ export interface Player {
   total_points: number
   tricks_won_count: number
   hand?: Card[] // Only visible for your own hand
+  score?: number // Game score
+  has_discarded?: boolean // Whether player has discarded
 }
 
 export interface TrickCard {
@@ -93,11 +95,16 @@ export interface GameState {
   talon: Card[]
   announcements: Announcement[]
   trick_history: CompletedTrick[]
+  valid_announcements?: AnnouncementType[]
+  announcement_history?: (Announcement | null)[]
+  valid_cards?: string[]
+  called_card?: Card | null
 }
 
 export interface RoomState {
   room_id: string
   players: Array<{
+    id: string
     name: string
     position: number
     is_connected: boolean

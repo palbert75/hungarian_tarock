@@ -1,6 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '@/store/gameStore'
-import { ToastMessage } from '@/types'
 
 const toastIcons = {
   success: '✅',

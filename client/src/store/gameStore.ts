@@ -73,6 +73,7 @@ interface GameStore {
 
 // Use sessionStorage for development (multi-tab testing) or localStorage for production
 // sessionStorage is isolated per tab, localStorage is shared across tabs
+// @ts-ignore - Vite environment variable
 const useSessionStorage = import.meta.env.DEV // Use sessionStorage in dev mode
 
 export const useGameStore = create<GameStore>()(
@@ -213,7 +214,7 @@ export const useGameStore = create<GameStore>()(
             },
           }
         : undefined, // undefined = use default localStorage
-      partialize: (state) => ({
+      partialize: (state: GameStore) => ({
         playerId: state.playerId,
         playerName: state.playerName,
         playerPosition: state.playerPosition,
@@ -221,7 +222,7 @@ export const useGameStore = create<GameStore>()(
         gameState: state.gameState,
         soundEnabled: state.soundEnabled,
         musicEnabled: state.musicEnabled,
-      }),
+      } as Partial<GameStore>),
     }
   )
 )

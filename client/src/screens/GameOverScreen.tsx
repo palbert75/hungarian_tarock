@@ -14,14 +14,14 @@ export default function GameOverScreen({ gameState, playerPosition }: GameOverSc
 
   // Use server-provided scoring data
   const declarerTeamScore = gameOverData?.declarer_team_points ?? gameState.players
-    .filter((p, idx) => idx === gameState.declarer_position || (gameState.partner_revealed && idx === gameState.partner_position))
+    .filter((_p, idx) => idx === gameState.declarer_position || (gameState.partner_revealed && idx === gameState.partner_position))
     .reduce((sum, p) => sum + p.total_points, 0)
 
   const opponentTeamScore = gameOverData?.opponent_team_points ?? gameState.players
-    .filter((p, idx) => idx !== gameState.declarer_position && !(gameState.partner_revealed && idx === gameState.partner_position))
+    .filter((_p, idx) => idx !== gameState.declarer_position && !(gameState.partner_revealed && idx === gameState.partner_position))
     .reduce((sum, p) => sum + p.total_points, 0)
 
-  const declarerWon = (gameOverData?.winner === 'declarer_team') ?? (declarerTeamScore >= 48)
+  const declarerWon = gameOverData?.winner === 'declarer_team' || declarerTeamScore >= 48
 
   // Am I on the winning team?
   const amIWinner = myPlayer.is_declarer || myPlayer.is_partner ? declarerWon : !declarerWon

@@ -7,6 +7,7 @@ class SocketManager {
   private serverUrl: string
 
   constructor() {
+    // @ts-ignore - Vite environment variable
     this.serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:8000'
   }
 
@@ -52,11 +53,12 @@ class SocketManager {
         console.error('[Socket.io.Engine] Engine error:', error)
       })
 
-      this.socket.io.on('packet', (packet) => {
+      this.socket.io.on('packet', (packet: any) => {
         console.log('[Socket.io.Engine] Packet received:', packet.type, packet.data)
       })
 
-      this.socket.io.on('packetCreate', (packet) => {
+      // @ts-ignore - packetCreate is a valid socket.io internal event
+      this.socket.io.on('packetCreate', (packet: any) => {
         console.log('[Socket.io.Engine] Packet created (sending):', packet.type, packet.data)
       })
 
@@ -71,7 +73,6 @@ class SocketManager {
         // Store the player name immediately
         // We'll get the actual player ID from the server when we receive room_state after joining a room
         const currentPlayerId = useGameStore.getState().playerId
-        const currentPlayerName = useGameStore.getState().playerName
 
         if (currentPlayerId) {
           console.log('[Socket] Have stored player ID for reconnection:', currentPlayerId)

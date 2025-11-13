@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import { socketManager } from '@/services/socketManager'
 import Hand from '@/components/Hand'
 import PlayerAvatar from '@/components/PlayerAvatar'
-import type { Bid, GameState } from '@/types'
+import type { GameState } from '@/types'
 
 interface BiddingPhaseProps {
   gameState: GameState
@@ -32,12 +32,6 @@ const getBidColor = (bidType: string): string => {
     default:
       return 'bg-slate-600'
   }
-}
-
-const getBidDisplayName = (bidType: string | null): string => {
-  if (!bidType || bidType === 'pass') return 'Pass'
-  if (bidType === 'hold') return 'Hold'
-  return bidTypes.find((b) => b.value === bidType)?.label || bidType
 }
 
 export default function BiddingPhase({ gameState, playerPosition }: BiddingPhaseProps) {

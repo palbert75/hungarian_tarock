@@ -177,7 +177,7 @@ export default function PartnerCallPhase({ gameState, playerPosition }: PartnerC
             className="mt-6 bg-green-900/30 border border-green-500/50 rounded-xl p-4 text-center"
           >
             <div className="text-green-400 font-semibold mb-1">Partner Called!</div>
-            <div className="text-white text-xl font-bold">Tarokk {gameState.called_card}</div>
+            <div className="text-white text-xl font-bold">Tarokk {gameState.called_card.rank}</div>
             <div className="text-slate-400 text-sm mt-2">
               The partner will be revealed when this card is played
             </div>

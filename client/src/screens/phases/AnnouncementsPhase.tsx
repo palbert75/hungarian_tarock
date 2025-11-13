@@ -100,7 +100,7 @@ export default function AnnouncementsPhase({
     ? gameState.announcement_history
         .slice()
         .reverse()
-        .findIndex((a) => a !== null)
+        .findIndex((a: Announcement | null) => a !== null)
     : 0
 
   return (
