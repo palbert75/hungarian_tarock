@@ -11,6 +11,7 @@ import type {
   ToastMessage,
   ChatMessage,
   TrickWinnerAnimation,
+  TrickCard,
 } from '@/types'
 
 interface GameStore {
@@ -38,6 +39,7 @@ interface GameStore {
   musicEnabled: boolean
   chatMessages: ChatMessage[]
   trickWinnerAnimation: TrickWinnerAnimation | null
+  lastTrickSnapshot: TrickCard[]
 
   // Actions - Connection
   setConnectionStatus: (status: ConnectionStatus) => void
@@ -70,6 +72,8 @@ interface GameStore {
   // Actions - Trick Animation
   setTrickWinnerAnimation: (animation: TrickWinnerAnimation | null) => void
   clearTrickWinnerAnimation: () => void
+  setLastTrickSnapshot: (cards: TrickCard[]) => void
+  clearLastTrickSnapshot: () => void
 
   // Helpers
   getMyHand: () => Card[]
@@ -103,6 +107,7 @@ export const useGameStore = create<GameStore>()(
       musicEnabled: false,
       chatMessages: [],
       trickWinnerAnimation: null,
+      lastTrickSnapshot: [],
 
   // Connection actions
   setConnectionStatus: (status) => set({ connectionStatus: status }),
@@ -187,7 +192,15 @@ export const useGameStore = create<GameStore>()(
   },
 
   clearTrickWinnerAnimation: () => {
-    set({ trickWinnerAnimation: null })
+    set({ trickWinnerAnimation: null, lastTrickSnapshot: [] })
+  },
+
+  setLastTrickSnapshot: (cards) => {
+    set({ lastTrickSnapshot: cards })
+  },
+
+  clearLastTrickSnapshot: () => {
+    set({ lastTrickSnapshot: [] })
   },
 
   // Helpers

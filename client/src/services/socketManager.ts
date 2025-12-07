@@ -220,6 +220,18 @@ class SocketManager {
         }
 
         useGameStore.getState().setGameState(gameState)
+
+        // Keep snapshot of current trick cards (for animation fallback)
+        if (gameState.current_trick && gameState.current_trick.length > 0) {
+          const validTrick = gameState.current_trick.filter(
+            (tc) =>
+              tc &&
+              typeof tc.player_position === 'number' &&
+              tc.card &&
+              typeof tc.card === 'object'
+          )
+          useGameStore.getState().setLastTrickSnapshot(validTrick)
+        }
       })
 
       this.socket.on('game_started', () => {
@@ -313,9 +325,17 @@ class SocketManager {
 
       this.socket.on('partner_revealed', (data) => {
         console.log('[Socket] Partner revealed:', data)
-        const partnerName = useGameStore
-          .getState()
-          .gameState?.players[data.partner_position]?.name
+        const partnerPosition =
+          typeof data.partner_position === 'string'
+            ? parseInt(data.partner_position, 10)
+            : data.partner_position
+
+        const partnerName =
+          useGameStore.getState().gameState?.players.find((p) => p.position === partnerPosition)?.name ||
+          useGameStore.getState().roomState?.players.find((p) => p.position === partnerPosition)?.name ||
+          (partnerPosition !== undefined && partnerPosition !== null
+            ? `Player ${partnerPosition + 1}`
+            : 'Unknown Player')
         useGameStore.getState().addToast({
           type: 'success',
           message: `Partner revealed: ${partnerName}!`,
@@ -368,10 +388,22 @@ class SocketManager {
       // Trick events
       this.socket.on('card_played', (data) => {
         console.log('[Socket] Card played:', data)
+        // Keep a live snapshot of the trick so we don't lose the last card before trick_complete
+        const snapshot = useGameStore.getState().lastTrickSnapshot || []
+        const existingIdx = snapshot.findIndex((tc) => tc.player_position === data.player_position)
+        const updatedSnapshot = [...snapshot]
+        if (existingIdx >= 0) {
+          updatedSnapshot[existingIdx] = { player_position: data.player_position, card: data.card }
+        } else {
+          updatedSnapshot.push({ player_position: data.player_position, card: data.card })
+        }
+        useGameStore.getState().setLastTrickSnapshot(updatedSnapshot)
       })
 
       this.socket.on('trick_started', (data) => {
         console.log('[Socket] Trick started:', data)
+        // New trick -> reset snapshot so we only keep current trick cards
+        useGameStore.getState().clearLastTrickSnapshot()
       })
 
       this.socket.on('trick_complete', (data) => {
@@ -381,75 +413,231 @@ class SocketManager {
         console.log('[Socket] data.winner_name:', data.winner_name)
         console.log('[Socket] data.trick_number:', data.trick_number)
 
+        // Normalise winner position (server can theoretically send string/number)
+        let winnerPosition =
+          data.winner !== undefined && data.winner !== null
+            ? typeof data.winner === 'string'
+              ? parseInt(data.winner, 10)
+              : data.winner
+            : null
+
+        // Helper: drop any malformed trick card entries
+        const sanitizeTrickCards = (cards: any[]) =>
+          (cards || []).filter(
+            (tc) =>
+              tc &&
+              typeof tc.player_position === 'number' &&
+              tc.card &&
+              typeof tc.card === 'object'
+          )
+
+        const latestState = useGameStore.getState().gameState
+        const lastTrickFromHistory = latestState?.trick_history?.length
+          ? latestState.trick_history.reduce((acc, curr) =>
+              acc === null || (curr.trick_number ?? -1) > (acc.trick_number ?? -1) ? curr : acc,
+            null as any)
+          : null
+
+        // Get trick number (already 1-indexed from server)
+        const trickNumber = typeof data.trick_number === 'number'
+          ? data.trick_number
+          : typeof latestState?.trick_number === 'number'
+            ? latestState.trick_number
+            : lastTrickFromHistory?.trick_number ?? '?'
+
         // Capture the current trick cards BEFORE they're cleared by game_state update
-        const gameState = useGameStore.getState().gameState
-        const currentTrickCards = gameState?.current_trick || []
+        const getTrickCards = (): any[] => {
+          const refreshed = useGameStore.getState().gameState
+          if (!refreshed) return []
+
+          // 1) Cards currently on the table
+          if (refreshed.current_trick && refreshed.current_trick.length > 0) {
+            return sanitizeTrickCards(refreshed.current_trick)
+          }
+
+          // 2) Last known trick from history (prefer matching trick number, else newest)
+          if (refreshed.trick_history && refreshed.trick_history.length > 0) {
+            const targetTrickNum = typeof trickNumber === 'number' ? trickNumber : null
+            const tricks = refreshed.trick_history
+            const matchingTrick = targetTrickNum !== null
+              ? tricks.find((t) => t.trick_number === targetTrickNum)
+              : null
+            const newestTrick =
+              matchingTrick ||
+              tricks.reduce((acc, curr) =>
+                acc === null || (curr.trick_number ?? -1) > (acc.trick_number ?? -1) ? curr : acc,
+              null as any)
+
+            if (newestTrick?.cards?.length) {
+              return sanitizeTrickCards(newestTrick.cards)
+            }
+          }
+
+          return []
+        }
+
+        // Also consider the live snapshot we captured via card_played events
+        const snapshotTrickCards = sanitizeTrickCards(useGameStore.getState().lastTrickSnapshot || [])
+        let currentTrickCards = getTrickCards()
+        if (snapshotTrickCards.length > currentTrickCards.length) {
+          currentTrickCards = snapshotTrickCards
+        }
 
         console.log('[Socket] Current trick cards in state:', currentTrickCards)
         console.log('[Socket] Number of cards:', currentTrickCards.length)
 
-        // Get winner name from server (preferred) or look it up from game state
-        let winnerName = data.winner_name
-
-        if (!winnerName && data.winner !== undefined && data.winner !== null) {
-          // Fallback: look up from game state
-          console.log('[Socket] Winner name not in data, looking up from game state. Players:',
-            gameState?.players.map(p => ({ pos: p.position, name: p.name })))
-
-          if (gameState?.players && gameState.players[data.winner]) {
-            winnerName = gameState.players[data.winner].name
-            console.log('[Socket] Found winner name from game state:', winnerName)
+        // If we still don't know winner position, fall back to history or current trick
+        if (winnerPosition === null) {
+          const historyWinner =
+            lastTrickFromHistory && typeof (lastTrickFromHistory as any).winner === 'number'
+              ? (lastTrickFromHistory as any).winner
+              : null
+          if (historyWinner !== null) {
+            winnerPosition = historyWinner
+          } else if (currentTrickCards.length > 0) {
+            winnerPosition = currentTrickCards[0].player_position
           }
         }
 
-        // Final fallback
-        if (!winnerName) {
-          winnerName = data.winner !== undefined && data.winner !== null ? `Player ${data.winner + 1}` : 'Unknown Player'
-          console.warn('[Socket] Could not determine winner name, using fallback:', winnerName, 'Data received:', data)
-        } else {
-          console.log('[Socket] Using winner name:', winnerName)
+        // Helper: resolve winner name robustly (uses latest state on each call)
+        const resolveWinnerName = (): string | undefined => {
+          const refreshed = useGameStore.getState().gameState
+          if (data.winner_name) return data.winner_name
+          if (winnerPosition === null) return undefined
+
+          // 1) Look in current game state players by position
+          const gsPlayer = refreshed?.players?.find((p) => p.position === winnerPosition)
+          if (gsPlayer?.name) return gsPlayer.name
+
+          // 2) Look in trick history (server includes winner_name there)
+          const history = refreshed?.trick_history || []
+          if (history.length) {
+            const targetTrickNum = typeof trickNumber === 'number' ? trickNumber : null
+            const matchingTrick = targetTrickNum !== null
+              ? history.find((t) => t.trick_number === targetTrickNum)
+              : history.reduce((acc, curr) =>
+                  acc === null || (curr.trick_number ?? -1) > (acc.trick_number ?? -1) ? curr : acc,
+                null as any)
+            if (matchingTrick?.winner_name) return matchingTrick.winner_name
+          }
+
+          // 3) Look in room state players by position
+          const roomPlayer = useGameStore.getState().roomState?.players.find((p) => p.position === winnerPosition)
+          if (roomPlayer?.name) return roomPlayer.name
+
+          return undefined
         }
 
-        // Get trick number (already 1-indexed from server)
-        const trickNumber = data.trick_number !== undefined && data.trick_number !== null
-          ? data.trick_number
-          : '?'
+        // Get winner name/position from best available data
+        if (winnerPosition === null && lastTrickFromHistory?.winner !== undefined) {
+          // Recover winner position from trick history if server omitted it
+          console.log('[Socket] Winner position missing; using last trick history entry')
+          // @ts-ignore
+          winnerPosition = lastTrickFromHistory.winner
+        }
+
+        let winnerName = resolveWinnerName()
+        if (!winnerName && lastTrickFromHistory?.winner_name) {
+          winnerName = lastTrickFromHistory.winner_name
+        }
 
         console.log('[Socket] Final values - winnerName:', winnerName, 'trickNumber:', trickNumber)
 
         // Find which card index is the winning card
         const winningCardIndex = currentTrickCards.findIndex(
-          tc => tc.player_position === data.winner
+          (tc) => tc.player_position === winnerPosition
         )
 
         console.log('[Socket] Winning card index:', winningCardIndex)
 
-        // Set up the trick winner animation if we have valid data
-        if (currentTrickCards.length > 0 && data.winner !== undefined && data.winner !== null) {
-          console.log('[Socket] ✅ Setting up animation with', currentTrickCards.length, 'cards')
+        const updateAnimation = (cards: any[], name: string, winningIdx: number) => {
           useGameStore.getState().setTrickWinnerAnimation({
-            winner_position: data.winner,
-            winner_name: winnerName,
-            cards: currentTrickCards,
-            winning_card_index: winningCardIndex >= 0 ? winningCardIndex : 0,
+            winner_position: winnerPosition!,
+            winner_name: name,
+            cards: sanitizeTrickCards(cards),
+            winning_card_index: winningIdx >= 0 ? winningIdx : 0,
             trick_number: trickNumber
           })
+        }
 
-          // Clear the animation after 4 seconds (2s highlight + 2s collection)
+        let toastSent = false
+        const sendToast = (nameToUse: string) => {
+          if (toastSent) return
+          toastSent = true
+          const readableTrick = trickNumber === '?' ? 'this trick' : `trick ${trickNumber}`
+          const readableName = nameToUse || (winnerPosition !== null ? `Player ${winnerPosition + 1}` : 'Winner')
+          const toastMessage = `${readableName} won ${readableTrick}!`
+          console.log('[Socket] Toast message:', toastMessage)
+          useGameStore.getState().addToast({
+            type: 'success',
+            message: toastMessage,
+          })
+        }
+
+        const needsRefresh = currentTrickCards.length < 4 || !winnerName
+
+        // Set up the trick winner animation if we have valid data
+        if (currentTrickCards.length > 0 && winnerPosition !== null) {
+          console.log('[Socket] ✅ Setting up animation with', currentTrickCards.length, 'cards')
+          updateAnimation(
+            currentTrickCards,
+            winnerName || `Player ${winnerPosition + 1}`,
+            winningCardIndex
+          )
+
+          // Only refresh if we were missing data (avoids double animations)
+          if (needsRefresh) {
+            setTimeout(() => {
+              const refreshedCards = getTrickCards()
+              const refreshedName = resolveWinnerName() || winnerName
+              const refreshedWinningIdx =
+                refreshedCards.findIndex((tc) => tc.player_position === winnerPosition)
+
+              const shouldUpdateCards = refreshedCards.length > currentTrickCards.length
+              const shouldUpdateName = refreshedName && refreshedName !== winnerName
+
+              if (shouldUpdateCards || shouldUpdateName) {
+                console.log('[Socket] Updating trick animation with refreshed data', {
+                  cards: refreshedCards.length,
+                  name: refreshedName
+                })
+                currentTrickCards = refreshedCards.length ? sanitizeTrickCards(refreshedCards) : currentTrickCards
+                winnerName = refreshedName || winnerName
+                updateAnimation(
+                  currentTrickCards,
+                  winnerName || `Player ${winnerPosition + 1}`,
+                  refreshedWinningIdx >= 0 ? refreshedWinningIdx : winningCardIndex
+                )
+              }
+
+              // Send toast once we have the best name we can get
+              if (!toastSent) {
+                const nameForToast = winnerName || resolveWinnerName()
+                if (nameForToast) {
+                  sendToast(nameForToast)
+                } else {
+                  sendToast(`Player ${winnerPosition + 1}`)
+                }
+              }
+            }, 180)
+          }
+
+          // If we already have a name now, send toast immediately; otherwise it will send after refresh
+          if (winnerName) {
+            sendToast(winnerName)
+          }
+
+          // Clear the animation after delay + collection (3s preview + ~2s fly)
           setTimeout(() => {
             console.log('[Socket] Clearing animation')
             useGameStore.getState().clearTrickWinnerAnimation()
-          }, 4000)
+          }, 6000)
         } else {
           console.log('[Socket] ❌ NOT setting up animation. Cards:', currentTrickCards.length, 'Winner:', data.winner)
+          const fallbackName =
+            winnerPosition !== null ? resolveWinnerName() || `Player ${winnerPosition + 1}` : 'Unknown Player'
+          sendToast(fallbackName)
         }
-
-        const toastMessage = `${winnerName} won trick ${trickNumber}!`
-        console.log('[Socket] Toast message:', toastMessage)
-        useGameStore.getState().addToast({
-          type: 'success',
-          message: toastMessage,
-        })
       })
 
       // Game over

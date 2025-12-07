@@ -1,3 +1,4 @@
+import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '@/store/gameStore'
 import { socketManager } from '@/services/socketManager'
@@ -15,6 +16,20 @@ export default function PlayingPhase({ gameState, playerPosition }: PlayingPhase
   const toggleCardSelection = useGameStore((state) => state.toggleCardSelection)
   const clearSelectedCards = useGameStore((state) => state.clearSelectedCards)
   const trickWinnerAnimation = useGameStore((state) => state.trickWinnerAnimation)
+  const lastTrickSnapshot = useGameStore((state) => state.lastTrickSnapshot)
+  const [animateCollection, setAnimateCollection] = React.useState(false)
+
+  // Wait before collecting cards so players can see the full trick
+  React.useEffect(() => {
+    if (!trickWinnerAnimation) {
+      setAnimateCollection(false)
+      return
+    }
+
+    setAnimateCollection(false)
+    const timer = setTimeout(() => setAnimateCollection(true), 3000)
+    return () => clearTimeout(timer)
+  }, [trickWinnerAnimation])
 
   const myPlayer = gameState.players[playerPosition]
   const isMyTurn = gameState.current_turn === playerPosition
@@ -62,6 +77,11 @@ export default function PlayingPhase({ gameState, playerPosition }: PlayingPhase
   const getPlayerTricksWon = (player: any) => {
     return player.tricks_won_count || 0
   }
+
+  // Prefer live current_trick; if empty (e.g., server cleared quickly), fall back to snapshot
+  const currentTrickCards = gameState.current_trick && gameState.current_trick.length > 0
+    ? gameState.current_trick
+    : lastTrickSnapshot
 
   return (
     <div className="w-full max-w-5xl mx-auto">
@@ -143,14 +163,13 @@ export default function PlayingPhase({ gameState, playerPosition }: PlayingPhase
         </div>
 
         {/* Cards in Current Trick or Winner Animation */}
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="sync">
           {trickWinnerAnimation ? (
             // Winner animation: Show winning card highlighted, then collect cards
             <motion.div
               key="winner-animation"
-              className="min-h-[180px]"
+              className="min-h-[240px]"
               initial={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
             >
               <div className="flex justify-center items-center gap-6 relative">
                 {trickWinnerAnimation.cards.map((trickCard, index) => {
@@ -164,21 +183,35 @@ export default function PlayingPhase({ gameState, playerPosition }: PlayingPhase
                       key={`winner-${trickCard.player_position}-${index}`}
                       className="flex flex-col items-center gap-3"
                       initial={{ scale: 1, x: 0, y: 0 }}
-                      animate={{
-                        // Phase 1 (0-2s): Pulse winning card 3 times
-                        scale: isWinningCard
-                          ? [1, 1.4, 1.2, 1.4, 1.2, 1.4, 1.2, 0.6] // Pulse 3 times then shrink
-                          : [1, 1, 1, 1, 1, 1, 1, 0.6], // Others stay still
-                        // Phase 2 (2-4s): Move all cards to winner
-                        x: [0, 0, 0, 0, 0, 0, 0, targetPos.x],
-                        y: [0, 0, 0, 0, 0, 0, 0, targetPos.y],
-                        opacity: [1, 1, 1, 1, 1, 1, 1, 0],
-                      }}
-                      transition={{
-                        duration: 4,
-                        times: [0, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 1], // Pulse pattern then move
-                        ease: "easeInOut"
-                      }}
+                      animate={
+                        animateCollection
+                          ? {
+                              // Collection phase: fly cards toward winner
+                              scale: isWinningCard ? [1, 1.1, 0.8] : [1, 1, 0.8],
+                              x: [0, 0, targetPos.x],
+                              y: [0, 0, targetPos.y],
+                              opacity: [1, 1, 0],
+                            }
+                          : {
+                              // Preview phase: hold position, lightly highlight winner
+                              scale: isWinningCard ? 1.08 : 1,
+                              x: 0,
+                              y: 0,
+                              opacity: 1,
+                            }
+                      }
+                      transition={
+                        animateCollection
+                          ? {
+                              duration: 1.6,
+                              times: [0, 0.35, 1],
+                              ease: "easeInOut",
+                            }
+                          : {
+                              duration: 0.3,
+                              ease: "easeOut",
+                            }
+                      }
                       style={{
                         zIndex: isWinningCard ? 10 : 1
                       }}
@@ -204,13 +237,17 @@ export default function PlayingPhase({ gameState, playerPosition }: PlayingPhase
               {/* Winner announcement overlay */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                animate={{ opacity: [0, 1, 1, 1, 0], scale: [0.8, 1, 1, 1, 0.8] }}
-                transition={{
-                  duration: 4,
-                  times: [0, 0.2, 0.5, 0.6, 1], // Show during pulsing, fade before cards move
-                  ease: "easeOut"
-                }}
-                className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                animate={
+                  animateCollection
+                    ? { opacity: [1, 0], scale: [1, 0.95] }
+                    : { opacity: [0, 1], scale: [0.8, 1] }
+                }
+                transition={
+                  animateCollection
+                    ? { duration: 0.4, ease: "easeInOut" }
+                    : { duration: 0.6, ease: "easeOut" }
+                }
+                className="absolute inset-0 flex items-center justify-center pointer-events-none z-30"
               >
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-8 py-4 rounded-2xl shadow-2xl">
                   <div className="text-3xl font-bold text-center">
@@ -222,24 +259,18 @@ export default function PlayingPhase({ gameState, playerPosition }: PlayingPhase
                 </div>
               </motion.div>
             </motion.div>
-          ) : gameState.current_trick && gameState.current_trick.length > 0 ? (
+          ) : currentTrickCards && currentTrickCards.length > 0 ? (
             // Normal trick display
             <div key="normal-trick" className="flex justify-center items-center gap-6 min-h-[180px]">
-              {gameState.current_trick.map((trickCard, index) => {
+              {currentTrickCards.map((trickCard, index) => {
                 const player = gameState.players[trickCard.player_position]
                 const playerName = player && player.name ? player.name : `Player ${trickCard.player_position + 1}`
                 return (
                   <motion.div
                     key={`${trickCard.player_position}-${index}`}
-                    initial={{ scale: 0, rotate: -180, opacity: 0 }}
-                    animate={{ scale: 1, rotate: 0, opacity: 1 }}
-                    exit={{ scale: 0, rotate: 180, opacity: 0 }}
-                    transition={{
-                      type: 'spring',
-                      stiffness: 260,
-                      damping: 20,
-                      delay: index * 0.1,
-                    }}
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: 'spring', stiffness: 260, damping: 20, delay: index * 0.05 }}
                     className="flex flex-col items-center gap-3"
                   >
                     <Card card={trickCard.card} size="lg" />
@@ -256,13 +287,9 @@ export default function PlayingPhase({ gameState, playerPosition }: PlayingPhase
             // Waiting for first card
             <div key="waiting" className="flex items-center justify-center min-h-[180px]">
               <div className="text-center text-slate-400">
-                <motion.div
-                  animate={{ scale: [1, 1.1, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className="text-6xl mb-3"
-                >
-                  🎴
-                </motion.div>
+                <div className="mb-3 flex items-center justify-center">
+                  <div className="w-12 h-12 border-4 border-slate-600 border-t-blue-400 rounded-full animate-spin" />
+                </div>
                 <p>Waiting for first card...</p>
               </div>
             </div>
