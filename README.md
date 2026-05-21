@@ -2,6 +2,8 @@
 
 A complete implementation of Hungarian Tarokk (Illustrated Hungarian Tarokk / XX Hívás), a traditional 4-player trick-taking card game, with real-time multiplayer support via WebSockets.
 
+**Demo:** https://huntarokk.netlify.app/
+
 ## 🎮 Features
 
 - **Complete Game Implementation**: Full rules of Hungarian Tarokk

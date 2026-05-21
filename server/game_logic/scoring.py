@@ -26,7 +26,7 @@ def calculate_player_points(player: Player) -> int:
 def calculate_team_scores(
     players: List[Player],
     declarer_position: int,
-    partner_position: int
+    partner_position: Optional[int]
 ) -> Tuple[int, int]:
     """
     Calculate scores for both teams.
@@ -54,7 +54,7 @@ def calculate_team_scores(
             # Declarer: tricks + discards go to declarer team
             discard_points = sum(c.points for c in player.discard_pile)
             declarer_team_points += tricks_points + discard_points
-        elif player.position == partner_position:
+        elif partner_position is not None and player.position == partner_position:
             # Partner: tricks go to declarer team, but discards go to OPPONENTS!
             declarer_team_points += tricks_points
             discard_points = sum(c.points for c in player.discard_pile)
@@ -117,7 +117,7 @@ def calculate_game_value(
 
 def calculate_payments(
     declarer_position: int,
-    partner_position: int,
+    partner_position: Optional[int],
     game_value: int,
     winner: str,
     num_players: int = 4
@@ -129,7 +129,7 @@ def calculate_payments(
 
     Args:
         declarer_position: Position of declarer
-        partner_position: Position of partner
+        partner_position: Position of partner, or None for solo/no-partner games
         game_value: Final game value
         winner: "declarer_team" or "opponent_team"
         num_players: Number of players (default 4)
@@ -139,7 +139,9 @@ def calculate_payments(
     """
     payments = {}
 
-    declarer_team = {declarer_position, partner_position}
+    declarer_team = {declarer_position}
+    if partner_position is not None:
+        declarer_team.add(partner_position)
     opponent_team = {i for i in range(num_players) if i not in declarer_team}
 
     if winner == "declarer_team":

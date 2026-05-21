@@ -1,6 +1,6 @@
 """Calculate final scoring with announcements and payments."""
 
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 from models.player import Player
 from models.announcement import Announcement, AnnouncementType
 from models.bid import Bid
@@ -13,7 +13,7 @@ from game_logic.announcement_checker import (
 def calculate_team_scores(
     players: List[Player],
     declarer_position: int,
-    partner_position: int
+    partner_position: Optional[int]
 ) -> Tuple[int, int]:
     """
     Calculate card points for both teams.
@@ -34,8 +34,6 @@ def calculate_team_scores(
     opponent_team_points = 0
 
     declarer = players[declarer_position]
-    partner = players[partner_position] if partner_position is not None else None
-
     for player in players:
         # Count tricks won
         tricks_points = sum(c.points for c in player.tricks_won)
@@ -44,7 +42,7 @@ def calculate_team_scores(
             # Declarer: tricks + discards go to declarer team
             discard_points = sum(c.points for c in player.discard_pile)
             declarer_team_points += tricks_points + discard_points
-        elif player.position == partner_position:
+        elif partner_position is not None and player.position == partner_position:
             # Partner: tricks go to declarer team, but discards go to OPPONENTS!
             declarer_team_points += tricks_points
             discard_points = sum(c.points for c in player.discard_pile)
@@ -123,48 +121,44 @@ def calculate_final_score(
     final_game_value = base_game_value * game_multiplier
 
     # Initialize payments: everyone starts at 50
-    player_scores = {i: 50 for i in range(4)}
+    num_players = len(players)
+    player_scores = {i: 50 for i in range(num_players)}
 
-    # Calculate base game payments
-    # Losing team pays game value to each member of winning team
-    if declarer_won:
-        # Each opponent pays final_game_value
-        for i in range(4):
-            if i in [declarer_position, partner_position]:
-                # Declarer team: receive payment from each opponent (2 opponents)
-                player_scores[i] += final_game_value * 2
-            else:
-                # Opponents: pay to each declarer team member
-                player_scores[i] -= final_game_value
-    else:
-        # Declarer lost
-        for i in range(4):
-            if i in [declarer_position, partner_position]:
-                # Declarer team: pay to each opponent (2 opponents)
-                player_scores[i] -= final_game_value * 2
-            else:
-                # Opponents: receive from each declarer team member
-                player_scores[i] += final_game_value
+    # Calculate base game payments (each losing player pays each winner)
+    declarer_team = {declarer_position}
+    if partner_position is not None:
+        declarer_team.add(partner_position)
+    opponent_team = {i for i in range(num_players) if i not in declarer_team}
+
+    winners = declarer_team if declarer_won else opponent_team
+    losers = opponent_team if declarer_won else declarer_team
+
+    for pos in winners:
+        player_scores[pos] += final_game_value * len(losers)
+    for pos in losers:
+        player_scores[pos] -= final_game_value * len(winners)
 
     # Calculate announcement bonus payments
     announcement_details = []
 
+    declarer_team_players = list(declarer_team)
+    opponent_team_players = list(opponent_team)
+
     for announcement in achieved_announcements:
         player_pos = announcement.player_position
-        is_declarer_team = player_pos in [declarer_position, partner_position]
+        is_declarer_team = player_pos in declarer_team
         points = announcement.get_points()
 
         # Announcement achieved: announcing player's team receives points
         # Each member of opposing team pays the announcing player
         if is_declarer_team:
             # Declarer team member achieved: each opponent pays
-            for i in range(4):
-                if i not in [declarer_position, partner_position]:
-                    player_scores[player_pos] += points
-                    player_scores[i] -= points
+            for i in opponent_team_players:
+                player_scores[player_pos] += points
+                player_scores[i] -= points
         else:
             # Opponent achieved: each declarer team member pays
-            for i in [declarer_position, partner_position]:
+            for i in declarer_team_players:
                 player_scores[player_pos] += points
                 player_scores[i] -= points
 
@@ -181,19 +175,18 @@ def calculate_final_score(
     # Failed announcements: announcing player's team PAYS the points
     for announcement in failed_announcements:
         player_pos = announcement.player_position
-        is_declarer_team = player_pos in [declarer_position, partner_position]
+        is_declarer_team = player_pos in declarer_team
         points = announcement.get_points()
 
         # Failed announcement: announcing player pays to each opposing team member
         if is_declarer_team:
             # Declarer team failed: they pay each opponent
-            for i in range(4):
-                if i not in [declarer_position, partner_position]:
-                    player_scores[player_pos] -= points
-                    player_scores[i] += points
+            for i in opponent_team_players:
+                player_scores[player_pos] -= points
+                player_scores[i] += points
         else:
             # Opponent failed: they pay each declarer team member
-            for i in [declarer_position, partner_position]:
+            for i in declarer_team_players:
                 player_scores[player_pos] -= points
                 player_scores[i] += points
 
