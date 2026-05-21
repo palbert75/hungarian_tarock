@@ -58,7 +58,7 @@ export default function DiscardingPhase({ gameState, playerPosition }: Discardin
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-slate-800/90 backdrop-blur-sm rounded-2xl p-8 shadow-2xl"
+        className="felt-panel rounded-xl p-5 md:p-8"
       >
         {/* Header */}
         <div className="text-center mb-6">
@@ -78,16 +78,16 @@ export default function DiscardingPhase({ gameState, playerPosition }: Discardin
         </div>
 
         {/* Progress Indicator */}
-        <div className="mb-6 bg-slate-700/50 rounded-xl p-4">
+        <div className="mb-6 bg-slate-950/35 border border-slate-600/40 rounded-xl p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-slate-300 text-sm font-semibold">Progress</span>
             <span className="text-slate-300 text-sm">{playersWhoDiscarded}/4 players</span>
           </div>
-          <div className="w-full bg-slate-600 rounded-full h-2">
+          <div className="w-full bg-slate-950/70 rounded-full h-2 overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${(playersWhoDiscarded / 4) * 100}%` }}
-              className="bg-blue-500 h-2 rounded-full"
+              className="bg-gradient-to-r from-blue-400 to-emerald-400 h-2 rounded-full"
               transition={{ duration: 0.5 }}
             />
           </div>
@@ -97,7 +97,7 @@ export default function DiscardingPhase({ gameState, playerPosition }: Discardin
           <>
             {/* Selection Counter */}
             <div className="mb-4 text-center">
-              <div className="inline-block bg-slate-700 rounded-lg px-6 py-3">
+              <div className="inline-block bg-slate-950/55 border border-slate-600/50 rounded-lg px-6 py-3">
                 <span className="text-slate-300">Selected: </span>
                 <span
                   className={`font-bold text-lg ${
@@ -128,7 +128,7 @@ export default function DiscardingPhase({ gameState, playerPosition }: Discardin
 
             {/* Info about invalid cards */}
             <div className="mt-4 text-center text-slate-400 text-sm">
-              <p>⚠️ Cannot discard Kings or Honours (I, XXI, Skíz)</p>
+              <p>Cannot discard Kings or Honours (I, XXI, Skíz)</p>
             </div>
 
             {/* Confirm Button */}
@@ -139,16 +139,16 @@ export default function DiscardingPhase({ gameState, playerPosition }: Discardin
                 onClick={handleConfirmDiscard}
                 disabled={!canConfirm}
                 className={`
-                  w-full px-6 py-4 rounded-xl font-semibold text-white text-lg
+                  btn w-full px-6 py-4 rounded-xl font-semibold text-white text-lg
                   transition-all duration-200
                   ${
                     canConfirm
-                      ? 'bg-green-600 hover:bg-green-700 shadow-lg'
+                      ? 'btn-success'
                       : 'bg-slate-700 text-slate-500 cursor-not-allowed'
                   }
                 `}
               >
-                {canConfirm ? '✓ Confirm Discard' : `Select ${cardsToDiscard - selectedCards.length} more card${cardsToDiscard - selectedCards.length !== 1 ? 's' : ''}`}
+                {canConfirm ? 'Confirm Discard' : `Select ${cardsToDiscard - selectedCards.length} more card${cardsToDiscard - selectedCards.length !== 1 ? 's' : ''}`}
               </motion.button>
             </div>
           </>
@@ -156,13 +156,11 @@ export default function DiscardingPhase({ gameState, playerPosition }: Discardin
           /* Waiting Message */
           <>
             <div className="text-center py-4">
-              <motion.div
-                animate={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="text-4xl mb-2"
-              >
-                ⏳
-              </motion.div>
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
+              className="mx-auto mb-3 h-10 w-10 rounded-full border-4 border-slate-600 border-t-yellow-300"
+            />
               <p className="text-slate-400 text-sm">
                 Waiting for {gameState.players[gameState.current_turn]?.name} to discard...
               </p>

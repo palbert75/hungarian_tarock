@@ -9,10 +9,10 @@ const toastIcons = {
 }
 
 const toastColors = {
-  success: 'bg-green-600',
-  error: 'bg-red-600',
-  warning: 'bg-yellow-600',
-  info: 'bg-blue-600',
+  success: 'border-green-400/50 bg-green-950/90',
+  error: 'border-red-400/50 bg-red-950/90',
+  warning: 'border-yellow-400/50 bg-yellow-950/90',
+  info: 'border-blue-400/50 bg-blue-950/90',
 }
 
 export default function Toast() {
@@ -31,7 +31,7 @@ export default function Toast() {
             transition={{ duration: 0.2 }}
             className={`
               ${toastColors[toast.type]}
-              text-white px-4 py-3 rounded-lg shadow-lg
+              text-white px-4 py-3 rounded-lg shadow-2xl border backdrop-blur-md
               flex items-center gap-3 min-w-[300px] max-w-[400px]
               pointer-events-auto cursor-pointer
             `}

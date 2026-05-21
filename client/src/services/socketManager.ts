@@ -2,6 +2,28 @@ import { io, Socket } from 'socket.io-client'
 import { useGameStore } from '@/store/gameStore'
 import type { GameState, RoomState, YourTurnData } from '@/types'
 
+const unwrapSocketEvent = <T = any>(payload: any): T => {
+  if (payload && typeof payload === 'object' && 'data' in payload && 'type' in payload) {
+    return payload.data as T
+  }
+  return payload as T
+}
+
+const resolvePlayerName = (position: unknown): string => {
+  const numericPosition =
+    typeof position === 'string' ? parseInt(position, 10) :
+    typeof position === 'number' ? position :
+    NaN
+
+  if (!Number.isFinite(numericPosition)) return 'Player'
+
+  return (
+    useGameStore.getState().gameState?.players.find((p) => p.position === numericPosition)?.name ||
+    useGameStore.getState().roomState?.players.find((p) => p.position === numericPosition)?.name ||
+    `Player ${numericPosition + 1}`
+  )
+}
+
 class SocketManager {
   private socket: Socket | null = null
   private serverUrl: string
@@ -266,9 +288,9 @@ class SocketManager {
       // Bidding events
       this.socket.on('bid_placed', (data) => {
         console.log('[Socket] Bid placed:', data)
-        const gameState = useGameStore.getState().gameState
-        const playerName = gameState?.players[data.player_position]?.name || 'Player'
-        const bidType = data.bid_type || 'pass'
+        const eventData = unwrapSocketEvent(data)
+        const playerName = resolvePlayerName(eventData.player_position)
+        const bidType = eventData.bid_type || 'pass'
 
         // Format bid display
         const bidDisplay = bidType === 'pass' ? 'Pass' :
@@ -288,9 +310,10 @@ class SocketManager {
       // Talon events
       this.socket.on('talon_distributed', (data) => {
         console.log('[Socket] Talon distributed:', data)
+        const eventData = unwrapSocketEvent(data)
         useGameStore.getState().addToast({
           type: 'info',
-          message: `You received ${data.you_received} cards from talon`,
+          message: `You received ${eventData.you_received} cards from talon`,
           duration: 2000,
         })
       })
@@ -298,14 +321,15 @@ class SocketManager {
       // Discard events
       this.socket.on('player_discarded', (data) => {
         console.log('[Socket] Player discarded:', data)
-        const gameState = useGameStore.getState().gameState
-        const player = gameState?.players[data.player_position]
-        const playerName = player?.name || `Player ${data.player_position + 1}`
+        const eventData = unwrapSocketEvent(data)
+        const playerName = resolvePlayerName(eventData.player_position)
+        const numCards = Number(eventData.num_cards) || 0
+        const tarokksDiscarded = Number(eventData.tarokks_discarded) || 0
 
         // Show notification about discarded cards
-        let message = `${playerName} discarded ${data.num_cards} card${data.num_cards !== 1 ? 's' : ''}`
-        if (data.tarokks_discarded > 0) {
-          message += ` (${data.tarokks_discarded} tarokk${data.tarokks_discarded !== 1 ? 's' : ''})`
+        let message = `${playerName} discarded ${numCards} card${numCards !== 1 ? 's' : ''}`
+        if (tarokksDiscarded > 0) {
+          message += ` (${tarokksDiscarded} tarokk${tarokksDiscarded !== 1 ? 's' : ''})`
         }
 
         useGameStore.getState().addToast({
@@ -317,25 +341,22 @@ class SocketManager {
       // Partner events
       this.socket.on('partner_called', (data) => {
         console.log('[Socket] Partner called:', data)
+        const eventData = unwrapSocketEvent(data)
         useGameStore.getState().addToast({
           type: 'info',
-          message: `Partner called: ${data.called_card}`,
+          message: `Partner called: ${eventData.called_card}`,
         })
       })
 
       this.socket.on('partner_revealed', (data) => {
         console.log('[Socket] Partner revealed:', data)
+        const eventData = unwrapSocketEvent(data)
         const partnerPosition =
-          typeof data.partner_position === 'string'
-            ? parseInt(data.partner_position, 10)
-            : data.partner_position
+          typeof eventData.partner_position === 'string'
+            ? parseInt(eventData.partner_position, 10)
+            : eventData.partner_position
 
-        const partnerName =
-          useGameStore.getState().gameState?.players.find((p) => p.position === partnerPosition)?.name ||
-          useGameStore.getState().roomState?.players.find((p) => p.position === partnerPosition)?.name ||
-          (partnerPosition !== undefined && partnerPosition !== null
-            ? `Player ${partnerPosition + 1}`
-            : 'Unknown Player')
+        const partnerName = resolvePlayerName(partnerPosition)
         useGameStore.getState().addToast({
           type: 'success',
           message: `Partner revealed: ${partnerName}!`,
@@ -345,35 +366,32 @@ class SocketManager {
       // Announcement events
       this.socket.on('announcement_made', (data) => {
         console.log('[Socket] Announcement made:', data)
-        const playerName = useGameStore
-          .getState()
-          .gameState?.players[data.player_position]?.name
-        const status = data.announced ? 'announced' : 'silent'
+        const eventData = unwrapSocketEvent(data)
+        const playerName = resolvePlayerName(eventData.player_position)
+        const status = eventData.announced ? 'announced' : 'silent'
         useGameStore.getState().addToast({
           type: 'info',
-          message: `${playerName}: ${data.announcement_type} (${status})`,
+          message: `${playerName}: ${eventData.announcement_type} (${status})`,
         })
       })
 
       this.socket.on('contra_made', (data) => {
         console.log('[Socket] Contra made:', data)
-        const playerName = useGameStore
-          .getState()
-          .gameState?.players[data.player_position]?.name
+        const eventData = unwrapSocketEvent(data)
+        const playerName = resolvePlayerName(eventData.player_position)
         useGameStore.getState().addToast({
           type: 'warning',
-          message: `${playerName} contra'd ${data.announcement_type}!`,
+          message: `${playerName} contra'd ${eventData.announcement_type}!`,
         })
       })
 
       this.socket.on('recontra_made', (data) => {
         console.log('[Socket] Recontra made:', data)
-        const playerName = useGameStore
-          .getState()
-          .gameState?.players[data.player_position]?.name
+        const eventData = unwrapSocketEvent(data)
+        const playerName = resolvePlayerName(eventData.player_position)
         useGameStore.getState().addToast({
           type: 'warning',
-          message: `${playerName} recontra'd ${data.announcement_type}!`,
+          message: `${playerName} recontra'd ${eventData.announcement_type}!`,
         })
       })
 
@@ -388,14 +406,15 @@ class SocketManager {
       // Trick events
       this.socket.on('card_played', (data) => {
         console.log('[Socket] Card played:', data)
+        const eventData = unwrapSocketEvent(data)
         // Keep a live snapshot of the trick so we don't lose the last card before trick_complete
         const snapshot = useGameStore.getState().lastTrickSnapshot || []
-        const existingIdx = snapshot.findIndex((tc) => tc.player_position === data.player_position)
+        const existingIdx = snapshot.findIndex((tc) => tc.player_position === eventData.player_position)
         const updatedSnapshot = [...snapshot]
         if (existingIdx >= 0) {
-          updatedSnapshot[existingIdx] = { player_position: data.player_position, card: data.card }
+          updatedSnapshot[existingIdx] = { player_position: eventData.player_position, card: eventData.card }
         } else {
-          updatedSnapshot.push({ player_position: data.player_position, card: data.card })
+          updatedSnapshot.push({ player_position: eventData.player_position, card: eventData.card })
         }
         useGameStore.getState().setLastTrickSnapshot(updatedSnapshot)
       })
@@ -407,6 +426,7 @@ class SocketManager {
       })
 
       this.socket.on('trick_complete', (data) => {
+        data = unwrapSocketEvent(data)
         console.log('[Socket] ====== TRICK COMPLETE EVENT ======')
         console.log('[Socket] Raw data received:', JSON.stringify(data, null, 2))
         console.log('[Socket] data.winner:', data.winner, 'type:', typeof data.winner)
@@ -679,9 +699,28 @@ class SocketManager {
       // Error handling
       this.socket.on('error', (data) => {
         console.error('[Socket] Error:', data)
+        const errorCode = data.data?.code
+        const errorMessage = data.data?.message || 'An error occurred'
+        const roomWasNotFound =
+          errorCode === 'JOIN_ROOM_ERROR' &&
+          /room .+ not found/i.test(errorMessage)
+
+        if (roomWasNotFound) {
+          const store = useGameStore.getState()
+
+          store.resetRoomSession()
+          store.addToast({
+            type: 'warning',
+            message: 'That room no longer exists. You have been returned to the lobby.',
+            duration: 5000,
+          })
+          this.listRooms()
+          return
+        }
+
         useGameStore.getState().addToast({
           type: 'error',
-          message: data.data?.message || 'An error occurred',
+          message: errorMessage,
         })
       })
     })

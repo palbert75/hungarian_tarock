@@ -24,11 +24,11 @@ export default function PlayerAvatar({
   if (!player) {
     // Empty slot
     return (
-      <div className="flex flex-col items-center gap-2">
-        <div className="w-20 h-20 rounded-full bg-slate-700/50 border-2 border-dashed border-slate-600 flex items-center justify-center">
-          <span className="text-2xl opacity-30">👤</span>
+      <div className="avatar-seat flex flex-col items-center gap-2 rounded-xl px-4 py-3">
+        <div className="w-16 h-16 rounded-full bg-slate-800/70 border border-dashed border-slate-500/70 flex items-center justify-center">
+          <span className="text-slate-500 text-xl">+</span>
         </div>
-        <div className="text-slate-500 text-sm font-medium">
+        <div className="text-slate-500 text-xs font-semibold uppercase tracking-wide">
           {positionLabels[position]}
         </div>
       </div>
@@ -37,7 +37,10 @@ export default function PlayerAvatar({
 
   return (
     <motion.div
-      className="flex flex-col items-center gap-2"
+      className={`
+        avatar-seat flex min-w-[7.5rem] flex-col items-center gap-2 rounded-xl px-4 py-3
+        ${isCurrentTurn ? 'border-yellow-300/60' : ''}
+      `}
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}
@@ -47,7 +50,7 @@ export default function PlayerAvatar({
         {/* Turn indicator ring */}
         {isCurrentTurn && (
           <motion.div
-            className="absolute inset-0 rounded-full border-4 border-yellow-400"
+            className="absolute inset-0 rounded-full border-4 border-yellow-300"
             animate={{
               scale: [1, 1.1, 1],
               opacity: [1, 0.7, 1],
@@ -63,17 +66,17 @@ export default function PlayerAvatar({
         {/* Avatar circle */}
         <div
           className={`
-            w-20 h-20 rounded-full flex items-center justify-center text-3xl
-            border-4 transition-all duration-300
+            w-16 h-16 rounded-full flex items-center justify-center text-xl font-black
+            border transition-all duration-300
             ${
               isLocalPlayer
-                ? 'bg-blue-600 border-blue-400'
-                : 'bg-slate-700 border-slate-600'
+                ? 'bg-blue-600/90 border-blue-300 text-white'
+                : 'bg-slate-700 border-slate-500 text-slate-100'
             }
-            ${isCurrentTurn ? 'ring-4 ring-yellow-400/50' : ''}
+            ${isCurrentTurn ? 'ring-4 ring-yellow-300/30' : ''}
           `}
         >
-          {isLocalPlayer ? '👤' : '🎮'}
+          {player.name.slice(0, 1).toUpperCase()}
         </div>
 
         {/* Connection status indicator */}
@@ -90,7 +93,7 @@ export default function PlayerAvatar({
         {/* Card count badge */}
         {player.hand_size > 0 && (
           <motion.div
-            className="absolute -top-2 -right-2 bg-slate-900 border-2 border-slate-600 rounded-full w-8 h-8 flex items-center justify-center"
+            className="absolute -top-2 -right-2 bg-slate-950 border border-slate-500 rounded-full w-8 h-8 flex items-center justify-center shadow-lg"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 500, damping: 30 }}
@@ -132,9 +135,9 @@ export default function PlayerAvatar({
       <div className="flex flex-col items-center gap-1">
         <div
           className={`
-            text-sm font-semibold px-3 py-1 rounded-full
-            ${isLocalPlayer ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-200'}
-            ${isCurrentTurn ? 'ring-2 ring-yellow-400' : ''}
+            max-w-[8rem] truncate text-sm font-semibold px-3 py-1 rounded-full
+            ${isLocalPlayer ? 'bg-blue-600 text-white' : 'bg-slate-700/90 text-slate-200'}
+            ${isCurrentTurn ? 'ring-2 ring-yellow-300' : ''}
           `}
         >
           {player.name}
@@ -142,14 +145,14 @@ export default function PlayerAvatar({
         </div>
 
         {/* Position label */}
-        <div className="text-xs text-slate-500">
+        <div className="text-[0.68rem] text-slate-500 uppercase tracking-wide">
           {positionLabels[position]}
         </div>
       </div>
 
       {/* Score (if available) */}
       {player.score !== undefined && player.score !== 0 && (
-        <div className="bg-slate-800 px-3 py-1 rounded-lg">
+        <div className="bg-slate-950/70 px-3 py-1 rounded-lg">
           <span className="text-xs text-slate-400">Score: </span>
           <span className={`text-sm font-bold ${player.score > 0 ? 'text-green-400' : 'text-red-400'}`}>
             {player.score > 0 ? '+' : ''}{player.score}

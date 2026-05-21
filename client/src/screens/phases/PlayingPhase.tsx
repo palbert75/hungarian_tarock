@@ -89,25 +89,25 @@ export default function PlayingPhase({ gameState, playerPosition }: PlayingPhase
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-slate-800/90 backdrop-blur-sm rounded-2xl p-4 mb-4 shadow-xl"
+        className="glass-panel rounded-xl p-4 mb-4"
       >
         <div className="flex items-center justify-center gap-4 mb-3">
-          <div className="text-slate-400 text-sm">Trick Progress</div>
+          <div className="text-slate-400 text-sm font-semibold uppercase tracking-wide">Trick Progress</div>
           <div className="text-xl font-bold text-white">
             {tricksCompleted} / {totalTricks}
           </div>
         </div>
-        <div className="w-full bg-slate-700 rounded-full h-3">
+        <div className="w-full bg-slate-950/70 rounded-full h-2 overflow-hidden">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${(tricksCompleted / totalTricks) * 100}%` }}
-            className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full"
+            className="bg-gradient-to-r from-emerald-400 via-amber-300 to-blue-400 h-2 rounded-full"
             transition={{ duration: 0.5 }}
           />
         </div>
 
         {/* Player Tricks Won */}
-        <div className="grid grid-cols-4 gap-2 mt-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-4">
           {gameState.players.map((player, idx) => {
             const tricksWon = getPlayerTricksWon(player)
             const isMe = idx === playerPosition
@@ -119,8 +119,8 @@ export default function PlayingPhase({ gameState, playerPosition }: PlayingPhase
               <div
                 key={idx}
                 className={`
-                  text-center p-2 rounded-lg
-                  ${isMe ? 'bg-blue-900/50 border-2 border-blue-500' : 'bg-slate-700/50'}
+                  text-center p-2 rounded-lg border
+                  ${isMe ? 'bg-blue-900/45 border-blue-400/70' : 'bg-slate-800/60 border-slate-600/40'}
                 `}
               >
                 <div className="text-xs text-slate-400 truncate">
@@ -142,7 +142,7 @@ export default function PlayingPhase({ gameState, playerPosition }: PlayingPhase
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-slate-800/90 backdrop-blur-sm rounded-2xl p-8 mb-6 shadow-2xl"
+        className="felt-panel rounded-xl p-4 md:p-8 mb-6"
       >
         <div className="text-center mb-6">
           <h2 className="text-2xl font-bold text-white mb-2">
@@ -171,7 +171,7 @@ export default function PlayingPhase({ gameState, playerPosition }: PlayingPhase
               className="min-h-[240px]"
               initial={{ opacity: 1 }}
             >
-              <div className="flex justify-center items-center gap-6 relative">
+              <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6 relative">
                 {trickWinnerAnimation.cards.map((trickCard, index) => {
                   const player = gameState.players[trickCard.player_position]
                   const playerName = player && player.name ? player.name : `Player ${trickCard.player_position + 1}`
@@ -249,9 +249,9 @@ export default function PlayingPhase({ gameState, playerPosition }: PlayingPhase
                 }
                 className="absolute inset-0 flex items-center justify-center pointer-events-none z-30"
               >
-                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-8 py-4 rounded-2xl shadow-2xl">
-                  <div className="text-3xl font-bold text-center">
-                    🏆 {trickWinnerAnimation.winner_name} Wins! 🏆
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-6 md:px-8 py-4 rounded-xl shadow-2xl">
+                  <div className="text-2xl md:text-3xl font-bold text-center">
+                    {trickWinnerAnimation.winner_name} Wins
                   </div>
                   <div className="text-center text-yellow-100 mt-1">
                     Trick #{trickWinnerAnimation.trick_number}
@@ -261,7 +261,7 @@ export default function PlayingPhase({ gameState, playerPosition }: PlayingPhase
             </motion.div>
           ) : currentTrickCards && currentTrickCards.length > 0 ? (
             // Normal trick display
-            <div key="normal-trick" className="flex justify-center items-center gap-6 min-h-[180px]">
+            <div key="normal-trick" className="flex flex-wrap justify-center items-center gap-4 md:gap-6 min-h-[180px]">
               {currentTrickCards.map((trickCard, index) => {
                 const player = gameState.players[trickCard.player_position]
                 const playerName = player && player.name ? player.name : `Player ${trickCard.player_position + 1}`
@@ -274,7 +274,7 @@ export default function PlayingPhase({ gameState, playerPosition }: PlayingPhase
                     className="flex flex-col items-center gap-3"
                   >
                     <Card card={trickCard.card} size="lg" />
-                    <div className="bg-slate-700 px-3 py-1 rounded-lg">
+                    <div className="bg-slate-900/80 border border-slate-600/50 px-3 py-1 rounded-lg">
                       <span className="text-white text-sm font-semibold">
                         {playerName}
                       </span>
@@ -317,15 +317,15 @@ export default function PlayingPhase({ gameState, playerPosition }: PlayingPhase
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-slate-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-2xl"
-        >
+        className="glass-panel rounded-xl p-4 md:p-6"
+      >
           {isMyTurn ? (
             <>
               <div className="mb-4">
                 <h3 className="text-white font-semibold text-center mb-2">Your Hand</h3>
                 {validCards.length > 0 && validCards.length < myPlayer.hand.length && (
                   <p className="text-center text-slate-400 text-sm">
-                    💡 Only highlighted cards can be played
+                    Only highlighted cards can be played
                   </p>
                 )}
               </div>
@@ -347,11 +347,11 @@ export default function PlayingPhase({ gameState, playerPosition }: PlayingPhase
                   onClick={handlePlayCard}
                   disabled={!canPlayCard}
                   className={`
-                    w-full px-6 py-4 rounded-xl font-semibold text-white text-lg
+                    btn w-full px-6 py-4 rounded-xl font-semibold text-white text-lg
                     transition-all duration-200
                     ${
                       canPlayCard
-                        ? 'bg-green-600 hover:bg-green-700 shadow-lg'
+                        ? 'btn-success'
                         : 'bg-slate-700 text-slate-500 cursor-not-allowed'
                     }
                   `}
@@ -359,7 +359,7 @@ export default function PlayingPhase({ gameState, playerPosition }: PlayingPhase
                   {selectedCards.length === 0
                     ? 'Select a card to play'
                     : canPlayCard
-                    ? '✓ Play Card'
+                    ? 'Play Card'
                     : 'Invalid card selection'}
                 </motion.button>
               </div>
@@ -369,7 +369,7 @@ export default function PlayingPhase({ gameState, playerPosition }: PlayingPhase
               <div className="mb-4">
                 <h3 className="text-white font-semibold text-center mb-2">Your Hand</h3>
                 <p className="text-center text-slate-400 text-sm">
-                  ⏳ Waiting for {gameState.players[gameState.current_turn]?.name} to play...
+                  Waiting for {gameState.players[gameState.current_turn]?.name} to play...
                 </p>
               </div>
 

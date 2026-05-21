@@ -26,13 +26,13 @@ export default function Hand({
   const cardCount = sortedCards.length
 
   // Calculate fan spread based on number of cards
-  const maxSpread = 40 // Maximum rotation in degrees
-  const spreadAngle = cardCount > 1 ? Math.min(maxSpread, cardCount * 3) : 0
+  const maxSpread = 34 // Maximum rotation in degrees
+  const spreadAngle = cardCount > 1 ? Math.min(maxSpread, cardCount * 2.6) : 0
   const angleStep = cardCount > 1 ? spreadAngle / (cardCount - 1) : 0
   const startAngle = -spreadAngle / 2
 
   // Calculate card overlap
-  const overlapPercent = layout === 'fan' ? 70 : 20 // 70% overlap for fan, 20% for straight
+  const overlapPercent = layout === 'fan' ? 58 : 30
 
   const getCardStyle = (index: number) => {
     if (layout === 'straight') {
@@ -44,7 +44,7 @@ export default function Hand({
 
     // Fan layout
     const angle = startAngle + angleStep * index
-    const verticalOffset = Math.abs(angle) * 0.5 // Cards in center are slightly higher
+    const verticalOffset = Math.abs(angle) * 0.42
 
     return {
       transform: `rotate(${angle}deg) translateY(${verticalOffset}px)`,
@@ -71,12 +71,13 @@ export default function Hand({
   const totalWidth = cardCount > 0 ? cardWidth + (cardCount - 1) * overlapWidth : 0
 
   return (
-    <div className="flex items-center justify-center py-8">
+    <div className="w-full overflow-x-auto overflow-y-visible scrollbar-hide py-6">
       <div
-        className="relative flex items-end justify-center"
+        className="relative mx-auto flex items-end justify-center"
         style={{
-          width: `${totalWidth}px`,
-          height: layout === 'fan' ? '200px' : 'auto',
+          width: `${Math.max(totalWidth, cardWidth)}px`,
+          height: layout === 'fan' ? '184px' : 'auto',
+          minWidth: `${Math.min(totalWidth, 320)}px`,
         }}
       >
         {sortedCards.map((card, index) => {

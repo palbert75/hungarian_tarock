@@ -49,6 +49,7 @@ interface GameStore {
   // Actions - Room
   setRoomState: (roomState: RoomState | null) => void
   setAvailableRooms: (rooms: AvailableRoom[]) => void
+  resetRoomSession: () => void
 
   // Actions - Game
   setGameState: (gameState: GameState | null) => void
@@ -120,6 +121,20 @@ export const useGameStore = create<GameStore>()(
   setRoomState: (roomState) => set({ roomState }),
 
   setAvailableRooms: (rooms) => set({ availableRooms: rooms }),
+
+  resetRoomSession: () => set({
+    playerId: null,
+    playerPosition: null,
+    roomState: null,
+    gameState: null,
+    yourTurnData: null,
+    gameOverData: null,
+    selectedCards: [],
+    hoveredCard: null,
+    chatMessages: [],
+    trickWinnerAnimation: null,
+    lastTrickSnapshot: [],
+  }),
 
   // Game actions
   setGameState: (gameState) => set({ gameState }),

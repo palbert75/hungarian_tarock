@@ -95,7 +95,7 @@ export default function BiddingPhase({ gameState, playerPosition }: BiddingPhase
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-slate-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-2xl"
+        className="felt-panel rounded-xl p-5 md:p-6"
       >
         {/* Header */}
         <div className="text-center mb-4">
@@ -126,7 +126,7 @@ export default function BiddingPhase({ gameState, playerPosition }: BiddingPhase
                     onClick={() => isValid && handleBid(bid.value)}
                     disabled={!isValid}
                     className={`
-                      px-4 py-3 rounded-xl font-semibold text-white
+                      px-4 py-3 rounded-lg font-semibold text-white border border-white/10
                       transition-all duration-200
                       ${isValid ? getBidColor(bid.value) : 'bg-slate-700 text-slate-500 cursor-not-allowed'}
                       ${isValid ? 'shadow-lg' : ''}
@@ -150,7 +150,7 @@ export default function BiddingPhase({ gameState, playerPosition }: BiddingPhase
                   onClick={() => isValid && handleBid(holdBid.value)}
                   disabled={!isValid}
                   className={`
-                    w-full px-4 py-3 rounded-xl font-semibold text-white
+                    w-full px-4 py-3 rounded-lg font-semibold text-white border border-white/10
                     transition-all duration-200
                     ${isValid ? getBidColor(holdBid.value) : 'bg-slate-700 text-slate-500 cursor-not-allowed'}
                     ${isValid ? 'shadow-lg' : ''}
@@ -167,7 +167,7 @@ export default function BiddingPhase({ gameState, playerPosition }: BiddingPhase
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handlePass}
-              className="w-full px-4 py-2.5 bg-slate-600 hover:bg-slate-700 text-white font-semibold rounded-xl transition-colors"
+              className="btn btn-muted w-full"
             >
               Pass
             </motion.button>
@@ -178,12 +178,10 @@ export default function BiddingPhase({ gameState, playerPosition }: BiddingPhase
         {!isMyTurn && (
           <div className="text-center py-4">
             <motion.div
-              animate={{ scale: [1, 1.1, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="text-4xl mb-2"
-            >
-              ⏳
-            </motion.div>
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
+              className="mx-auto mb-3 h-10 w-10 rounded-full border-4 border-slate-600 border-t-yellow-300"
+            />
             <p className="text-slate-400 text-sm">Waiting for {currentPlayer.name} to bid...</p>
           </div>
         )}
@@ -195,10 +193,9 @@ export default function BiddingPhase({ gameState, playerPosition }: BiddingPhase
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="mt-4 bg-slate-800/90 backdrop-blur-sm rounded-2xl px-4 py-2 shadow-2xl relative"
+          className="glass-panel mt-4 rounded-xl px-4 py-4"
         >
-          {/* Player Avatar in upper left corner */}
-          <div className="absolute top-2 left-2 z-10">
+          <div className="mb-2 flex justify-center">
             <PlayerAvatar
               player={myPlayer}
               isCurrentTurn={gameState.current_turn === playerPosition}

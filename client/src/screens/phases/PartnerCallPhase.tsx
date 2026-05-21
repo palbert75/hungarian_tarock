@@ -44,11 +44,13 @@ export default function PartnerCallPhase({ gameState, playerPosition }: PartnerC
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-slate-800/90 backdrop-blur-sm rounded-2xl p-8 shadow-2xl"
+        className="felt-panel rounded-xl p-5 md:p-8"
       >
         {/* Header */}
         <div className="text-center mb-6">
-          <div className="text-6xl mb-4">👑</div>
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-amber-400/15 text-amber-200 border border-amber-300/30 font-display text-2xl">
+            T
+          </div>
           <h2 className="text-3xl font-bold text-white mb-2">Call Your Partner</h2>
           {isIDeclarer ? (
             <p className="text-yellow-400 font-semibold">
@@ -65,13 +67,13 @@ export default function PartnerCallPhase({ gameState, playerPosition }: PartnerC
         {isIDeclarer ? (
           <>
             {/* Info Box */}
-            <div className="mb-6 bg-blue-900/30 border border-blue-500/50 rounded-xl p-4">
-              <h3 className="text-blue-400 font-semibold mb-2 text-sm">How it works:</h3>
+            <div className="mb-6 bg-blue-900/25 border border-blue-500/40 rounded-xl p-4">
+              <h3 className="text-blue-300 font-semibold mb-2 text-sm">How it works</h3>
               <ul className="text-slate-300 text-sm space-y-1">
-                <li>• Select a tarokk card you don't have</li>
-                <li>• The player holding it becomes your partner</li>
-                <li>• They remain secret until they play the called card</li>
-                <li>• You play as a team of 2 against the other 2</li>
+                <li>Select a tarokk card you don't have</li>
+                <li>The player holding it becomes your partner</li>
+                <li>They remain secret until they play the called card</li>
+                <li>You play as a team of 2 against the other 2</li>
               </ul>
             </div>
 
@@ -80,7 +82,7 @@ export default function PartnerCallPhase({ gameState, playerPosition }: PartnerC
               <h3 className="text-white font-semibold mb-3 text-center">
                 Select a Tarokk to Call
               </h3>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                 {callableTarokks.map((tarokk) => {
                   const isSelected = selectedTarokk === tarokk.value
                   // Check if player has this card (would be invalid to call)
@@ -96,7 +98,7 @@ export default function PartnerCallPhase({ gameState, playerPosition }: PartnerC
                       onClick={() => !iHaveThisCard && setSelectedTarokk(tarokk.value)}
                       disabled={iHaveThisCard}
                       className={`
-                        px-3 py-4 rounded-lg font-bold text-lg
+                        px-3 py-4 rounded-lg font-bold text-lg border border-white/10
                         transition-all duration-200
                         ${
                           isSelected
@@ -122,7 +124,7 @@ export default function PartnerCallPhase({ gameState, playerPosition }: PartnerC
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-6 bg-slate-700/50 rounded-xl p-4 text-center"
+                className="mb-6 bg-slate-950/45 border border-slate-600/50 rounded-xl p-4 text-center"
               >
                 <p className="text-slate-300 text-sm mb-2">You will call:</p>
                 <div className="text-3xl font-bold text-gold">Tarokk {selectedTarokk}</div>
@@ -136,32 +138,30 @@ export default function PartnerCallPhase({ gameState, playerPosition }: PartnerC
               onClick={handleCallPartner}
               disabled={!selectedTarokk}
               className={`
-                w-full px-6 py-4 rounded-xl font-semibold text-white text-lg
+                btn w-full px-6 py-4 rounded-xl font-semibold text-white text-lg
                 transition-all duration-200
                 ${
                   selectedTarokk
-                    ? 'bg-green-600 hover:bg-green-700 shadow-lg'
+                    ? 'btn-success'
                     : 'bg-slate-700 text-slate-500 cursor-not-allowed'
                 }
               `}
             >
-              {selectedTarokk ? '✓ Confirm Partner Call' : 'Select a Tarokk First'}
+              {selectedTarokk ? 'Confirm Partner Call' : 'Select a Tarokk First'}
             </motion.button>
           </>
         ) : (
           /* Waiting Screen for Non-Declarers */
           <div className="text-center py-6">
             <motion.div
-              animate={{ scale: [1, 1.1, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="text-4xl mb-3"
-            >
-              ⏳
-            </motion.div>
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
+              className="mx-auto mb-3 h-10 w-10 rounded-full border-4 border-slate-600 border-t-yellow-300"
+            />
             <p className="text-slate-400 mb-3 text-sm">
               {declarer?.name} is selecting their partner...
             </p>
-            <div className="bg-slate-700/50 rounded-xl p-4 max-w-md mx-auto">
+            <div className="bg-slate-950/45 border border-slate-600/50 rounded-xl p-4 max-w-md mx-auto">
               <p className="text-slate-300 text-xs">
                 The partner will remain secret until they play the called card during the game.
               </p>
@@ -191,10 +191,9 @@ export default function PartnerCallPhase({ gameState, playerPosition }: PartnerC
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="mt-4 bg-slate-800/90 backdrop-blur-sm rounded-2xl px-4 py-2 shadow-2xl relative"
+          className="glass-panel mt-4 rounded-xl px-4 py-4"
         >
-          {/* Player Avatar in upper left corner */}
-          <div className="absolute top-2 left-2 z-10">
+          <div className="mb-2 flex justify-center">
             <PlayerAvatar
               player={myPlayer}
               isCurrentTurn={gameState.current_turn === playerPosition}

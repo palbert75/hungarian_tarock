@@ -70,7 +70,7 @@ export default function GameScreen() {
 
   if (!gameState || playerPosition === null) {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-table-green">
+      <div className="screen-scroll w-full bg-table-green flex items-center justify-center">
         <div className="text-white text-xl">Loading game...</div>
       </div>
     )
@@ -127,18 +127,18 @@ export default function GameScreen() {
     gameState.phase === 'announcements'
 
   return (
-    <div className="w-full h-full bg-table-green relative overflow-y-auto scrollbar-hide">
+    <div className="screen-scroll screen-scroll-x table-felt relative">
       {/* Top Bar */}
-      <div className="sticky top-0 left-0 right-0 bg-slate-900/90 backdrop-blur-sm px-6 py-4 flex items-center justify-between z-10">
-        <div className="flex items-center gap-6">
-          <div className="text-white font-semibold">
-            🎴 Room: {gameState.game_id.substring(0, 8)}
+      <div className="top-bar sticky top-0 left-0 right-0 px-4 md:px-6 py-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between z-10">
+        <div className="flex flex-wrap items-center gap-2 md:gap-3">
+          <div className="status-pill text-white">
+            <span className="text-amber-300">Room</span> {gameState.game_id.substring(0, 8)}
           </div>
-          <div className="text-slate-300 text-sm">
-            Phase: <span className="text-blue-400 font-semibold capitalize">{gameState.phase}</span>
+          <div className="status-pill">
+            Phase <span className="text-blue-300 font-semibold capitalize">{gameState.phase.replace('_', ' ')}</span>
           </div>
-          <div className="text-slate-300 text-sm">
-            Turn: <span className="text-yellow-400 font-semibold">
+          <div className="status-pill">
+            Turn <span className="text-yellow-300 font-semibold">
               {gameState.players[gameState.current_turn]?.name}
             </span>
           </div>
@@ -148,28 +148,28 @@ export default function GameScreen() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setShowChat(!showChat)}
-            className={`px-4 py-2 ${showChat ? 'bg-blue-600 hover:bg-blue-700' : 'bg-slate-700 hover:bg-slate-600'} text-white font-semibold rounded-lg transition-colors text-sm`}
+            className={`btn text-sm ${showChat ? 'btn-primary' : 'btn-muted'}`}
           >
-            💬 Chat
+            Chat
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleLeaveRoom}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors text-sm"
+            className="btn btn-danger text-sm"
           >
-            🚪 Leave Room
+            Leave
           </motion.button>
         </div>
       </div>
 
       {/* Game Table Layout */}
-      <div className="w-full min-h-full pt-20 pb-4 px-4 flex flex-col">
+      <div className="relative z-[1] flex min-h-full min-w-[320px] w-full flex-col px-3 pb-8 pt-6 md:px-4">
         {showPhaseOverlay ? (
           /* Phase Overlay (Bidding, Discarding, Announcements) */
-          <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col gap-4">
             {/* Show player avatars at top */}
-            <div className="flex items-start justify-between px-8 pt-4 pb-2">
+            <div className="screen-scroll-x flex items-start justify-between gap-3 px-2 md:px-8 pt-4 pb-2">
               {/* Left Player */}
               <div>
                 {leftPlayer && (
@@ -208,7 +208,7 @@ export default function GameScreen() {
             </div>
 
             {/* Phase Content - Centered below players */}
-            <div className="flex-1 flex items-center justify-center px-4">
+            <div className="flex-1 flex items-start justify-center px-0 md:items-center md:px-4">
               {renderPhase()}
             </div>
           </div>
@@ -216,7 +216,7 @@ export default function GameScreen() {
           /* Full Table Layout (Playing Phase) */
           <>
             {/* Top Player */}
-            <div className="flex justify-center py-4">
+            <div className="flex justify-center py-2 md:py-4">
               {topPlayer && (
                 <PlayerAvatar
                   player={topPlayer.player}
@@ -228,7 +228,7 @@ export default function GameScreen() {
             </div>
 
             {/* Middle Area - Left Player, Center Table, Right Player */}
-            <div className="flex-1 flex items-center justify-between px-8">
+            <div className="flex-1 flex flex-col items-center justify-between gap-4 px-0 md:flex-row md:gap-6 md:px-8">
               {/* Left Player */}
               <div className="flex items-center">
                 {leftPlayer && (
@@ -242,7 +242,7 @@ export default function GameScreen() {
               </div>
 
               {/* Center - Phase Content */}
-              <div className="flex-1 flex items-center justify-center">{renderPhase()}</div>
+              <div className="min-w-0 w-full flex-1 flex items-center justify-center">{renderPhase()}</div>
 
               {/* Right Player */}
               <div className="flex items-center">
@@ -277,9 +277,9 @@ export default function GameScreen() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-slate-800/90 backdrop-blur-sm rounded-2xl p-12 max-w-2xl shadow-2xl text-center"
+              className="felt-panel rounded-xl p-8 md:p-12 max-w-2xl text-center"
             >
-              <h2 className="text-4xl font-bold text-white mb-4">🎴 Game In Progress</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Game In Progress</h2>
               <p className="text-slate-300 text-lg">
                 Current Phase:{' '}
                 <span className="text-blue-400 font-semibold capitalize">{gameState.phase}</span>
@@ -295,10 +295,10 @@ export default function GameScreen() {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
-          className="absolute bottom-4 left-4 bg-slate-800/95 backdrop-blur-sm rounded-xl p-4 shadow-2xl z-20 max-w-xs"
+          className="glass-panel fixed bottom-4 left-4 rounded-xl p-4 z-20 max-w-[calc(100vw-2rem)] sm:max-w-xs"
         >
           <h3 className="text-white font-semibold mb-3 text-sm flex items-center gap-2">
-            <span>📋</span> Bid History
+            Bid History
           </h3>
           <div className="space-y-2 max-h-64 overflow-y-auto pr-2" style={{ scrollbarWidth: 'thin', scrollbarColor: '#475569 #334155' }}>
             {gameState.bid_history.map((bid: Bid, index: number) => (
@@ -337,10 +337,10 @@ export default function GameScreen() {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
-          className="absolute bottom-4 left-4 bg-slate-800/95 backdrop-blur-sm rounded-xl p-4 shadow-2xl z-20 max-w-xs"
+          className="glass-panel fixed bottom-4 left-4 rounded-xl p-4 z-20 max-w-[calc(100vw-2rem)] sm:max-w-xs"
         >
           <h3 className="text-white font-semibold mb-3 text-sm flex items-center gap-2">
-            <span>📢</span> Announcements
+            Announcements
           </h3>
           <div className="space-y-2 max-h-64 overflow-y-auto pr-2" style={{ scrollbarWidth: 'thin', scrollbarColor: '#475569 #334155' }}>
             {gameState.announcements.map((announcement: any, index: number) => {
@@ -418,7 +418,7 @@ export default function GameScreen() {
               animate={{ x: 0 }}
               exit={{ x: 400 }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed right-0 top-0 bottom-0 w-96 z-40"
+              className="fixed right-0 top-0 bottom-0 z-40 w-full max-w-96"
             >
               <Chat className="h-full shadow-2xl" />
             </motion.div>

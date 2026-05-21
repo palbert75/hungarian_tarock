@@ -62,11 +62,11 @@ export default function GameOverScreen({ gameState, playerPosition }: GameOverSc
   }
 
   return (
-    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="screen-scroll app-backdrop p-4 md:p-6">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-3xl px-6"
+        className="mx-auto w-full max-w-3xl py-8"
       >
         {/* Result Header */}
         <motion.div
@@ -91,7 +91,7 @@ export default function GameOverScreen({ gameState, playerPosition }: GameOverSc
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="grid grid-cols-2 gap-4 mb-8"
+          className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8"
         >
           {/* Declarer Team */}
           <div className={`bg-slate-800 rounded-2xl p-6 border-2 ${declarerWon ? 'border-green-500' : 'border-slate-700'}`}>
@@ -153,7 +153,7 @@ export default function GameOverScreen({ gameState, playerPosition }: GameOverSc
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.5 + index * 0.1 }}
                 className={`
-                  flex items-center justify-between px-4 py-3 rounded-lg
+                  flex flex-col gap-3 px-4 py-3 rounded-lg sm:flex-row sm:items-center sm:justify-between
                   ${player.isMe ? 'bg-blue-900/50 border-2 border-blue-500' : 'bg-slate-700/50'}
                 `}
               >
@@ -175,7 +175,7 @@ export default function GameOverScreen({ gameState, playerPosition }: GameOverSc
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex w-full items-center justify-between gap-4 sm:w-auto">
                   <div className="text-center">
                     <div className="text-xs text-slate-400">Tricks</div>
                     <div className="text-lg font-bold text-white">{player.tricksWon}</div>
@@ -210,7 +210,7 @@ export default function GameOverScreen({ gameState, playerPosition }: GameOverSc
             className="bg-slate-800 rounded-2xl p-6 mb-4"
           >
             <h3 className="text-white font-semibold mb-4 text-center">Game Value</h3>
-            <div className="grid grid-cols-3 gap-4 text-center">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
               <div>
                 <div className="text-slate-400 text-sm mb-1">Base Value</div>
                 <div className="text-2xl font-bold text-white">{gameOverData.base_game_value}</div>
@@ -239,8 +239,8 @@ export default function GameOverScreen({ gameState, playerPosition }: GameOverSc
             <div className="space-y-2">
               {gameOverData.achieved_announcements?.map((ann: any, idx: number) => (
                 <div key={idx} className="bg-green-900/30 border border-green-500/50 rounded-lg px-4 py-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-wrap items-center gap-2">
                       <span className="text-green-400">✓</span>
                       <span className="text-white font-semibold capitalize">{ann.announcement_type.replace('_', ' ')}</span>
                       <span className="text-slate-400 text-sm">
@@ -255,8 +255,8 @@ export default function GameOverScreen({ gameState, playerPosition }: GameOverSc
               ))}
               {gameOverData.failed_announcements?.map((ann: any, idx: number) => (
                 <div key={idx} className="bg-red-900/30 border border-red-500/50 rounded-lg px-4 py-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-wrap items-center gap-2">
                       <span className="text-red-400">✗</span>
                       <span className="text-white font-semibold capitalize">{ann.announcement_type.replace('_', ' ')}</span>
                       <span className="text-slate-400 text-sm">
@@ -277,7 +277,7 @@ export default function GameOverScreen({ gameState, playerPosition }: GameOverSc
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1 }}
-          className="grid grid-cols-2 gap-4"
+          className="grid grid-cols-1 sm:grid-cols-2 gap-4"
         >
           <button
             onClick={handlePlayAgain}

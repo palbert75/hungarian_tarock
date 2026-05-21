@@ -38,9 +38,9 @@ export default function Chat({ className = '' }: ChatProps) {
   }
 
   return (
-    <div className={`flex flex-col bg-gray-900/80 backdrop-blur-sm rounded-lg border border-gray-700 ${className}`}>
+    <div className={`glass-panel flex flex-col rounded-xl ${className}`}>
       {/* Chat header */}
-      <div className="px-4 py-3 border-b border-gray-700">
+      <div className="px-4 py-3 border-b border-slate-700/70">
         <h3 className="text-lg font-semibold text-white">Chat</h3>
       </div>
 
@@ -64,7 +64,7 @@ export default function Chat({ className = '' }: ChatProps) {
                     max-w-[80%] rounded-lg px-3 py-2
                     ${isOwnMessage
                       ? 'bg-blue-600 text-white'
-                      : 'bg-gray-700 text-gray-100'
+                      : 'bg-slate-700 text-gray-100'
                     }
                   `}
                 >
@@ -75,7 +75,7 @@ export default function Chat({ className = '' }: ChatProps) {
                   )}
                   <div className="text-sm break-words">{msg.message}</div>
                 </div>
-                <div className="text-xs text-gray-400 mt-1 px-1">
+                <div className="text-xs text-slate-400 mt-1 px-1">
                   {formatTimestamp(msg.timestamp)}
                 </div>
               </motion.div>
@@ -86,7 +86,7 @@ export default function Chat({ className = '' }: ChatProps) {
       </div>
 
       {/* Input area */}
-      <form onSubmit={handleSubmit} className="p-4 border-t border-gray-700">
+      <form onSubmit={handleSubmit} className="p-4 border-t border-slate-700/70">
         <div className="flex gap-2">
           <input
             type="text"
@@ -94,21 +94,12 @@ export default function Chat({ className = '' }: ChatProps) {
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Type a message..."
             maxLength={500}
-            className="
-              flex-1 bg-gray-800 text-white rounded-lg px-4 py-2
-              border border-gray-600 focus:border-blue-500 focus:outline-none
-              placeholder-gray-400 text-sm
-            "
+            className="input-field flex-1 text-sm"
           />
           <button
             type="submit"
             disabled={!message.trim()}
-            className="
-              px-6 py-2 bg-blue-600 text-white rounded-lg
-              hover:bg-blue-700 active:bg-blue-800
-              disabled:bg-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed
-              transition-colors font-medium text-sm
-            "
+            className="btn btn-primary px-6 py-2 text-sm disabled:bg-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed"
           >
             Send
           </button>

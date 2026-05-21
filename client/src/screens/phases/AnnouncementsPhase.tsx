@@ -108,7 +108,7 @@ export default function AnnouncementsPhase({
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-slate-800/90 backdrop-blur-sm rounded-2xl p-4 shadow-2xl"
+        className="felt-panel rounded-xl p-4"
       >
         {/* Header */}
         <div className="text-center mb-3">
@@ -132,7 +132,7 @@ export default function AnnouncementsPhase({
 
         {/* Announcement History */}
         {gameState.announcements && gameState.announcements.length > 0 && (
-          <div className="mb-3 bg-slate-700/50 rounded-xl p-2">
+          <div className="mb-3 bg-slate-950/35 border border-slate-600/40 rounded-xl p-2">
             <h3 className="text-white font-semibold mb-2 text-xs">Announcements Made</h3>
             <div className="space-y-2">
               {gameState.announcements.map((announcement: any, index: number) => {
@@ -155,7 +155,7 @@ export default function AnnouncementsPhase({
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    className="bg-slate-600/50 rounded-lg p-2"
+                    className="bg-slate-800/65 border border-slate-600/40 rounded-lg p-2"
                   >
                     <div className="flex items-center justify-between gap-2">
                       {/* Left side - Announcement info */}
@@ -176,7 +176,7 @@ export default function AnnouncementsPhase({
                         {/* Status badges */}
                         <div className="flex flex-col gap-1">
                           <div className={`text-xs font-semibold px-2 py-0.5 rounded ${announcement.announced ? 'bg-yellow-600' : 'bg-slate-500'}`}>
-                            {announcement.announced ? '📢' : '🤫'}
+                            {announcement.announced ? 'Open' : 'Silent'}
                           </div>
                           {announcement.contra && (
                             <div className="text-xs font-semibold px-2 py-0.5 rounded bg-red-600 text-white">
@@ -219,12 +219,12 @@ export default function AnnouncementsPhase({
         {isMyTurn ? (
           <div className="space-y-3">
             {/* Info */}
-            <div className="bg-blue-900/30 border border-blue-700/50 rounded-lg p-2 text-xs text-blue-200">
-              💡 Click to announce. You can select multiple announcements.
+            <div className="bg-blue-900/25 border border-blue-700/50 rounded-lg p-2 text-xs text-blue-200">
+              Select one or more announcements.
             </div>
 
             {/* Announcement Selection Grid */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {announcementTypes.map((announcement) => {
                 const isValid = validAnnouncements.includes(announcement.value)
                 const isSelected = selectedAnnouncements.includes(announcement.value)
@@ -241,7 +241,7 @@ export default function AnnouncementsPhase({
                       }
                     }}
                     className={`
-                      px-3 py-4 rounded-xl font-semibold text-left
+                      px-3 py-4 rounded-lg font-semibold text-left border border-white/10
                       transition-all duration-200
                       ${
                         isSelected
@@ -258,11 +258,11 @@ export default function AnnouncementsPhase({
                     </div>
                     <div className="text-xs opacity-80 mb-1">{announcement.description}</div>
                     <div className="text-xs opacity-70">
-                      📢 +{announcement.points.announced} | 🤫 +{announcement.points.silent}
+                      Open +{announcement.points.announced} | Silent +{announcement.points.silent}
                     </div>
                     {isSelected && (
-                      <div className="mt-2 text-center text-lg">
-                        📢
+                      <div className="mt-2 text-center text-xs font-bold text-blue-100">
+                        Selected
                       </div>
                     )}
                   </motion.button>
@@ -290,7 +290,7 @@ export default function AnnouncementsPhase({
                       >
                         <span>{info?.icon}</span>
                         <span>{info?.label}</span>
-                        <span>📢</span>
+                        <span>Open</span>
                       </div>
                     )
                   })}
@@ -306,25 +306,25 @@ export default function AnnouncementsPhase({
                 onClick={handleConfirmAnnouncements}
                 disabled={selectedAnnouncements.length === 0}
                 className={`
-                  px-3 py-2 rounded-xl font-semibold text-white text-sm
+                  btn px-3 py-2 rounded-lg font-semibold text-white text-sm
                   transition-all duration-200
                   ${
                     selectedAnnouncements.length > 0
-                      ? 'bg-green-600 hover:bg-green-700 shadow-lg'
+                      ? 'btn-success'
                       : 'bg-slate-700 text-slate-500 cursor-not-allowed'
                   }
                 `}
               >
                 {selectedAnnouncements.length > 0
-                  ? `✓ Confirm (${selectedAnnouncements.length})`
-                  : '✓ Confirm'}
+                  ? `Confirm (${selectedAnnouncements.length})`
+                  : 'Confirm'}
               </motion.button>
 
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handlePass}
-                className="px-3 py-2 bg-slate-600 hover:bg-slate-700 text-white font-semibold rounded-xl transition-colors text-sm"
+                className="btn btn-muted px-3 py-2 text-sm"
               >
                 Pass
               </motion.button>
@@ -334,12 +334,10 @@ export default function AnnouncementsPhase({
           /* Waiting Message */
           <div className="text-center py-4">
             <motion.div
-              animate={{ scale: [1, 1.1, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="text-4xl mb-2"
-            >
-              ⏳
-            </motion.div>
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
+              className="mx-auto mb-3 h-10 w-10 rounded-full border-4 border-slate-600 border-t-yellow-300"
+            />
             <p className="text-slate-400 text-sm">Waiting for {currentPlayer.name}...</p>
           </div>
         )}
@@ -351,10 +349,9 @@ export default function AnnouncementsPhase({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="mt-4 bg-slate-800/90 backdrop-blur-sm rounded-2xl px-4 py-2 shadow-2xl relative"
+          className="glass-panel mt-4 rounded-xl px-4 py-4"
         >
-          {/* Player Avatar in upper left corner */}
-          <div className="absolute top-2 left-2 z-10">
+          <div className="mb-2 flex justify-center">
             <PlayerAvatar
               player={myPlayer}
               isCurrentTurn={gameState.current_turn === playerPosition}

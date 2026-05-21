@@ -74,69 +74,80 @@ export default function Card({
   const suitColor = getSuitColor(card.suit)
   const suitSymbol = getSuitSymbol(card.suit)
   const displayName = getCardDisplayName(card)
+  const isTarokk = card.suit === 'tarokk'
+  const rankSize = size === 'xs' || size === 'sm' ? 'text-[0.68rem]' : 'text-sm'
+  const suitSize = size === 'xs' || size === 'sm' ? 'text-base' : 'text-xl'
+  const centerSize = size === 'xl' ? '4rem' : size === 'lg' ? '3rem' : size === 'sm' ? '1.65rem' : size === 'xs' ? '1.35rem' : '2.2rem'
 
   return (
     <motion.div
-      whileHover={isClickable ? { y: -8, scale: 1.05 } : undefined}
+      whileHover={isClickable ? { y: -10, scale: 1.045 } : undefined}
       whileTap={isClickable ? { scale: 0.95 } : undefined}
-      animate={selected ? { y: -12 } : { y: 0 }}
+      animate={selected ? { y: -16, scale: 1.04 } : { y: 0, scale: 1 }}
       onClick={isClickable ? onClick : undefined}
       className={`
         ${sizeClasses[size]}
-        relative rounded-lg shadow-lg
+        playing-card relative
         transition-all duration-200
         ${isClickable ? 'cursor-pointer' : ''}
         ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
-        ${selected ? 'ring-4 ring-blue-500 ring-offset-2' : ''}
+        ${selected ? 'ring-4 ring-yellow-300 ring-offset-2 ring-offset-emerald-950' : ''}
       `}
     >
       {faceDown ? (
         // Card back design
-        <div className="w-full h-full bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 rounded-lg border-2 border-slate-600 flex items-center justify-center">
-          <div className="text-4xl opacity-30">🎴</div>
+        <div className="card-back w-full h-full rounded-xl border border-red-950/60 flex items-center justify-center overflow-hidden">
+          <div className="w-3/4 h-3/4 rounded-lg border border-yellow-200/25 flex items-center justify-center">
+            <div className="text-yellow-100/70 font-display text-2xl">T</div>
+          </div>
         </div>
       ) : (
         // Card front design
         <div
           className={`
-            w-full h-full bg-white rounded-lg border-2
-            ${card.suit === 'tarokk' ? 'border-purple-700' : 'border-slate-300'}
-            flex flex-col p-1.5
-            ${disabled ? 'bg-slate-100' : ''}
+            card-face w-full h-full rounded-xl border
+            ${isTarokk ? 'border-violet-500/70' : 'border-slate-300'}
+            flex flex-col p-1.5 overflow-hidden
+            ${disabled ? 'grayscale' : ''}
           `}
         >
           {/* Top rank and suit */}
-          <div className={`flex flex-col items-center ${suitColor} font-bold leading-none`}>
-            <div className="text-sm">{displayName}</div>
-            <div className="text-xl">{suitSymbol}</div>
+          <div className={`flex flex-col items-start ${suitColor} font-black leading-none`}>
+            <div className={`${rankSize} max-w-full truncate`}>{displayName}</div>
+            <div className={suitSize}>{suitSymbol}</div>
           </div>
 
           {/* Center suit symbol (larger) */}
-          <div className="flex-1 flex items-center justify-center min-h-0">
-            <div className={`${suitColor} opacity-20`}>
-              <div style={{ fontSize: size === 'xl' ? '4rem' : size === 'lg' ? '3rem' : '2rem' }}>
+          <div className="flex-1 flex items-center justify-center min-h-0 relative">
+            {isTarokk && (
+              <div className="absolute inset-x-2 top-1/2 h-px bg-violet-200/60" />
+            )}
+            <div className={`${suitColor} opacity-25 drop-shadow-sm`}>
+              <div style={{ fontSize: centerSize, lineHeight: 1 }}>
                 {suitSymbol}
               </div>
             </div>
           </div>
 
           {/* Bottom rank and suit (rotated 180°) */}
-          <div className={`flex flex-col items-center ${suitColor} font-bold leading-none rotate-180`}>
-            <div className="text-sm">{displayName}</div>
-            <div className="text-xl">{suitSymbol}</div>
+          <div className={`flex flex-col items-start self-end ${suitColor} font-black leading-none rotate-180`}>
+            <div className={`${rankSize} max-w-full truncate`}>{displayName}</div>
+            <div className={suitSize}>{suitSymbol}</div>
           </div>
 
           {/* Point value indicator (if non-zero) */}
           {card.points > 0 && (
-            <div className="absolute bottom-1 right-1 bg-gold text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+            <div className="absolute bottom-1 right-1 bg-amber-500 text-slate-950 text-[0.65rem] font-black rounded-full w-5 h-5 flex items-center justify-center shadow-md">
               {card.points}
             </div>
           )}
 
           {/* Disabled overlay */}
           {disabled && (
-            <div className="absolute inset-0 bg-slate-500/20 rounded-lg flex items-center justify-center">
-              <div className="text-4xl opacity-50">🚫</div>
+            <div className="absolute inset-0 bg-slate-900/20 rounded-xl flex items-center justify-center">
+              <div className="px-2 py-1 rounded-md bg-slate-950/70 text-white text-[0.65rem] font-bold">
+                Locked
+              </div>
             </div>
           )}
         </div>

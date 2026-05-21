@@ -82,7 +82,7 @@ function App() {
   }, [roomState])
 
   return (
-    <div className="w-full h-full bg-slate-900">
+    <div className="w-full h-full app-backdrop">
       {getCurrentScreen()}
       <Toast />
     </div>
