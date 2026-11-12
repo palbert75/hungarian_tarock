@@ -1,6 +1,6 @@
 # Mobile UI, Bots, Tutorial Hints, Hungarian: Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Make the tarokk web app comfortably playable on a phone (installable PWA), let bots fill seats, give tutorial hints from the bots' rules, and ship Hungarian + English texts.
 
@@ -208,7 +208,7 @@ Behaviour per spec 4.2, 4.3, 4.4 and the mockups. Specific decisions:
 
 ### Task 13: Wrap-up
 
-- [ ] Full server suite, `npx tsc --noEmit`, `npx vitest run`, `npm run build`.
-- [ ] Update `README.md` (bots, tutorial, PWA, languages, next hand) and `client/IMPLEMENTATION_STATUS.md`.
-- [ ] Write `docs/superpowers/plans/2026-11-12-status.md`: what is done, what was checked how, what the owner must check (Hungarian wording, real-phone install, server deploy).
-- [ ] Commit and push.
+- [x] Full server suite, `npx tsc --noEmit`, `npx vitest run`, `npm run build`.
+- [x] Update `README.md` (bots, tutorial, PWA, languages, next hand) and `client/IMPLEMENTATION_STATUS.md`.
+- [x] Write `docs/superpowers/plans/2026-11-12-status.md`: what is done, what was checked how, what the owner must check (Hungarian wording, real-phone install, server deploy).
+- [x] Commit and push.
