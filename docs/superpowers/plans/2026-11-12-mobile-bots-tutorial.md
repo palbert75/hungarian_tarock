@@ -66,8 +66,8 @@
 - Socket events `swap_seats {from_position, to_position}` and `set_bot_speed {speed}`: owner only, else error code `NOT_OWNER`.
 - `player_connection` broadcast `{player_position, player_name, connected: bool}` on every drop and return, in any phase.
 
-- [ ] Tests: `test_join_takes_lowest_free_seat`, `test_leave_keeps_other_positions`, `test_swap_occupied_seats`, `test_move_to_empty_seat`, `test_swap_rejected_mid_game`, `test_owner_is_creator`, `test_ownership_passes_to_next_human`, `test_sorted_players_at_deal`, `test_grace_expiry_vacates` (call the expiry function directly), `test_room_deleted_when_no_humans`.
-- [ ] Implement, full suite green, commit.
+- [x] Tests: `test_join_takes_lowest_free_seat`, `test_leave_keeps_other_positions`, `test_swap_occupied_seats`, `test_move_to_empty_seat`, `test_swap_rejected_mid_game`, `test_owner_is_creator`, `test_ownership_passes_to_next_human`, `test_sorted_players_at_deal`, `test_grace_expiry_vacates` (call the expiry function directly), `test_room_deleted_when_no_humans`.
+- [x] Implement, full suite green, commit.
 
 ### Task 3: Next hand, rotating dealer, running totals (spec 9)
 
@@ -78,8 +78,8 @@
 - `handle_game_over` adds each `player_scores` entry to `Player.total_score`; `game_over` payload gains `total_scores: list[int]` and `hand_number`. Totals also in `game_state.to_dict` per player.
 - Socket event `next_hand {}`: sets `ready_next`; when every connected non-bot human is ready, deals the next hand. Bots count as ready. Broadcast `room_state` after each change.
 
-- [ ] Tests: `test_dealer_rotates`, `test_first_bidder_and_first_leader_follow_dealer` (for dealers 0..3: `current_turn` at bidding start and `trick_leader` at play start equal `(dealer+1)%4`, with a declarer at another seat), `test_totals_accumulate`, `test_next_hand_waits_for_all_humans`, `test_all_pass_keeps_dealer`.
-- [ ] Implement, suite green, commit.
+- [x] Tests: `test_dealer_rotates`, `test_first_bidder_and_first_leader_follow_dealer` (for dealers 0..3: `current_turn` at bidding start and `trick_leader` at play start equal `(dealer+1)%4`, with a declarer at another seat), `test_totals_accumulate`, `test_next_hand_waits_for_all_humans`, `test_all_pass_keeps_dealer`.
+- [x] Implement, suite green, commit.
 
 ## Part B: client piece 1
 
@@ -152,8 +152,8 @@ Behaviour per spec 4.2, 4.3, 4.4 and the mockups. Specific decisions:
 - A human rejoining a seat with `bot_controlled=True` sets it False (and `turn_seq += 1` so a pending bot task dies); `player_connection` is broadcast. A second socket for the same player replaces the first.
 - Until Task 9 the runner's decision function is a stub that plays the first legal option.
 
-- [ ] Tests: `test_existing_flow_through_actions` (a scripted hand via `act_*`), `test_add_remove_fill_bots_owner_only`, `test_replace_requires_disconnected`, `test_human_takes_seat_back_cancels_bot`, `test_stale_bot_task_does_not_act` (turn_seq changed), `test_second_socket_replaces_first`.
-- [ ] Suite green, commit.
+- [x] Tests: `test_existing_flow_through_actions` (a scripted hand via `act_*`), `test_add_remove_fill_bots_owner_only`, `test_replace_requires_disconnected`, `test_human_takes_seat_back_cancels_bot`, `test_stale_bot_task_does_not_act` (turn_seq changed), `test_second_socket_replaces_first`.
+- [x] Suite green, commit.
 
 ### Task 9: Bot strategy (spec 5.2, 5.3)
 

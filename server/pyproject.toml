@@ -30,7 +30,7 @@ dev = [
 ]
 
 [tool.setuptools]
-packages = ["models", "game_logic", "networking", "validation", "utils"]
+packages = ["models", "game_logic", "networking", "validation", "utils", "bots", "persistence"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

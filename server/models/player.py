@@ -34,6 +34,12 @@ class Player(BaseModel):
     is_declarer: bool = False
     is_partner: bool = False
     partner_revealed: bool = False  # Whether partner identity has been revealed
+    is_bot: bool = False          # A bot from the start (never a person)
+    bot_controlled: bool = False  # A bot is currently playing this seat
+    vacant: bool = False          # Seat freed between hands; keeps its running total
+    total_score: int = 0          # Running total across hands at this table
+    ready_next: bool = False      # Asked for the next hand
+    talon_card_ids: List[str] = Field(default_factory=list)  # Cards received from the talon this hand
 
     def add_cards_to_hand(self, cards: List[Card]) -> None:
         """Add cards to player's hand."""
@@ -155,6 +161,7 @@ class Player(BaseModel):
         self.hand.clear()
         self.tricks_won.clear()
         self.discard_pile.clear()
+        self.talon_card_ids = []
         self.is_declarer = False
         self.is_partner = False
         self.partner_revealed = False
@@ -179,6 +186,11 @@ class Player(BaseModel):
             "is_declarer": self.is_declarer,
             "total_points": self.get_total_points(),
             "tricks_won_count": len(self.tricks_won) // 4,  # Each trick has 4 cards
+            "is_bot": self.is_bot,
+            "bot_controlled": self.bot_controlled,
+            "vacant": self.vacant,
+            "total_score": self.total_score,
+            "ready_next": self.ready_next,
         }
 
         # Only reveal partner status if partner has been revealed
@@ -192,6 +204,7 @@ class Player(BaseModel):
             data["tricks_won"] = [card.to_dict() for card in self.tricks_won]
             data["discard_pile"] = [card.to_dict() for card in self.discard_pile]
             data["partner_revealed"] = self.partner_revealed
+            data["talon_card_ids"] = self.talon_card_ids
 
         return data
 

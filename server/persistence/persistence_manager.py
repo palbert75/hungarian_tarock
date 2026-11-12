@@ -64,6 +64,10 @@ class PersistenceManager:
 
                 # Save game state
                 game_state_dict = room.game_state.to_dict(include_all_hands=True)
+                game_state_dict["room_meta"] = {
+                    "owner_id": room.owner_id,
+                    "bot_speed": room.bot_speed,
+                }
                 self.db.save_game_state(room.room_id, game_state_dict)
 
                 # Note: Chat messages are saved individually in real-time
@@ -205,6 +209,9 @@ class PersistenceManager:
                         phase=game_state_dict.get('phase'),
                         players_in_json=len(game_state_dict.get('players', [])))
             room.game_state = self._reconstruct_game_state(game_state_dict)
+            meta = game_state_dict.get("room_meta") or {}
+            room.owner_id = meta.get("owner_id")
+            room.bot_speed = meta.get("bot_speed", "normal")
             logger.debug("game_state_reconstructed",
                         room_id=room_id,
                         players_loaded=len(room.game_state.players))
@@ -217,8 +224,8 @@ class PersistenceManager:
         for player_data in room_data.get('players', []):
             player = room.game_state.get_player_by_id(player_data['id'])
             if player:
-                # Update connection status (should be False after restart)
-                player.is_connected = False
+                # Update connection status (should be False after restart; bots are always there)
+                player.is_connected = player.is_bot
                 player.is_ready = player_data.get('is_ready', False)
                 logger.debug("player_connection_updated",
                            room_id=room_id,
@@ -378,7 +385,13 @@ class PersistenceManager:
                 is_ready=player_dict.get('is_ready', False),
                 is_declarer=player_dict.get('is_declarer', False),
                 is_partner=player_dict.get('is_partner', False),
-                partner_revealed=player_dict.get('partner_revealed', False)
+                partner_revealed=player_dict.get('partner_revealed', False),
+                is_bot=player_dict.get('is_bot', False),
+                bot_controlled=player_dict.get('bot_controlled', False),
+                vacant=player_dict.get('vacant', False),
+                total_score=player_dict.get('total_score', 0),
+                ready_next=player_dict.get('ready_next', False),
+                talon_card_ids=player_dict.get('talon_card_ids', [])
             )
             player.id = player_dict['id']
             game_state.players.append(player)

@@ -111,9 +111,7 @@ class GameState(BaseModel):
 
     def get_player(self, position: int) -> Optional[Player]:
         """Get player by position."""
-        if 0 <= position < len(self.players):
-            return self.players[position]
-        return None
+        return next((p for p in self.players if p.position == position), None)
 
     def get_player_by_id(self, player_id: str) -> Optional[Player]:
         """Get player by ID."""
@@ -158,6 +156,38 @@ class GameState(BaseModel):
                 pos = (start_pos + i) % 4
                 cards = self.deck.deal(1)
                 self.players[pos].add_cards_to_hand(cards)
+
+    def reset_for_next_hand(self) -> None:
+        """
+        Clear everything that belongs to one hand and move the deal on.
+
+        The dealer rotates by one seat. The seat after the dealer bids first
+        and leads the first trick.
+        """
+        self.dealer_position = (self.dealer_position + 1) % 4
+        self.hand_number += 1
+        self.game_id = str(uuid4())
+        self.talon = []
+        self.bid_history = []
+        self.declarer_position = None
+        self.winning_bid = None
+        self.called_card_rank = None
+        self.partner_position = None
+        self.partner_revealed = False
+        self.current_trick = []
+        self.trick_leader = None
+        self.trick_number = 0
+        self.previous_trick_winner = None
+        self.trick_history = []
+        self.players_who_discarded = []
+        self.announcements = []
+        self.announcement_history = []
+        self.announcement_turn_log = []
+        self.declarer_alone = False
+        self.called_card_discarded_by = None
+        self.game_contra = False
+        for player in self.players:
+            player.ready_next = False
 
     def start_bidding(self) -> None:
         """Start the bidding phase."""
