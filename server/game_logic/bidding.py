@@ -4,6 +4,7 @@ from typing import List, Optional
 from models.bid import Bid, BidType
 from models.player import Player
 from validation.rules import has_honour
+from models.game_state import can_hold, highest_bid_of
 
 
 class BiddingManager:
@@ -27,19 +28,15 @@ class BiddingManager:
             if not has_honour(player.hand):
                 return False, "Must have at least one honour (skíz, XXI, or pagát) to bid"
 
-        # Check HOLD conditions
-        if bid_type == BidType.HOLD:
-            player_has_bid = any(
-                b.player_position == player.position and b.bid_type not in [BidType.PASS, BidType.HOLD]
-                for b in bid_history
-            )
-            if not player_has_bid:
-                return False, "Cannot HOLD - must have already bid in this auction"
+        # A pass is final
+        if bid_type != BidType.PASS and any(
+            b.player_position == player.position and b.bid_type == BidType.PASS for b in bid_history
+        ):
+            return False, "Already passed in this auction"
 
-            # Must have a bid to hold
-            highest_bid = BiddingManager.get_highest_bid(bid_history)
-            if highest_bid is None:
-                return False, "No bid to hold"
+        # Check HOLD conditions
+        if bid_type == BidType.HOLD and not can_hold(player.position, bid_history):
+            return False, "Cannot HOLD - only an earlier bidder may hold a later, higher bid"
 
         # Check if bid is higher than current highest (except PASS and HOLD)
         if bid_type not in [BidType.PASS, BidType.HOLD]:
@@ -62,10 +59,7 @@ class BiddingManager:
         Returns:
             Highest bid or None if no bids
         """
-        non_pass_bids = [b for b in bid_history if b.bid_type != BidType.PASS]
-        if not non_pass_bids:
-            return None
-        return max(non_pass_bids, key=lambda b: b.game_value)
+        return highest_bid_of(bid_history)
 
     @staticmethod
     def is_auction_complete(bid_history: List[Bid], num_players: int = 4) -> bool:
@@ -149,12 +143,7 @@ class BiddingManager:
             if test_bid.is_higher_than(highest_bid):
                 valid_bids.append(bid_type)
 
-        # Check if HOLD is valid
-        player_has_bid = any(
-            b.player_position == player.position and b.bid_type not in [BidType.PASS, BidType.HOLD]
-            for b in bid_history
-        )
-        if player_has_bid and highest_bid is not None:
+        if can_hold(player.position, bid_history):
             valid_bids.append(BidType.HOLD)
 
         return valid_bids

@@ -102,6 +102,9 @@ def validate_discard(cards: List[Card]) -> Tuple[bool, str]:
         if card.is_honour():
             return False, f"Cannot discard Honours: {card}"
 
+        if card.is_xx():
+            return False, f"Cannot discard the XX: {card}"
+
     return True, "OK"
 
 

@@ -51,8 +51,8 @@
 - Scoring handles `partner_position is None` and doubles the game value when `game_contra`.
 - New fields persisted and restored.
 
-- [ ] Tests (each a function in the test file): `test_holder_becomes_declarer` (A three, B two, A hold, others pass → declarer A, talon 2); `test_hold_not_legal_for_latest_bidder`; `test_passed_player_not_asked_again`; `test_auction_ends_when_one_left`; `test_all_pass_no_declarer`; `test_fourth_seat_gets_announcement_turn`; `test_two_announcements_advance_turn_once`; `test_xx_cannot_be_discarded`; `test_called_card_in_skart_declarer_alone`; `test_obligatory_contra_applied_once_and_doubles_game`; `test_scoring_without_partner`.
-- [ ] Run, see them fail; implement; run full suite green; commit.
+- [x] Tests (each a function in the test file): `test_holder_becomes_declarer` (A three, B two, A hold, others pass → declarer A, talon 2); `test_hold_not_legal_for_latest_bidder`; `test_passed_player_not_asked_again`; `test_auction_ends_when_one_left`; `test_all_pass_no_declarer`; `test_fourth_seat_gets_announcement_turn`; `test_two_announcements_advance_turn_once`; `test_xx_cannot_be_discarded`; `test_called_card_in_skart_declarer_alone`; `test_obligatory_contra_applied_once_and_doubles_game`; `test_scoring_without_partner`.
+- [x] Run, see them fail; implement; run full suite green; commit.
 
 ### Task 2: Fixed seats, table owner, waiting-room grace
 

@@ -88,8 +88,12 @@ class Card(BaseModel):
 
     def can_be_discarded(self) -> bool:
         """Check if this card can be legally discarded."""
-        # Cannot discard Kings or Honours
-        return not (self.is_king() or self.is_honour())
+        # Cannot discard Kings, Honours or the XX
+        return not (self.is_king() or self.is_honour() or self.is_xx())
+
+    def is_xx(self) -> bool:
+        """Check if this is the XX (the usual called card)."""
+        return self.is_tarokk() and self.rank == TarokkRank.XX.value
 
     def tarokk_value(self) -> int:
         """

@@ -12,6 +12,33 @@ from models.bid import Bid, BidType
 from models.announcement import Announcement
 
 
+def highest_bid_of(bid_history: List[Bid]) -> Optional[Bid]:
+    """Highest non-pass bid; among equal values the latest one wins."""
+    best = None
+    for b in bid_history:
+        if b.bid_type == BidType.PASS:
+            continue
+        if best is None or b.game_value >= best.game_value:
+            best = b
+    return best
+
+
+def can_hold(position: int, bid_history: List[Bid]) -> bool:
+    """
+    Only a player who bid earlier may hold a later, higher bid.
+
+    The bid being held must be a real bid (not itself a hold) by someone
+    else, and the holder's own last bid must be lower.
+    """
+    if any(b.player_position == position and b.bid_type == BidType.PASS for b in bid_history):
+        return False
+    highest = highest_bid_of(bid_history)
+    if highest is None or highest.bid_type == BidType.HOLD or highest.player_position == position:
+        return False
+    own = [b for b in bid_history if b.player_position == position and b.bid_type != BidType.PASS]
+    return bool(own) and own[-1].game_value < highest.game_value
+
+
 class GamePhase(str, Enum):
     """Game phases in Hungarian Tarokk."""
     WAITING = "waiting"              # Waiting for players
@@ -65,6 +92,15 @@ class GameState(BaseModel):
     # Announcements
     announcements: List[Announcement] = Field(default_factory=list)
     announcement_history: List[Optional[Announcement]] = Field(default_factory=list)  # Track all actions (announcement or None for pass)
+    announcement_turn_log: List[dict] = Field(default_factory=list)  # One entry per turn: {"position", "passed"}
+
+    # Declarer alone (called card lies in the skart) and kontra on the game
+    declarer_alone: bool = False
+    called_card_discarded_by: Optional[int] = None
+    game_contra: bool = False
+
+    # Hands played at this table
+    hand_number: int = 1
 
     def add_player(self, player: Player) -> None:
         """Add a player to the game."""
@@ -154,12 +190,12 @@ class GameState(BaseModel):
         if bid_type not in [BidType.PASS, BidType.HOLD] and not player.has_honour():
             raise ValueError("Player must have at least one honour (skíz, XXI, or pagát) to bid")
 
+        if player_position in self.passed_positions():
+            raise ValueError("Player has already passed in this auction")
+
         # Check if HOLD is allowed
-        if bid_type == BidType.HOLD:
-            player_has_bid = any(b.player_position == player_position and b.bid_type not in [BidType.PASS, BidType.HOLD]
-                               for b in self.bid_history)
-            if not player_has_bid:
-                raise ValueError("Cannot HOLD - player has not bid yet in this auction")
+        if bid_type == BidType.HOLD and not can_hold(player_position, self.bid_history):
+            raise ValueError("Cannot HOLD - only an earlier bidder may hold a later, higher bid")
 
         # Create bid
         bid = Bid(player_position=player_position, bid_type=bid_type)
@@ -182,18 +218,27 @@ class GameState(BaseModel):
         # Solo ends the auction immediately
         if bid_type == BidType.SOLO:
             self.end_bidding()
-        else:
-            # Move to next player
-            self.current_turn = self.next_position(self.current_turn)
+        elif not self.is_bidding_complete():
+            # Move to the next player who has not passed
+            passed = self.passed_positions()
+            nxt = self.next_position(self.current_turn)
+            while nxt in passed:
+                nxt = self.next_position(nxt)
+            self.current_turn = nxt
 
         return bid
 
+    def passed_positions(self) -> set:
+        """Seats that have passed in this auction. A pass is final."""
+        return {b.player_position for b in self.bid_history if b.bid_type == BidType.PASS}
+
     def get_highest_bid(self) -> Optional[Bid]:
-        """Get the current highest bid (excluding PASS)."""
-        non_pass_bids = [b for b in self.bid_history if b.bid_type != BidType.PASS]
-        if not non_pass_bids:
-            return None
-        return max(non_pass_bids, key=lambda b: b.game_value)
+        """Get the current highest bid (excluding PASS).
+
+        Among bids of the same value the latest wins, so a player who
+        holds a bid takes it over.
+        """
+        return highest_bid_of(self.bid_history)
 
     def is_bidding_complete(self) -> bool:
         """Check if bidding phase is complete."""
@@ -204,21 +249,28 @@ class GameState(BaseModel):
         if any(b.bid_type == BidType.SOLO for b in self.bid_history):
             return True
 
+        active = [p for p in range(4) if p not in self.passed_positions()]
+
         # All 4 players have passed
-        if len(self.bid_history) >= 4 and all(b.bid_type == BidType.PASS for b in self.bid_history):
+        if not active:
             return True
 
-        # After the first round, if 3 consecutive passes
-        if len(self.bid_history) >= 4:
-            last_three = self.bid_history[-3:]
-            if all(b.bid_type == BidType.PASS for b in last_three):
-                return True
+        # One player left and that player owns the highest bid
+        if len(active) == 1:
+            highest = self.get_highest_bid()
+            return highest is not None and highest.player_position == active[0]
 
         return False
 
     def end_bidding(self) -> None:
         """End bidding and determine declarer."""
-        self.winning_bid = self.get_highest_bid()
+        highest = self.get_highest_bid()
+        if highest and highest.bid_type == BidType.HOLD:
+            # Record the held bid under its real type
+            real_type = next(t for t in (BidType.THREE, BidType.TWO, BidType.ONE, BidType.SOLO)
+                             if Bid(player_position=0, bid_type=t).game_value == highest.game_value)
+            highest = Bid(player_position=highest.player_position, bid_type=real_type)
+        self.winning_bid = highest
         if self.winning_bid:
             self.declarer_position = self.winning_bid.player_position
             self.players[self.declarer_position].is_declarer = True
@@ -288,6 +340,8 @@ class GameState(BaseModel):
 
         self.phase = GamePhase.PARTNER_CALL
         self.called_card_rank = tarokk_rank
+        self.declarer_alone = False
+        self.called_card_discarded_by = None
 
         # Find which player has this card
         for player in self.players:
@@ -297,27 +351,62 @@ class GameState(BaseModel):
                     player.is_partner = True
                     return
 
-        raise ValueError(f"Called card {tarokk_rank} not found in any player's hand")
+        # The called card lies in the skart: the declarer plays alone.
+        self.partner_position = None
+        self.declarer_alone = True
+        for player in self.players:
+            if any(c.is_tarokk() and c.rank == tarokk_rank for c in player.discard_pile):
+                if player.position != self.declarer_position:
+                    # This player must kontra the game.
+                    self.called_card_discarded_by = player.position
+                return
+
+        raise ValueError(f"Called card {tarokk_rank} not found")
+
+    def apply_obligatory_contra_if_due(self) -> bool:
+        """
+        Apply the obligatory kontra on the game when the seat to move in the
+        announcement round is the player who discarded the called card.
+
+        Returns:
+            True if the kontra was applied by this call
+        """
+        if (self.phase == GamePhase.ANNOUNCEMENTS
+                and not self.game_contra
+                and self.called_card_discarded_by is not None
+                and self.current_turn == self.called_card_discarded_by):
+            self.game_contra = True
+            return True
+        return False
 
     def start_announcement_phase(self) -> None:
         """Start the announcement phase."""
         self.phase = GamePhase.ANNOUNCEMENTS
         self.announcement_history.clear()
         self.announcements.clear()
+        self.announcement_turn_log.clear()
         # Start with declarer (bid winner)
         self.current_turn = self.declarer_position
 
-    def make_announcement(self, announcement: Announcement) -> None:
-        """
-        Add an announcement to the game.
-
-        Args:
-            announcement: The announcement to add
-        """
-        self.announcements.append(announcement)
-        self.announcement_history.append(announcement)
-        # Move to next player
+    def _end_announcement_turn(self, player_position: int, passed: bool) -> None:
+        """Log one announcement turn and move to the next seat."""
+        self.announcement_turn_log.append({"position": player_position, "passed": passed})
         self.current_turn = self.next_position(self.current_turn)
+
+    def make_announcements(self, player_position: int, announcements: List[Announcement]) -> None:
+        """
+        Add one or more announcements made in a single turn.
+
+        The turn moves on by one seat, however many announcements were made.
+        """
+        for announcement in announcements:
+            self.announcements.append(announcement)
+            self.announcement_history.append(announcement)
+        self._end_announcement_turn(player_position, passed=False)
+
+    def make_announcement(self, announcement: Announcement) -> None:
+        """Add a single announcement (one turn)."""
+        self.make_announcements(announcement.player_position, [announcement])
 
     def player_pass_announcement(self, player_position: int) -> None:
         """
@@ -328,21 +417,24 @@ class GameState(BaseModel):
         """
         # None indicates a pass
         self.announcement_history.append(None)
-        # Move to next player
-        self.current_turn = self.next_position(self.current_turn)
+        self._end_announcement_turn(player_position, passed=True)
+
+    def record_contra_turn(self, player_position: int) -> None:
+        """A kontra or rekontra uses the player's turn and is not a pass."""
+        self.announcement_history.append(None)
+        self._end_announcement_turn(player_position, passed=False)
 
     def is_announcement_phase_complete(self) -> bool:
         """
         Check if the announcement phase is complete.
 
-        Phase ends when 3 consecutive passes occur (similar to bidding).
+        Every seat gets at least one turn; after that the phase ends on
+        three passes in a row.
         """
-        if len(self.announcement_history) < 3:
+        log = self.announcement_turn_log
+        if len({t["position"] for t in log}) < 4:
             return False
-
-        # Check if last 3 actions were all passes (None)
-        last_three = self.announcement_history[-3:]
-        return all(action is None for action in last_three)
+        return all(t["passed"] for t in log[-3:])
 
     def start_playing(self) -> None:
         """Start the trick-taking phase."""
@@ -465,8 +557,8 @@ class GameState(BaseModel):
         Returns:
             Tuple of (declarer_team_points, opponent_team_points)
         """
-        if self.declarer_position is None or self.partner_position is None:
-            raise ValueError("No declarer or partner")
+        if self.declarer_position is None:
+            raise ValueError("No declarer")
 
         declarer_team_points = 0
         opponent_team_points = 0
@@ -537,7 +629,14 @@ class GameState(BaseModel):
             "trick_history": self.trick_history,  # Full history of completed tricks
             "players_who_discarded": self.players_who_discarded,
             "announcement_history": [a.to_dict() if a else None for a in self.announcement_history],
+            "announcement_turn_log": self.announcement_turn_log,
+            "game_contra": self.game_contra,
+            # Known to everyone only once the obligatory kontra has been said
+            "declarer_alone": self.declarer_alone if (self.game_contra or include_all_hands) else False,
+            "hand_number": self.hand_number,
         }
+        if include_all_hands:
+            result["called_card_discarded_by"] = self.called_card_discarded_by
 
         # Add winning bid if it exists
         if self.winning_bid:

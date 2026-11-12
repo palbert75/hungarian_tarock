@@ -445,7 +445,8 @@ async def make_announcement(sid: str, data: dict):
                    announced=announced,
                    count=len(announcement_types))
 
-        # Process all announcements
+        # Process all announcements (one turn, however many)
+        made = []
         for announcement_type_str in announcement_types:
             announcement_type = AnnouncementType(announcement_type_str)
 
@@ -454,18 +455,18 @@ async def make_announcement(sid: str, data: dict):
             if not is_valid:
                 raise ValueError(f"{announcement_type_str}: {error}")
 
-            # Create and add announcement
-            announcement = Announcement(
+            made.append(Announcement(
                 player_position=player.position,
                 announcement_type=announcement_type,
                 announced=announced
-            )
-            game_state.make_announcement(announcement)
+            ))
 
-            # Notify all players about this announcement
+        game_state.make_announcements(player.position, made)
+
+        for announcement in made:
             await broadcast_to_room(room.room_id, MessageType.ANNOUNCEMENT_MADE, {
                 "player_position": player.position,
-                "announcement_type": announcement_type_str,
+                "announcement_type": announcement.announcement_type.value,
                 "announced": announced
             })
 
@@ -582,7 +583,7 @@ async def contra_announcement(sid: str, data: dict):
         announcement.contra_by = player.position
 
         # Add to announcement history
-        game_state.player_pass_announcement(player.position)  # Move turn forward
+        game_state.record_contra_turn(player.position)  # Uses the turn, not a pass
 
         # Notify all players
         await broadcast_to_room(room.room_id, MessageType.CONTRA_MADE, {
@@ -657,7 +658,7 @@ async def recontra_announcement(sid: str, data: dict):
         announcement.recontra_by = player.position
 
         # Add to announcement history
-        game_state.player_pass_announcement(player.position)  # Move turn forward
+        game_state.record_contra_turn(player.position)  # Uses the turn, not a pass
 
         # Notify all players
         await broadcast_to_room(room.room_id, MessageType.RECONTRA_MADE, {
@@ -848,6 +849,15 @@ async def broadcast_to_room(room_id: str, msg_type: MessageType, data: dict):
 
 async def send_your_turn(room: Any, player_position: int):
     """Notify a player it's their turn."""
+    if room.game_state.apply_obligatory_contra_if_due():
+        # The player who discarded the called card must kontra the game
+        await broadcast_to_room(room.room_id, MessageType.CONTRA_MADE, {
+            "player_position": room.game_state.current_turn,
+            "announcement_type": "game",
+            "obligatory": True
+        })
+        await broadcast_game_state(room.room_id)
+
     player = room.game_state.get_player(player_position)
     if not player:
         return
@@ -985,7 +995,8 @@ async def handle_game_over(room):
         partner_position=game_state.partner_position,
         winning_bid=game_state.winning_bid,
         announcements=game_state.announcements,
-        trick_history=game_state.trick_history
+        trick_history=game_state.trick_history,
+        game_contra=game_state.game_contra
     )
 
     # Notify all players

@@ -262,6 +262,11 @@ class PersistenceManager:
         game_state.trick_number = game_state_dict.get('trick_number', 0)
         game_state.trick_leader = game_state_dict.get('trick_leader')
         game_state.previous_trick_winner = game_state_dict.get('previous_trick_winner')
+        game_state.announcement_turn_log = game_state_dict.get('announcement_turn_log', [])
+        game_state.declarer_alone = game_state_dict.get('declarer_alone', False)
+        game_state.called_card_discarded_by = game_state_dict.get('called_card_discarded_by')
+        game_state.game_contra = game_state_dict.get('game_contra', False)
+        game_state.hand_number = game_state_dict.get('hand_number', 1)
 
         logger.debug("game_state_basic_fields_set",
                     phase=game_state.phase.value,
@@ -276,11 +281,7 @@ class PersistenceManager:
         # Reconstruct bid history
         game_state.bid_history = []
         for bid_dict in game_state_dict.get('bid_history', []):
-            bid = Bid(
-                player_position=bid_dict['player_position'],
-                bid_type=BidType(bid_dict['bid_type'])
-            )
-            game_state.bid_history.append(bid)
+            game_state.bid_history.append(Bid.from_dict(bid_dict))
 
         # Set winning bid if exists
         winning_bid_dict = game_state_dict.get('winning_bid')

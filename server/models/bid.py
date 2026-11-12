@@ -32,8 +32,10 @@ class Bid(BaseModel):
 
     def __init__(self, player_position: int, bid_type: BidType, **data):
         super().__init__(player_position=player_position, bid_type=bid_type, **data)
-        self.game_value = self._get_game_value()
-        self.talon_cards = self._get_talon_cards()
+        # A HOLD carries the value of the bid it matched
+        if bid_type != BidType.HOLD or not data.get("game_value"):
+            self.game_value = self._get_game_value()
+            self.talon_cards = self._get_talon_cards()
 
     def _get_game_value(self) -> int:
         """Get the base game value for this bid type."""
@@ -123,7 +125,8 @@ class Bid(BaseModel):
     @classmethod
     def from_dict(cls, data: dict) -> "Bid":
         """Create bid from dictionary."""
-        return cls(
-            player_position=data["player_position"],
-            bid_type=BidType(data["bid_type"])
-        )
+        bid_type = BidType(data["bid_type"])
+        if bid_type == BidType.HOLD:
+            return cls(player_position=data["player_position"], bid_type=bid_type,
+                       game_value=data.get("game_value", 0), talon_cards=data.get("talon_cards", 0))
+        return cls(player_position=data["player_position"], bid_type=bid_type)

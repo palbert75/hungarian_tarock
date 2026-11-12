@@ -61,7 +61,8 @@ def calculate_final_score(
     partner_position: int,
     winning_bid: Bid,
     announcements: List[Announcement],
-    trick_history: List[dict]
+    trick_history: List[dict],
+    game_contra: bool = False
 ) -> Dict:
     """
     Calculate the complete final score including all bonuses and payments.
@@ -119,6 +120,10 @@ def calculate_final_score(
                 game_multiplier = mult
 
     final_game_value = base_game_value * game_multiplier
+
+    # Kontra on the game doubles the game value
+    if game_contra:
+        final_game_value *= 2
 
     # Initialize payments: everyone starts at 50
     num_players = len(players)
@@ -207,6 +212,7 @@ def calculate_final_score(
         "base_game_value": base_game_value,
         "game_multiplier": game_multiplier,
         "final_game_value": final_game_value,
+        "game_contra": game_contra,
         "player_scores": player_scores,  # Final scores for each player (starting from 50)
         "achieved_announcements": [a.to_dict() for a in achieved_announcements],
         "failed_announcements": [a.to_dict() for a in failed_announcements],
