@@ -1,198 +1,202 @@
-import { motion } from 'framer-motion'
-import { useGameStore } from '@/store/gameStore'
+import { useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { selectIsOwner, selectMyPosition, useGameStore } from '@/store/gameStore'
 import { socketManager } from '@/services/socketManager'
-import Chat from '@/components/Chat'
+import TopBar from '@/components/TopBar'
+import SettingsSheet from '@/components/SettingsSheet'
+import ChatSheet from '@/components/Chat'
+import TableView from '@/components/TableView'
+import { positionAt, SEATS } from '@/utils/seats'
+import { shareInvite } from '@/utils/invite'
+import type { RoomPlayer, Seat } from '@/types'
 
+/** Seat number under a point on the screen (for dragging players between seats). */
+function seatUnder(x: number, y: number): number | null {
+  const el = document.elementFromPoint(x, y)?.closest('[data-seat-pos]')
+  return el ? Number(el.getAttribute('data-seat-pos')) : null
+}
+
+/** Before the first hand: who sits where, bots, invite, ready. */
 export default function WaitingRoomScreen() {
-  const roomState = useGameStore((state) => state.roomState)
-  const playerName = useGameStore((state) => state.playerName)
+  const { t } = useTranslation()
+  const room = useGameStore((s) => s.roomState)
+  const me = useGameStore(selectMyPosition)
+  const isOwner = useGameStore(selectIsOwner)
+  const addToast = useGameStore((s) => s.addToast)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [chatOpen, setChatOpen] = useState(false)
+  /** Seat picked up (by tap or drag) to be moved */
+  const [picked, setPicked] = useState<number | null>(null)
+  const [over, setOver] = useState<number | null>(null)
+  const drag = useRef<{ from: number; moved: boolean; x: number; y: number } | null>(null)
 
-  if (!roomState) return null
+  if (!room) return null
+  const myPos = me ?? 0
+  const playerAt = (position: number) => room.players.find((p) => p.position === position)
+  const mine = playerAt(myPos)
+  const free = 4 - room.players.length
+  const owner = room.players.find((p) => p.id === room.owner_id)
 
-  const myPlayer = roomState.players.find((p) => p.name === playerName)
-  const isReady = myPlayer?.is_ready || false
-
-  const handleReady = () => {
-    socketManager.ready()
+  const move = (from: number, to: number) => {
+    if (from !== to) socketManager.swapSeats(from, to)
+    setPicked(null)
   }
 
-  const handleLeaveRoom = () => {
-    // Save player name before clearing
-    const playerName = useGameStore.getState().playerName
-
-    // Leave the room via socket
-    socketManager.leaveRoom()
-
-    // Clear persisted session data
-    useGameStore.persist.clearStorage()
-
-    // Restore player name so user doesn't have to re-enter it
-    if (playerName) {
-      useGameStore.getState().setPlayerInfo('', playerName)
+  // Owner only: drag a player onto another seat, or tap one seat and then another
+  const seatHandlers = (position: number, player?: RoomPlayer) => {
+    if (!isOwner) return {}
+    return {
+      onPointerDown: (e: React.PointerEvent) => {
+        if (!player || (e.target as HTMLElement).closest('button')) return
+        drag.current = { from: position, moved: false, x: e.clientX, y: e.clientY }
+        ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+      },
+      onPointerMove: (e: React.PointerEvent) => {
+        const d = drag.current
+        if (!d) return
+        if (!d.moved && Math.hypot(e.clientX - d.x, e.clientY - d.y) > 10) {
+          d.moved = true
+          setPicked(d.from)
+        }
+        if (d.moved) setOver(seatUnder(e.clientX, e.clientY))
+      },
+      onPointerUp: (e: React.PointerEvent) => {
+        const d = drag.current
+        drag.current = null
+        setOver(null)
+        if ((e.target as HTMLElement).closest('button')) return
+        if (d?.moved) {
+          const target = seatUnder(e.clientX, e.clientY)
+          if (target !== null) move(d.from, target)
+          else setPicked(null)
+          return
+        }
+        // A tap: pick up, put down, or cancel
+        if (picked === null) {
+          if (player) setPicked(position)
+        } else {
+          move(picked, position)
+        }
+      },
+      onPointerCancel: () => {
+        drag.current = null
+        setOver(null)
+        setPicked(null)
+      },
     }
-
-    console.log('[WaitingRoomScreen] Left room and cleared session storage')
   }
 
-  const handleCopyRoomCode = () => {
-    navigator.clipboard.writeText(roomState.room_id)
-    useGameStore.getState().addToast({
-      type: 'success',
-      message: 'Room code copied!',
-    })
+  const seats: Partial<Record<Seat, React.ReactNode>> = {}
+  for (const seat of SEATS) {
+    const position = positionAt(seat, myPos)
+    const player = playerAt(position)
+    const isBot = !!player?.is_bot
+    const away = !!player && !isBot && !player.is_connected
+    const highlight = picked === position ? 'ring-2 ring-yellow-400' : over === position || (picked !== null && isOwner) ? 'ring-2 ring-yellow-400/40' : ''
+    seats[seat] = (
+      <div
+        data-seat-pos={position}
+        {...seatHandlers(position, player)}
+        style={{ touchAction: isOwner ? 'none' : undefined }}
+        className={`relative w-[7.2rem] max-w-full min-h-[5.2rem] rounded-2xl border px-2 py-2 flex flex-col items-center justify-center gap-0.5 text-center select-none ${
+          player ? 'bg-black/35 border-white/15' : 'bg-black/15 border-dashed border-white/25'
+        } ${highlight} ${isOwner && player ? 'cursor-grab' : ''}`}
+      >
+        {player ? (
+          <>
+            <div className="text-xl leading-none">{isBot ? '🤖' : away ? '💤' : '🙂'}</div>
+            <div className="w-full truncate text-sm font-semibold">
+              {player.name}
+              {position === myPos ? ` (${t('seat.you')})` : ''}
+            </div>
+            <div className={`text-[0.7rem] ${away ? 'text-red-300' : player.is_ready || isBot ? 'text-green-400' : 'text-slate-300'}`}>
+              {away ? t('seat.dropped') : isBot ? t('seat.bot') : player.is_ready ? `✓ ${t('room.ready')}` : t('room.notReady')}
+              {player.id === room.owner_id ? ` · ${t('room.owner')}` : ''}
+            </div>
+            {isOwner && isBot && (
+              <button
+                type="button"
+                aria-label={t('room.removeBot')}
+                className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-red-800 border border-red-300/60 text-xs font-bold"
+                onClick={() => socketManager.removeBot(position)}
+              >
+                ✕
+              </button>
+            )}
+          </>
+        ) : (
+          <>
+            <div className="text-xs text-slate-300">{t('room.freeSeat')}</div>
+            {isOwner && picked === null && (
+              <button type="button" className="chip !min-h-0 !py-1" onClick={() => socketManager.addBot(position)}>
+                🤖 {t('room.addBot')}
+              </button>
+            )}
+          </>
+        )}
+      </div>
+    )
+  }
+
+  const share = async () => {
+    const outcome = await shareInvite(room.room_id, t('invite.text'))
+    if (outcome === 'copied') addToast({ type: 'success', message: t('invite.copied') })
   }
 
   return (
-    <div className="screen-scroll app-backdrop p-4 md:p-6">
-      <div className="mx-auto flex min-h-full w-full max-w-7xl flex-col gap-6 lg:flex-row">
-        {/* Main Content */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="min-w-0 flex-1 flex flex-col"
-        >
-        {/* Header */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0">
-            <h2 className="text-3xl font-bold text-white">Waiting Room</h2>
-            <p className="text-slate-400 mt-1 break-all">Room: {roomState.room_id}</p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={handleLeaveRoom}
-              className="btn btn-danger text-sm"
-            >
-              Leave Room
-            </button>
-            <button
-              onClick={handleReady}
-              className={`btn px-6 py-2 text-sm ${
-                isReady
-                  ? 'btn-success'
-                  : 'btn-primary'
-              }`}
-            >
-              {isReady ? 'Ready' : 'Mark Ready'}
-            </button>
-          </div>
-        </div>
+    <div className="h-full flex flex-col game-felt text-white">
+      <TopBar
+        left={t('room.code', { code: room.room_id })}
+        status={free > 0 ? t('room.waitingPlayers', { count: free }) : t('room.waitingReady')}
+        onSettings={() => setSettingsOpen(true)}
+        onChat={() => setChatOpen(true)}
+      />
 
-        {/* Waiting message */}
-        {!roomState.is_full && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center mb-8"
-          >
-            <p className="text-2xl text-slate-300 font-medium">
-              Waiting for players...
-            </p>
-            <p className="text-slate-400 mt-2">
-              {roomState.players.length}/4 players joined
-            </p>
-          </motion.div>
-        )}
-
-        {/* Player Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-          {[0, 1, 2, 3].map((position) => {
-            const player = roomState.players.find((p) => p.position === position)
-
-            return (
-              <motion.div
-                key={position}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: position * 0.1 }}
-                className={`
-                  room-card rounded-xl p-6 text-center
-                  ${player ? 'border-slate-500/60' : 'border-dashed border-slate-700'}
-                `}
-              >
-                <div className={`
-                  mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full border font-black
-                  ${player ? 'bg-slate-700 border-slate-500 text-white' : 'bg-slate-900/60 border-dashed border-slate-600 text-slate-500'}
-                `}>
-                  {player ? player.name.slice(0, 1).toUpperCase() : '+'}
-                </div>
-
-                <h3 className="text-lg font-semibold text-white mb-2">
-                  Position {position}
-                </h3>
-
-                {player ? (
-                  <>
-                    <p className="text-slate-300 font-medium mb-2">
-                      {player.name}
-                      {player.name === playerName && (
-                        <span className="text-blue-400"> (You)</span>
-                      )}
-                    </p>
-                    <div className="flex items-center justify-center gap-2">
-                      <span
-                        className={`w-2 h-2 rounded-full ${
-                          player.is_connected ? 'bg-green-500' : 'bg-red-500'
-                        }`}
-                      />
-                      <span className="text-sm text-slate-400">
-                        {player.is_connected ? 'Online' : 'Offline'}
-                      </span>
-                    </div>
-                    {player.is_ready && (
-                      <div className="mt-2 text-green-400 font-semibold">
-                        Ready
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <p className="text-slate-500 italic">Empty</p>
-                )}
-              </motion.div>
-            )
-          })}
-        </div>
-
-        {/* Share Room Code */}
-        <div className="glass-panel rounded-xl p-6">
-          <p className="text-slate-300 text-sm mb-2">
-            Share room code with friends:
+      <div className="flex-1 min-h-0 overflow-y-auto safe-x py-3">
+        <div className="max-w-xl mx-auto flex flex-col gap-3">
+          <TableView
+            seats={seats}
+            center={<span className="text-2xl">🃏</span>}
+            className="rounded-3xl band-top p-3 min-h-[19rem]"
+          />
+          <p className="text-center text-xs text-slate-300">
+            {isOwner
+              ? picked !== null
+                ? t('room.pickTarget')
+                : t('room.ownerHelp')
+              : t('room.guestHelp', { name: owner?.name ?? '' })}
           </p>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <div className="flex-1 px-4 py-3 bg-slate-950/45 border border-slate-600/50 rounded-lg text-center overflow-hidden">
-              <span className="text-lg md:text-2xl font-mono font-bold text-white tracking-wider break-all">
-                {roomState.room_id}
-              </span>
-            </div>
-            <button
-              onClick={handleCopyRoomCode}
-              className="btn btn-primary px-6 py-3"
-            >
-              Copy
-            </button>
-          </div>
         </div>
-
-        {/* Game starts hint */}
-        {roomState.players.every((p) => p.is_ready) && roomState.is_full && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-6 text-center text-green-400 font-semibold"
-          >
-            All players ready. Game starting...
-          </motion.div>
-        )}
-        </motion.div>
-
-        {/* Chat Sidebar */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="w-full lg:w-96 h-[360px] lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)]"
-        >
-          <Chat className="h-full" />
-        </motion.div>
       </div>
+
+      <div className="flex-none safe-x safe-bottom pt-2">
+        <div className="max-w-xl mx-auto flex flex-col gap-2">
+          <div className="grid grid-cols-2 gap-2">
+            <button type="button" className="tap tap-ghost" onClick={share}>
+              🔗 {t('invite.share')}
+            </button>
+            {isOwner ? (
+              <button type="button" className="tap tap-ghost" disabled={free === 0} onClick={() => socketManager.fillBots()}>
+                🤖 {t('room.fillBots')}
+              </button>
+            ) : (
+              <button type="button" className="tap tap-ghost" onClick={() => socketManager.leaveRoom()}>
+                {t('over.leave')}
+              </button>
+            )}
+          </div>
+          <button
+            type="button"
+            className={`tap w-full ${mine?.is_ready ? 'tap-ghost' : 'tap-go'}`}
+            onClick={() => socketManager.ready(!mine?.is_ready)}
+          >
+            {mine?.is_ready ? (free > 0 ? t('room.readyWaiting') : t('room.readyWaitingOthers')) : t('room.imReady')}
+          </button>
+        </div>
+      </div>
+
+      <SettingsSheet open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <ChatSheet open={chatOpen} onClose={() => setChatOpen(false)} />
     </div>
   )
 }

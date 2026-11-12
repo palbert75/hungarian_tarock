@@ -1,216 +1,70 @@
-import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
+import { useGameStore } from '@/store/gameStore'
 import { socketManager } from '@/services/socketManager'
-import Hand from '@/components/Hand'
-import PlayerAvatar from '@/components/PlayerAvatar'
-import type { GameState } from '@/types'
+import type { Table } from '@/hooks/useTable'
+import { useIsWide } from '@/hooks/useIsWide'
+import GameLayout from '@/components/GameLayout'
+import Seats from '@/components/Seats'
+import { HandGrid } from '@/components/Hand'
+import HintBox, { useHint } from '@/components/HintBox'
+import type { BidType } from '@/types'
 
-interface BiddingPhaseProps {
-  gameState: GameState
-  playerPosition: number
-}
+const BID_BUTTONS: BidType[] = ['three', 'two', 'one', 'solo', 'hold', 'pass']
 
-const bidTypes = [
-  { value: 'three', label: 'Three', description: '3 from talon' },
-  { value: 'two', label: 'Two', description: '2 from talon' },
-  { value: 'one', label: 'One', description: '1 from talon' },
-  { value: 'solo', label: 'Solo', description: 'No talon' },
-  { value: 'hold', label: 'Hold', description: 'Match highest bid' },
-]
+export default function BiddingPhase({ table }: { table: Table }) {
+  const { t } = useTranslation()
+  const wide = useIsWide()
+  const { game, myHand } = table
+  const yourTurnData = useGameStore((s) => s.yourTurnData)
+  const hint = useHint(yourTurnData?.hint, table.isMyTurn)
+  const validBids = table.isMyTurn ? yourTurnData?.valid_bids ?? ['pass'] : []
 
-const getBidColor = (bidType: string): string => {
-  switch (bidType) {
-    case 'three':
-      return 'bg-blue-600 hover:bg-blue-700'
-    case 'two':
-      return 'bg-purple-600 hover:bg-purple-700'
-    case 'one':
-      return 'bg-orange-600 hover:bg-orange-700'
-    case 'solo':
-      return 'bg-red-600 hover:bg-red-700'
-    case 'hold':
-      return 'bg-yellow-600 hover:bg-yellow-700'
-    default:
-      return 'bg-slate-600'
-  }
-}
+  const highest = [...game.bid_history].reverse().find((b) => b.bid_type !== 'pass')
+  const lastBidOf = (position: number) =>
+    [...game.bid_history].reverse().find((b) => b.player_position === position)
 
-export default function BiddingPhase({ gameState, playerPosition }: BiddingPhaseProps) {
-  const isMyTurn = gameState.current_turn === playerPosition
-  const currentPlayer = gameState.players[gameState.current_turn]
-  const myPlayer = gameState.players[playerPosition]
+  const top = (
+    <Seats
+      table={table}
+      content={(position) => {
+        const bid = lastBidOf(position)
+        if (bid) {
+          const leading = highest && bid === highest
+          return (
+            <span className={`bubble ${leading ? 'bubble-hi' : ''} ${bid.bid_type === 'pass' ? 'bubble-muted' : ''}`}>
+              {t(`bid.${bid.bid_type}`)}
+            </span>
+          )
+        }
+        return <span className="bubble bubble-muted">{position === game.current_turn ? '…' : '–'}</span>
+      }}
+    />
+  )
 
-  console.log('[BiddingPhase] Rendering...', {
-    playerPosition,
-    hasHand: !!myPlayer.hand,
-    handSize: myPlayer.hand?.length || 0,
-    hand: myPlayer.hand,
-  })
-
-  // Get valid bids - this would come from server in real implementation
-  // For now, we allow all bid types that are higher than current highest bid
-  const getValidBids = (): string[] => {
-    const validBids: string[] = []
-
-    // Get the highest bid (excluding pass and hold)
-    const highestBid = gameState.bid_history
-      .filter((b) => b.bid_type !== null && b.bid_type !== 'pass' && b.bid_type !== 'hold')
-      .slice(-1)[0]
-
-    // If no bids yet, can bid anything except hold
-    if (!highestBid || !highestBid.bid_type) {
-      return bidTypes.filter(b => b.value !== 'hold').map((b) => b.value)
-    }
-
-    // Can bid higher than current highest
-    const bidOrder = ['three', 'two', 'one', 'solo']
-    const highestIndex = bidOrder.indexOf(highestBid.bid_type)
-    validBids.push(...bidOrder.slice(highestIndex + 1))
-
-    // Can hold if player has already made a bid (not just passed)
-    const playerHasBid = gameState.bid_history.some(
-      (b) => b.player_position === playerPosition &&
-             b.bid_type !== null &&
-             b.bid_type !== 'pass' &&
-             b.bid_type !== 'hold'
-    )
-    if (playerHasBid) {
-      validBids.push('hold')
-    }
-
-    return validBids
-  }
-
-  const validBids = getValidBids()
-
-  const handleBid = (bidType: string) => {
-    socketManager.placeBid(bidType)
-  }
-
-  const handlePass = () => {
-    socketManager.pass()
-  }
+  const actions = (
+    <div className="grid grid-cols-3 gap-2">
+      {BID_BUTTONS.map((bid) => (
+        <button
+          key={bid}
+          type="button"
+          disabled={!validBids.includes(bid)}
+          onClick={() => socketManager.placeBid(bid)}
+          className={`tap ${bid === 'pass' ? 'tap-pass' : 'tap-blue'} ${hint?.payload.bid_type === bid ? 'tap-hint' : ''}`}
+        >
+          {t(`bid.${bid}`)}
+        </button>
+      ))}
+    </div>
+  )
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="felt-panel rounded-xl p-5 md:p-6"
-      >
-        {/* Header */}
-        <div className="text-center mb-4">
-          <h2 className="text-2xl font-bold text-white mb-1">Bidding Phase</h2>
-          <p className="text-slate-300 text-sm">
-            {isMyTurn ? (
-              <span className="text-yellow-400 font-semibold">Your turn to bid</span>
-            ) : (
-              <>
-                Waiting for <span className="text-yellow-400 font-semibold">{currentPlayer.name}</span>
-              </>
-            )}
-          </p>
-        </div>
-
-        {/* Bid Buttons */}
-        {isMyTurn && (
-          <div className="space-y-4">
-            {/* Bid Type Grid - First 4 bids */}
-            <div className="grid grid-cols-2 gap-3">
-              {bidTypes.slice(0, 4).map((bid) => {
-                const isValid = validBids.includes(bid.value)
-                return (
-                  <motion.button
-                    key={bid.value}
-                    whileHover={isValid ? { scale: 1.02 } : undefined}
-                    whileTap={isValid ? { scale: 0.98 } : undefined}
-                    onClick={() => isValid && handleBid(bid.value)}
-                    disabled={!isValid}
-                    className={`
-                      px-4 py-3 rounded-lg font-semibold text-white border border-white/10
-                      transition-all duration-200
-                      ${isValid ? getBidColor(bid.value) : 'bg-slate-700 text-slate-500 cursor-not-allowed'}
-                      ${isValid ? 'shadow-lg' : ''}
-                    `}
-                  >
-                    <div className="text-base">{bid.label}</div>
-                    <div className="text-xs opacity-80 mt-0.5">{bid.description}</div>
-                  </motion.button>
-                )
-              })}
-            </div>
-
-            {/* Hold Button - Full width */}
-            {(() => {
-              const holdBid = bidTypes.find(b => b.value === 'hold')
-              const isValid = holdBid && validBids.includes(holdBid.value)
-              return holdBid && (
-                <motion.button
-                  whileHover={isValid ? { scale: 1.02 } : undefined}
-                  whileTap={isValid ? { scale: 0.98 } : undefined}
-                  onClick={() => isValid && handleBid(holdBid.value)}
-                  disabled={!isValid}
-                  className={`
-                    w-full px-4 py-3 rounded-lg font-semibold text-white border border-white/10
-                    transition-all duration-200
-                    ${isValid ? getBidColor(holdBid.value) : 'bg-slate-700 text-slate-500 cursor-not-allowed'}
-                    ${isValid ? 'shadow-lg' : ''}
-                  `}
-                >
-                  <div className="text-base">{holdBid.label}</div>
-                  <div className="text-xs opacity-80 mt-0.5">{holdBid.description}</div>
-                </motion.button>
-              )
-            })()}
-
-            {/* Pass Button */}
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handlePass}
-              className="btn btn-muted w-full"
-            >
-              Pass
-            </motion.button>
-          </div>
-        )}
-
-        {/* Waiting Message */}
-        {!isMyTurn && (
-          <div className="text-center py-4">
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
-              className="mx-auto mb-3 h-10 w-10 rounded-full border-4 border-slate-600 border-t-yellow-300"
-            />
-            <p className="text-slate-400 text-sm">Waiting for {currentPlayer.name} to bid...</p>
-          </div>
-        )}
-      </motion.div>
-
-      {/* Player's Hand - Always visible during bidding */}
-      {myPlayer.hand && myPlayer.hand.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="glass-panel mt-4 rounded-xl px-4 py-4"
-        >
-          <div className="mb-2 flex justify-center">
-            <PlayerAvatar
-              player={myPlayer}
-              isCurrentTurn={gameState.current_turn === playerPosition}
-              position={playerPosition as 0 | 1 | 2 | 3}
-              isLocalPlayer={true}
-            />
-          </div>
-
-          <Hand
-            cards={myPlayer.hand}
-            layout="fan"
-            size="md"
-          />
-        </motion.div>
-      )}
-    </div>
+    <GameLayout
+      wide={wide}
+      focus="hand"
+      top={top}
+      hint={<HintBox hint={hint} hand={myHand} />}
+      hand={<HandGrid cards={myHand} />}
+      actions={actions}
+    />
   )
 }

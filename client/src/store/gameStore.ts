@@ -1,272 +1,171 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import type {
   ConnectionStatus,
   GameState,
   RoomState,
   AvailableRoom,
   YourTurnData,
-  Card,
-  ModalType,
+  GameOverData,
   ToastMessage,
   ChatMessage,
-  TrickWinnerAnimation,
-  TrickCard,
+  FinishedTrick,
 } from '@/types'
 
 interface GameStore {
-  // Connection state
+  // Connection
   connectionStatus: ConnectionStatus
   playerId: string | null
   playerName: string
-  playerPosition: number | null
+  /** Room we sit in (kept across reloads so we can come back to our seat) */
+  roomId: string | null
+  /** Room from an invite link, joined once we are connected */
+  pendingRoomId: string | null
+  /** "Play against bots": fill the new table with bots and start */
+  quickBots: boolean
 
-  // Room state
+  // Room
   roomState: RoomState | null
   availableRooms: AvailableRoom[]
 
-  // Game state
+  // Game
   gameState: GameState | null
   yourTurnData: YourTurnData | null
-  gameOverData: any | null  // Scoring details from server
+  gameOverData: GameOverData | null
+  finishedTrick: FinishedTrick | null
 
-  // UI state
+  // UI
   selectedCards: string[]
-  hoveredCard: string | null
-  showingModal: ModalType
   toasts: ToastMessage[]
-  soundEnabled: boolean
-  musicEnabled: boolean
   chatMessages: ChatMessage[]
-  trickWinnerAnimation: TrickWinnerAnimation | null
-  lastTrickSnapshot: TrickCard[]
+  unreadChat: number
 
-  // Actions - Connection
   setConnectionStatus: (status: ConnectionStatus) => void
-  setPlayerInfo: (id: string, name: string) => void
-  setPlayerPosition: (position: number) => void
+  setPlayerName: (name: string) => void
+  setSeat: (playerId: string, roomId: string) => void
+  setPendingRoomId: (roomId: string | null) => void
+  setQuickBots: (on: boolean) => void
 
-  // Actions - Room
   setRoomState: (roomState: RoomState | null) => void
   setAvailableRooms: (rooms: AvailableRoom[]) => void
   resetRoomSession: () => void
 
-  // Actions - Game
   setGameState: (gameState: GameState | null) => void
   setYourTurnData: (data: YourTurnData | null) => void
-  setGameOverData: (data: any) => void
+  setGameOverData: (data: GameOverData | null) => void
+  setFinishedTrick: (trick: FinishedTrick | null) => void
 
-  // Actions - UI
-  toggleCardSelection: (cardId: string) => void
+  toggleCardSelection: (cardId: string, max?: number) => void
   clearSelectedCards: () => void
-  setHoveredCard: (cardId: string | null) => void
-  setShowingModal: (modal: ModalType) => void
   addToast: (toast: Omit<ToastMessage, 'id'>) => void
   removeToast: (id: string) => void
-  toggleSound: () => void
-  toggleMusic: () => void
 
-  // Actions - Chat
-  addChatMessage: (message: ChatMessage) => void
+  addChatMessage: (message: ChatMessage, countUnread?: boolean) => void
   clearChatMessages: () => void
-
-  // Actions - Trick Animation
-  setTrickWinnerAnimation: (animation: TrickWinnerAnimation | null) => void
-  clearTrickWinnerAnimation: () => void
-  setLastTrickSnapshot: (cards: TrickCard[]) => void
-  clearLastTrickSnapshot: () => void
-
-  // Helpers
-  getMyHand: () => Card[]
-  isMyTurn: () => boolean
-  getPlayerAtPosition: (position: number) => any
+  markChatRead: () => void
 }
 
-// Use sessionStorage for development (multi-tab testing) or localStorage for production
-// sessionStorage is isolated per tab, localStorage is shared across tabs
-// @ts-ignore - Vite environment variable
-const useSessionStorage = import.meta.env.DEV // Use sessionStorage in dev mode
+// sessionStorage is isolated per tab (handy for testing four players in
+// one browser); localStorage survives closing the app.
+const storage = import.meta.env.DEV ? sessionStorage : localStorage
 
 export const useGameStore = create<GameStore>()(
   persist(
     (set, get) => ({
-      // Initial state
       connectionStatus: 'disconnected',
       playerId: null,
       playerName: '',
-      playerPosition: null,
+      roomId: null,
+      pendingRoomId: null,
+      quickBots: false,
       roomState: null,
       availableRooms: [],
       gameState: null,
       yourTurnData: null,
       gameOverData: null,
+      finishedTrick: null,
       selectedCards: [],
-      hoveredCard: null,
-      showingModal: null,
       toasts: [],
-      soundEnabled: true,
-      musicEnabled: false,
       chatMessages: [],
-      trickWinnerAnimation: null,
-      lastTrickSnapshot: [],
+      unreadChat: 0,
 
-  // Connection actions
-  setConnectionStatus: (status) => set({ connectionStatus: status }),
+      setConnectionStatus: (status) => set({ connectionStatus: status }),
+      setPlayerName: (name) => set({ playerName: name }),
+      setSeat: (playerId, roomId) => set({ playerId, roomId }),
+      setPendingRoomId: (roomId) => set({ pendingRoomId: roomId }),
+      setQuickBots: (on) => set({ quickBots: on }),
 
-  setPlayerInfo: (id, name) => set({ playerId: id, playerName: name }),
+      setRoomState: (roomState) => set({ roomState }),
+      setAvailableRooms: (rooms) => set({ availableRooms: rooms }),
 
-  setPlayerPosition: (position) => set({ playerPosition: position }),
+      resetRoomSession: () =>
+        set({
+          playerId: null,
+          roomId: null,
+          quickBots: false,
+          roomState: null,
+          gameState: null,
+          yourTurnData: null,
+          gameOverData: null,
+          finishedTrick: null,
+          selectedCards: [],
+          chatMessages: [],
+          unreadChat: 0,
+        }),
 
-  // Room actions
-  setRoomState: (roomState) => set({ roomState }),
+      setGameState: (gameState) => set({ gameState }),
+      setYourTurnData: (data) => set({ yourTurnData: data }),
+      setGameOverData: (data) => set({ gameOverData: data }),
+      setFinishedTrick: (trick) => set({ finishedTrick: trick }),
 
-  setAvailableRooms: (rooms) => set({ availableRooms: rooms }),
+      toggleCardSelection: (cardId, max) => {
+        const { selectedCards } = get()
+        if (selectedCards.includes(cardId)) {
+          set({ selectedCards: selectedCards.filter((id) => id !== cardId) })
+        } else if (max === 1) {
+          set({ selectedCards: [cardId] })
+        } else if (max === undefined || selectedCards.length < max) {
+          set({ selectedCards: [...selectedCards, cardId] })
+        }
+      },
+      clearSelectedCards: () => set({ selectedCards: [] }),
 
-  resetRoomSession: () => set({
-    playerId: null,
-    playerPosition: null,
-    roomState: null,
-    gameState: null,
-    yourTurnData: null,
-    gameOverData: null,
-    selectedCards: [],
-    hoveredCard: null,
-    chatMessages: [],
-    trickWinnerAnimation: null,
-    lastTrickSnapshot: [],
-  }),
+      addToast: (toast) => {
+        const id = Math.random().toString(36).substring(7)
+        // Keep at most three on screen
+        set((state) => ({ toasts: [...state.toasts.slice(-2), { ...toast, id }] }))
+        setTimeout(() => {
+          set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) }))
+        }, toast.duration || 3000)
+      },
+      removeToast: (id) => set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) })),
 
-  // Game actions
-  setGameState: (gameState) => set({ gameState }),
-
-  setYourTurnData: (data) => set({ yourTurnData: data }),
-
-  setGameOverData: (data) => set({ gameOverData: data }),
-
-  // UI actions
-  toggleCardSelection: (cardId) => {
-    const { selectedCards } = get()
-    const isSelected = selectedCards.includes(cardId)
-
-    set({
-      selectedCards: isSelected
-        ? selectedCards.filter((id) => id !== cardId)
-        : [...selectedCards, cardId],
-    })
-  },
-
-  clearSelectedCards: () => set({ selectedCards: [] }),
-
-  setHoveredCard: (cardId) => set({ hoveredCard: cardId }),
-
-  setShowingModal: (modal) => set({ showingModal: modal }),
-
-  addToast: (toast) => {
-    const id = Math.random().toString(36).substring(7)
-    set((state) => ({
-      toasts: [...state.toasts, { ...toast, id }],
-    }))
-
-    // Auto-remove after duration
-    const duration = toast.duration || 3000
-    setTimeout(() => {
-      set((state) => ({
-        toasts: state.toasts.filter((t) => t.id !== id),
-      }))
-    }, duration)
-  },
-
-  removeToast: (id) => {
-    set((state) => ({
-      toasts: state.toasts.filter((t) => t.id !== id),
-    }))
-  },
-
-  toggleSound: () => {
-    set((state) => ({ soundEnabled: !state.soundEnabled }))
-  },
-
-  toggleMusic: () => {
-    set((state) => ({ musicEnabled: !state.musicEnabled }))
-  },
-
-  // Chat actions
-  addChatMessage: (message) => {
-    set((state) => ({
-      chatMessages: [...state.chatMessages, message],
-    }))
-  },
-
-  clearChatMessages: () => {
-    set({ chatMessages: [] })
-  },
-
-  // Trick animation actions
-  setTrickWinnerAnimation: (animation) => {
-    set({ trickWinnerAnimation: animation })
-  },
-
-  clearTrickWinnerAnimation: () => {
-    set({ trickWinnerAnimation: null, lastTrickSnapshot: [] })
-  },
-
-  setLastTrickSnapshot: (cards) => {
-    set({ lastTrickSnapshot: cards })
-  },
-
-  clearLastTrickSnapshot: () => {
-    set({ lastTrickSnapshot: [] })
-  },
-
-  // Helpers
-  getMyHand: () => {
-    const { gameState, playerPosition } = get()
-    if (!gameState || playerPosition === null) return []
-
-    const me = gameState.players[playerPosition]
-    return me?.hand || []
-  },
-
-  isMyTurn: () => {
-    const { gameState, playerPosition } = get()
-    if (!gameState || playerPosition === null) return false
-
-    return gameState.current_turn === playerPosition
-  },
-
-  getPlayerAtPosition: (position) => {
-    const { gameState } = get()
-    if (!gameState) return null
-
-    return gameState.players[position]
-  },
+      addChatMessage: (message, countUnread = false) =>
+        set((state) => ({
+          chatMessages: [...state.chatMessages, message],
+          unreadChat: countUnread ? state.unreadChat + 1 : state.unreadChat,
+        })),
+      clearChatMessages: () => set({ chatMessages: [], unreadChat: 0 }),
+      markChatRead: () => set({ unreadChat: 0 }),
     }),
     {
       name: 'tarokk-game-storage',
-      // Use sessionStorage in dev mode (per-tab), localStorage in production (persistent)
-      storage: useSessionStorage
-        ? {
-            getItem: (name) => {
-              const value = sessionStorage.getItem(name)
-              return value ? JSON.parse(value) : null
-            },
-            setItem: (name, value) => {
-              sessionStorage.setItem(name, JSON.stringify(value))
-            },
-            removeItem: (name) => {
-              sessionStorage.removeItem(name)
-            },
-          }
-        : undefined, // undefined = use default localStorage
-      partialize: (state: GameStore) => ({
+      storage: createJSONStorage(() => storage),
+      partialize: (state) => ({
         playerId: state.playerId,
         playerName: state.playerName,
-        playerPosition: state.playerPosition,
-        roomState: state.roomState,
-        gameState: state.gameState,
-        soundEnabled: state.soundEnabled,
-        musicEnabled: state.musicEnabled,
-      } as Partial<GameStore>),
+        roomId: state.roomId,
+      }),
     }
   )
 )
+
+/** My seat number at the table, from the room (it can change when seats are swapped). */
+export function selectMyPosition(state: GameStore): number | null {
+  const me = state.roomState?.players.find((p) => p.id === state.playerId)
+  return me ? me.position : null
+}
+
+export function selectIsOwner(state: GameStore): boolean {
+  return !!state.playerId && state.roomState?.owner_id === state.playerId
+}

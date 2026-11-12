@@ -1,114 +1,76 @@
-import { motion } from 'framer-motion'
 import { useMemo } from 'react'
+import type { CSSProperties } from 'react'
 import Card from './Card'
-import { sortCards } from '@/utils/cardSorting'
 import type { Card as CardType } from '@/types'
+import { sortCards } from '@/utils/cardSorting'
 
-interface HandProps {
+interface HandGridProps {
   cards: CardType[]
-  selectedCards?: string[]
-  validCards?: string[]
-  onCardClick?: (cardId: string) => void
-  layout?: 'fan' | 'straight'
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+  selected?: string[]
+  /** Card ids that cannot be chosen now (shown greyed) */
+  disabled?: string[]
+  /** Card ids carrying a small tag (e.g. "new" for talon cards) */
+  tagged?: string[]
+  tagLabel?: string
+  /** Card ids the tutorial recommends */
+  hinted?: string[]
+  onTap?: (cardId: string) => void
 }
 
-export default function Hand({
-  cards,
-  selectedCards = [],
-  validCards,
-  onCardClick,
-  layout = 'fan',
-  size = 'md',
-}: HandProps) {
-  // Sort cards: Tarokks first (descending), then suits (descending)
-  const sortedCards = useMemo(() => sortCards(cards), [cards])
-  const cardCount = sortedCards.length
+/** Split sorted cards into two rows that are as even as possible (one row for few cards). */
+export function splitRows(cards: CardType[]): CardType[][] {
+  if (cards.length <= 4) return [cards]
+  const first = Math.ceil(cards.length / 2)
+  return [cards.slice(0, first), cards.slice(first)]
+}
 
-  // Calculate fan spread based on number of cards
-  const maxSpread = 34 // Maximum rotation in degrees
-  const spreadAngle = cardCount > 1 ? Math.min(maxSpread, cardCount * 2.6) : 0
-  const angleStep = cardCount > 1 ? spreadAngle / (cardCount - 1) : 0
-  const startAngle = -spreadAngle / 2
-
-  // Calculate card overlap
-  const overlapPercent = layout === 'fan' ? 58 : 30
-
-  const getCardStyle = (index: number) => {
-    if (layout === 'straight') {
-      return {
-        transform: 'rotate(0deg)',
-        zIndex: index,
-      }
-    }
-
-    // Fan layout
-    const angle = startAngle + angleStep * index
-    const verticalOffset = Math.abs(angle) * 0.42
-
-    return {
-      transform: `rotate(${angle}deg) translateY(${verticalOffset}px)`,
-      zIndex: index,
-    }
-  }
-
-  const isCardDisabled = (cardId: string): boolean => {
-    // If validCards is provided and card is not in it, it's disabled
-    if (validCards && !validCards.includes(cardId)) return true
-    return false
-  }
-
-  // Calculate container width based on overlap
-  const cardWidths = {
-    xs: 48, // 12 * 4px (w-12)
-    sm: 64, // 16 * 4px (w-16)
-    md: 80, // 20 * 4px (w-20)
-    lg: 96, // 24 * 4px (w-24)
-    xl: 128, // 32 * 4px (w-32)
-  }
-  const cardWidth = cardWidths[size]
-  const overlapWidth = cardWidth * (overlapPercent / 100)
-  const totalWidth = cardCount > 0 ? cardWidth + (cardCount - 1) * overlapWidth : 0
+/** The hand, large: it fills whatever space its parent gives it. */
+export function HandGrid({ cards, selected = [], disabled = [], tagged = [], tagLabel, hinted = [], onTap }: HandGridProps) {
+  const rows = useMemo(() => splitRows(sortCards(cards)), [cards])
+  const cols = Math.max(...rows.map((r) => r.length), 1)
+  const style = { '--cols': cols, '--rows': rows.length } as CSSProperties
 
   return (
-    <div className="w-full overflow-x-auto overflow-y-visible scrollbar-hide py-6">
-      <div
-        className="relative mx-auto flex items-end justify-center"
-        style={{
-          width: `${Math.max(totalWidth, cardWidth)}px`,
-          height: layout === 'fan' ? '184px' : 'auto',
-          minWidth: `${Math.min(totalWidth, 320)}px`,
-        }}
-      >
-        {sortedCards.map((card, index) => {
-          const isSelected = selectedCards.includes(card.id)
-          const isDisabled = isCardDisabled(card.id)
-
-          return (
-            <motion.div
-              key={card.id}
-              className="absolute"
-              style={{
-                ...getCardStyle(index),
-                left: `${index * overlapWidth}px`,
-                transformOrigin: 'bottom center',
-              }}
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05, duration: 0.3 }}
-            >
+    <div className="hand-box" style={style}>
+      {rows.map((row, i) => (
+        <div className="hand-row" key={i}>
+          {row.map((card) => {
+            const isDisabled = disabled.includes(card.id)
+            return (
               <Card
+                key={card.id}
                 card={card}
-                size={size}
-                selectable={!!onCardClick}
-                selected={isSelected}
-                disabled={isDisabled}
-                onClick={() => onCardClick?.(card.id)}
+                selected={selected.includes(card.id)}
+                dimmed={isDisabled}
+                hinted={hinted.includes(card.id)}
+                tag={tagged.includes(card.id) ? tagLabel : undefined}
+                onClick={onTap && !isDisabled ? () => onTap(card.id) : undefined}
               />
-            </motion.div>
-          )
-        })}
-      </div>
+            )
+          })}
+        </div>
+      ))}
     </div>
+  )
+}
+
+/** The hand, small: one overlapping row along the bottom. */
+export function HandStrip({ cards, onTap, label }: { cards: CardType[]; onTap?: () => void; label?: string }) {
+  const sorted = useMemo(() => sortCards(cards), [cards])
+  const n = Math.max(sorted.length, 1)
+  // Overlap so that any number of cards fits the width
+  const width = `min(3.1rem, calc((100vw - 1.5rem) / ${n} * 1.35))`
+  const overlap = `calc(${width} * -0.27)`
+  return (
+    <button type="button" onClick={onTap} className="w-full flex flex-col items-center gap-1 py-1" aria-label={label}>
+      {label && <span className="text-[0.7rem] text-slate-300/80">{label}</span>}
+      <div className="flex justify-center" style={{ paddingLeft: `calc(${width} * 0.27)` }}>
+        {sorted.map((card) => (
+          <div key={card.id} style={{ marginLeft: overlap }}>
+            <Card card={card} width={width} />
+          </div>
+        ))}
+      </div>
+    </button>
   )
 }

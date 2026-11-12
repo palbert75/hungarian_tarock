@@ -661,6 +661,7 @@ class GameState(BaseModel):
             "announcement_history": [a.to_dict() if a else None for a in self.announcement_history],
             "announcement_turn_log": self.announcement_turn_log,
             "game_contra": self.game_contra,
+            "game_contra_by": self.called_card_discarded_by if self.game_contra else None,
             # Known to everyone only once the obligatory kontra has been said
             "declarer_alone": self.declarer_alone if (self.game_contra or include_all_hands) else False,
             "hand_number": self.hand_number,

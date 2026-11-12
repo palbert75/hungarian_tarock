@@ -1,0 +1,217 @@
+{
+  "common": {
+    "close": "Bezárás"
+  },
+  "welcome": {
+    "subtitle": "Magyar tarokk négy játékosnak",
+    "invited": "Meghívtak egy asztalhoz. Hogy szólítsunk?",
+    "name": "Neved",
+    "namePlaceholder": "pl. Kata",
+    "go": "Játsszunk!"
+  },
+  "connection": {
+    "connecting": "Kapcsolódás…",
+    "reconnecting": "Megszakadt a kapcsolat – újracsatlakozás…",
+    "returning": "Vissza a helyedre…"
+  },
+  "lobby": {
+    "playBots": "Játék gépek ellen",
+    "newTable": "Új asztal",
+    "openTables": "Nyitott asztalok",
+    "noTables": "Most nincs nyitott asztal. Nyiss egyet!",
+    "emptyTable": "Üres asztal",
+    "seats": "{{taken}} / 4 hely foglalt",
+    "betweenHands": "két játszma között",
+    "join": "Beülök",
+    "haveCode": "Van asztalkódod?",
+    "codePlaceholder": "Asztalkód"
+  },
+  "room": {
+    "code": "Asztal: {{code}}",
+    "waitingPlayers": "Szabad helyek: {{count}}",
+    "waitingReady": "Várjuk, hogy mindenki kész legyen",
+    "freeSeat": "Szabad hely",
+    "addBot": "Gép",
+    "removeBot": "Gép eltávolítása",
+    "fillBots": "Feltöltés gépekkel",
+    "ready": "kész",
+    "notReady": "még nem kész",
+    "owner": "házigazda",
+    "imReady": "Kész vagyok",
+    "readyWaiting": "Kész – várunk a játékosokra (koppints a visszavonáshoz)",
+    "readyWaitingOthers": "Kész – várunk a többiekre (koppints a visszavonáshoz)",
+    "ownerHelp": "Te vagy a házigazda: húzd a játékost másik helyre, vagy koppints rá, aztán a helyre.",
+    "pickTarget": "Most koppints arra a helyre, ahová ültetnéd.",
+    "guestHelp": "{{name}} a házigazda, ő dönti el, ki hol ül."
+  },
+  "invite": {
+    "share": "Meghívás",
+    "text": "Gyere tarokkozni az asztalomhoz!",
+    "copied": "A meghívó linkje a vágólapon"
+  },
+  "seat": {
+    "you": "Te",
+    "bot": "gép",
+    "declarer": "felvevő",
+    "partner": "partner",
+    "dealer": "osztó",
+    "dropped": "kiesett"
+  },
+  "game": {
+    "yourTurn": "Te jössz",
+    "waitingFor": "{{name}} következik",
+    "hand": "{{number}}. játszma",
+    "dealing": "Osztás…",
+    "called": "hívott: {{card}}",
+    "alone": "a felvevő egyedül játszik",
+    "dropped": "{{name}} kiesett – várjuk, hogy visszajöjjön",
+    "replaceWithBot": "Gép üljön a helyére",
+    "ownerCanReplace": "a házigazda gépet ültethet a helyére"
+  },
+  "bid": {
+    "pass": "Passz",
+    "three": "Három",
+    "two": "Kettő",
+    "one": "Egy",
+    "solo": "Szóló",
+    "hold": "Tartom"
+  },
+  "discard": {
+    "goingToSkart": "Skartba megy: {{count}} / {{total}}",
+    "done": "kész",
+    "new": "új",
+    "protected": "A szürke lapok nem tehetők skartba (királyok, honőrök, XX)",
+    "confirm": "Skartolok ({{count}})",
+    "selectMore": "Válassz még {{count}} lapot",
+    "waitingOthers": "A többiek még skartolnak"
+  },
+  "call": {
+    "choose": "Melyik tarokkot hívod partnernek?",
+    "yours": "nálad",
+    "confirm": "Hívom: {{card}}",
+    "waiting": "{{name}} partnert hív"
+  },
+  "announcement": {
+    "trull": "Tuletroá",
+    "four_kings": "Négy király",
+    "double_game": "Duplajáték",
+    "volat": "Volát",
+    "pagat_ultimo": "Pagátultimó",
+    "xxi_catch": "XXI-fogás"
+  },
+  "announce": {
+    "choose": "Bemondás…",
+    "confirm": "Bemondom ({{count}})",
+    "contra": "Kontra: {{what}}",
+    "recontra": "Rekontra: {{what}}",
+    "contraShort": "kontra",
+    "recontraShort": "rekontra",
+    "contraGame": "kontra játék"
+  },
+  "play": {
+    "tricks": "ütés: {{count}}",
+    "tookTrick": "{{name}} viszi az ütést",
+    "yourHandTap": "A lapjaid – koppints a nagyításhoz",
+    "yourHand": "A lapjaid",
+    "greyedCards": "A szürke lapok most nem játszhatók ki",
+    "playCard": "Kijátszom: {{card}}",
+    "selectCard": "Válassz lapot"
+  },
+  "over": {
+    "title": "Játszma vége",
+    "youWon": "Nyertél",
+    "youLost": "Vesztettél",
+    "declarerWon": "A felvevők megnyerték a játékot",
+    "defendersWon": "Az ellenjátékosok megnyerték a játékot",
+    "declarerSide": "Felvevők",
+    "defenderSide": "Ellenjátékosok",
+    "gameValue": "A játék értéke: {{value}}",
+    "bonuses": "Figurák",
+    "silent": "csendes",
+    "player": "Játékos",
+    "thisHand": "Ez a játszma",
+    "total": "Összesen",
+    "freeSeat": "Szabad hely",
+    "needFour": "A következő játszmához négy játékos kell.",
+    "nextHand": "Következő játszma",
+    "waitingOthers": "Várunk a többiekre…",
+    "leave": "Felállok az asztaltól"
+  },
+  "card": {
+    "skiz": "Skíz",
+    "rank": {
+      "K": "K",
+      "Q": "D",
+      "C": "L",
+      "J": "B",
+      "10": "10"
+    }
+  },
+  "suit": {
+    "hearts": "kőr",
+    "diamonds": "káró",
+    "spades": "pikk",
+    "clubs": "treff",
+    "tarokk": "tarokk"
+  },
+  "chat": {
+    "title": "Csevegés",
+    "empty": "Még nincs üzenet",
+    "placeholder": "Üzenet…",
+    "send": "Küldés"
+  },
+  "settings": {
+    "title": "Beállítások",
+    "tutorial": "Oktató tippek",
+    "tutorialDetail": "Megmutatja, mit érdemes lépned, és miért",
+    "language": "Nyelv",
+    "sound": "Hangok",
+    "botSpeed": "Gépek sebessége",
+    "botSpeedDetail": "Mennyit gondolkodnak a gépek",
+    "ownerOnly": "A házigazda állítja be",
+    "fast": "Gyors",
+    "normal": "Normál",
+    "slow": "Lassú",
+    "leave": "Felállok az asztaltól",
+    "leaveConfirm": "Felállsz az asztaltól a játék közepén?"
+  },
+  "hint": {
+    "fallback": "Javasolt lépés"
+  },
+  "toast": {
+    "reconnected": "Újra online vagy",
+    "playerBack": "{{name}} újra online",
+    "playerReplaced": "{{name}} helyett mostantól gép játszik",
+    "playerDropped": "{{name}} kiesett",
+    "allPassed": "Mindenki passzolt – új osztás",
+    "talonReceived": "Lapok a talonból: {{count}}",
+    "tarokksDiscarded": "{{name}} tarokkot skartolt: {{count}}",
+    "partnerCalled": "A hívott lap: {{card}}",
+    "partnerRevealed": "{{name}} a partner",
+    "contraGame": "{{name}} skartolta a hívott lapot: kontra a játékra, a felvevő egyedül játszik",
+    "contra": "{{name}}: kontra {{what}}",
+    "recontra": "{{name}}: rekontra {{what}}"
+  },
+  "error": {
+    "generic": "Valami hiba történt",
+    "roomGone": "Ez az asztal már nem létezik",
+    "roomFull": "Ez az asztal megtelt",
+    "NOT_OWNER": "Ezt csak a házigazda teheti meg",
+    "BID_ERROR": "Ez a licit most nem lehetséges",
+    "DISCARD_ERROR": "Ezek a lapok nem tehetők skartba",
+    "CALL_PARTNER_ERROR": "Ez a lap nem hívható",
+    "ANNOUNCEMENT_ERROR": "Ez nem mondható be",
+    "PASS_ANNOUNCEMENT_ERROR": "Most nem passzolhatsz",
+    "CONTRA_ERROR": "Erre nem mondhatsz kontrát",
+    "RECONTRA_ERROR": "Erre nem mondhatsz rekontrát",
+    "PLAY_CARD_ERROR": "Ez a lap most nem játszható ki",
+    "READY_ERROR": "Nem sikerült a készenlét átállítása",
+    "NEXT_HAND_ERROR": "A következő játszma még nem indulhat",
+    "SEAT_ERROR": "Ez az ültetés nem lehetséges",
+    "BOT_ERROR": "Nem sikerült a gépek módosítása",
+    "CREATE_ROOM_ERROR": "Nem sikerült asztalt nyitni",
+    "LEAVE_ROOM_ERROR": "Nem sikerült felállni az asztaltól",
+    "LIST_ROOMS_ERROR": "Nem sikerült betölteni az asztalokat",
+    "CHAT_ERROR": "Az üzenet nem ment el"
+  }
+}

@@ -1,372 +1,169 @@
-import { motion } from 'framer-motion'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useGameStore } from '@/store/gameStore'
 import { socketManager } from '@/services/socketManager'
-import Hand from '@/components/Hand'
-import PlayerAvatar from '@/components/PlayerAvatar'
-import type { GameState, Announcement } from '@/types'
+import type { Table } from '@/hooks/useTable'
+import { useIsWide } from '@/hooks/useIsWide'
+import GameLayout from '@/components/GameLayout'
+import Seats from '@/components/Seats'
+import { HandGrid } from '@/components/Hand'
+import HintBox, { useHint } from '@/components/HintBox'
+import type { Announcement, AnnouncementType } from '@/types'
 
-interface AnnouncementsPhaseProps {
-  gameState: GameState
-  playerPosition: number
+const ORDER: AnnouncementType[] = ['trull', 'four_kings', 'double_game', 'volat', 'pagat_ultimo', 'xxi_catch']
+
+type Side = 'declarer' | 'opponent' | 'unknown'
+
+/** Which side a seat is on, as far as I can know it. */
+function useSides(table: Table) {
+  const { game, me, myHand } = table
+  const declarer = game.declarer_position
+  const called = (game.called_card_rank || '').toLowerCase()
+  const iHoldCalled = !!called && myHand.some((c) => c.suit === 'tarokk' && c.rank.toLowerCase() === called)
+  const iAmPartner = (game.partner_revealed && game.partner_position === me) || iHoldCalled
+  const mySide: Side = me === declarer || iAmPartner ? 'declarer' : 'opponent'
+
+  const sideOf = (position: number): Side => {
+    if (position === me) return mySide
+    if (position === declarer) return 'declarer'
+    if (game.partner_revealed && position === game.partner_position) return 'declarer'
+    if (iAmPartner || game.declarer_alone) return 'opponent'
+    return 'unknown'
+  }
+  return { mySide, sideOf }
 }
 
-const announcementTypes = [
-  {
-    value: 'trull',
-    label: 'Trull',
-    description: 'I, XXI, Škis',
-    icon: '🎯',
-    points: { announced: 2, silent: 1 },
-  },
-  {
-    value: 'four_kings',
-    label: 'Four Kings',
-    description: 'All 4 Kings',
-    icon: '👑',
-    points: { announced: 2, silent: 1 },
-  },
-  {
-    value: 'double_game',
-    label: 'Double Game',
-    description: '2x points',
-    icon: '2️⃣',
-    points: { announced: 0, silent: 0 },
-  },
-  {
-    value: 'volat',
-    label: 'Volat',
-    description: 'Win all tricks',
-    icon: '💯',
-    points: { announced: 8, silent: 4 },
-  },
-  {
-    value: 'pagat_ultimo',
-    label: 'Pagát Ultimó',
-    description: 'Win last trick with I',
-    icon: '🎴',
-    points: { announced: 8, silent: 4 },
-  },
-  {
-    value: 'xxi_catch',
-    label: 'XXI Catch',
-    description: 'Capture XXI',
-    icon: '🎣',
-    points: { announced: 8, silent: 4 },
-  },
-]
+export default function AnnouncementsPhase({ table }: { table: Table }) {
+  const { t } = useTranslation()
+  const wide = useIsWide()
+  const { game, me, myHand } = table
+  const yourTurnData = useGameStore((s) => s.yourTurnData)
+  const hint = useHint(yourTurnData?.hint, table.isMyTurn)
+  const { mySide, sideOf } = useSides(table)
+  const [chosen, setChosen] = useState<AnnouncementType[]>([])
 
-export default function AnnouncementsPhase({
-  gameState,
-  playerPosition,
-}: AnnouncementsPhaseProps) {
-  const [selectedAnnouncements, setSelectedAnnouncements] = useState<string[]>([])
+  useEffect(() => {
+    if (!table.isMyTurn) setChosen([])
+  }, [table.isMyTurn])
 
-  const isMyTurn = gameState.current_turn === playerPosition
-  const currentPlayer = gameState.players[gameState.current_turn]
-  const myPlayer = gameState.players[playerPosition]
+  const valid = table.isMyTurn ? yourTurnData?.valid_announcements ?? [] : []
+  const options = ORDER.filter((a) => valid.includes(a))
+  const hinted = hint?.payload.announcement_types ?? []
 
-  // Get valid announcements (would come from server in real implementation)
-  // If server doesn't provide valid_announcements, allow all announcements for now
-  const validAnnouncements = gameState.valid_announcements && gameState.valid_announcements.length > 0
-    ? gameState.valid_announcements
-    : announcementTypes.map(a => a.value)
+  const canContra = (a: Announcement) => !a.contra && a.player_position !== me && sideOf(a.player_position) !== mySide
+  const canRecontra = (a: Announcement) =>
+    !!a.contra && !a.recontra && (a.player_position === me || sideOf(a.player_position) === mySide)
+  const contras = table.isMyTurn ? game.announcements.filter(canContra) : []
+  const recontras = table.isMyTurn ? game.announcements.filter(canRecontra) : []
 
-  const toggleAnnouncement = (announcementType: string) => {
-    setSelectedAnnouncements((prev) => {
-      if (prev.includes(announcementType)) {
-        // Remove if already selected
-        return prev.filter((type) => type !== announcementType)
-      }
-      // Add new announcement
-      return [...prev, announcementType]
-    })
-  }
+  const lastTurn = (position: number) =>
+    [...(game.announcement_turn_log || [])].reverse().find((entry) => entry.position === position)
 
-  const handleConfirmAnnouncements = () => {
-    if (selectedAnnouncements.length > 0) {
-      // Send all announcements to server at once (always announced: true)
-      console.log('[AnnouncementsPhase] Confirming announcements:', selectedAnnouncements)
-      socketManager.makeAnnouncements(selectedAnnouncements, true)
-      setSelectedAnnouncements([])
-    }
-  }
+  const toggle = (a: AnnouncementType) =>
+    setChosen((list) => (list.includes(a) ? list.filter((x) => x !== a) : [...list, a]))
 
-  const handlePass = () => {
-    socketManager.passAnnouncement()
-  }
+  const top = (
+    <Seats
+      table={table}
+      content={(position) => {
+        const made = game.announcements.filter((a) => a.player_position === position)
+        const kontraGame = game.game_contra && game.game_contra_by === position
+        if (made.length || kontraGame) {
+          return (
+            <div className="flex flex-col items-center gap-0.5">
+              {kontraGame && <span className="bubble bubble-hi">{t('announce.contraGame')}</span>}
+              {made.map((a) => (
+                <span key={a.announcement_type} className="bubble bubble-hi">
+                  {t(`announcement.${a.announcement_type}`)}
+                  {a.recontra ? ` · ${t('announce.recontraShort')}` : a.contra ? ` · ${t('announce.contraShort')}` : ''}
+                </span>
+              ))}
+            </div>
+          )
+        }
+        const turn = lastTurn(position)
+        if (turn) return <span className="bubble bubble-muted">{t('bid.pass')}</span>
+        return <span className="bubble bubble-muted">{position === game.current_turn ? '…' : '–'}</span>
+      }}
+    />
+  )
 
-  // Count consecutive passes
-  const consecutivePasses = gameState.announcement_history
-    ? gameState.announcement_history
-        .slice()
-        .reverse()
-        .findIndex((a: Announcement | null) => a !== null)
-    : 0
+  const actions = table.isMyTurn ? (
+    <div className="flex flex-col gap-2">
+      {options.length > 0 && (
+        <div className="flex flex-wrap justify-center gap-1.5">
+          {options.map((a) => (
+            <button
+              key={a}
+              type="button"
+              onClick={() => toggle(a)}
+              className={`chip ${chosen.includes(a) ? 'chip-on' : ''} ${hinted.includes(a) ? 'tap-hint' : ''}`}
+            >
+              {chosen.includes(a) ? '✓ ' : ''}
+              {t(`announcement.${a}`)}
+            </button>
+          ))}
+        </div>
+      )}
+      {(contras.length > 0 || recontras.length > 0) && (
+        <div className="flex flex-wrap justify-center gap-1.5">
+          {contras.map((a) => (
+            <button
+              key={`c-${a.announcement_type}`}
+              type="button"
+              className="chip"
+              onClick={() => socketManager.contraAnnouncement(a.announcement_type)}
+            >
+              {t('announce.contra', { what: t(`announcement.${a.announcement_type}`) })}
+            </button>
+          ))}
+          {recontras.map((a) => (
+            <button
+              key={`r-${a.announcement_type}`}
+              type="button"
+              className="chip"
+              onClick={() => socketManager.recontraAnnouncement(a.announcement_type)}
+            >
+              {t('announce.recontra', { what: t(`announcement.${a.announcement_type}`) })}
+            </button>
+          ))}
+        </div>
+      )}
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          className={`tap tap-pass ${hint?.action === 'pass_announcement' ? 'tap-hint' : ''}`}
+          onClick={() => socketManager.passAnnouncement()}
+        >
+          {t('bid.pass')}
+        </button>
+        <button
+          type="button"
+          className="tap tap-go"
+          disabled={chosen.length === 0}
+          onClick={() => {
+            socketManager.makeAnnouncements(chosen)
+            setChosen([])
+          }}
+        >
+          {chosen.length ? t('announce.confirm', { count: chosen.length }) : t('announce.choose')}
+        </button>
+      </div>
+    </div>
+  ) : (
+    <button type="button" className="tap w-full" disabled>
+      {t('game.waitingFor', { name: table.nameAt(game.current_turn) })}
+    </button>
+  )
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="felt-panel rounded-xl p-4"
-      >
-        {/* Header */}
-        <div className="text-center mb-3">
-          <h2 className="text-xl font-bold text-white mb-1">Announcements</h2>
-          <p className="text-slate-300 text-sm">
-            {isMyTurn ? (
-              <span className="text-yellow-400 font-semibold">Your turn to announce</span>
-            ) : (
-              <>
-                Waiting for{' '}
-                <span className="text-yellow-400 font-semibold">{currentPlayer.name}</span>
-              </>
-            )}
-          </p>
-          {consecutivePasses > 0 && (
-            <p className="text-slate-400 text-xs mt-1">
-              {consecutivePasses} consecutive pass{consecutivePasses !== 1 ? 'es' : ''} (need 3 to end)
-            </p>
-          )}
-        </div>
-
-        {/* Announcement History */}
-        {gameState.announcements && gameState.announcements.length > 0 && (
-          <div className="mb-3 bg-slate-950/35 border border-slate-600/40 rounded-xl p-2">
-            <h3 className="text-white font-semibold mb-2 text-xs">Announcements Made</h3>
-            <div className="space-y-2">
-              {gameState.announcements.map((announcement: any, index: number) => {
-                const announcementInfo = announcementTypes.find(
-                  (a) => a.value === announcement.announcement_type
-                )
-
-                // Check if current player can contra or recontra
-                const isDeclarerTeam = playerPosition === gameState.declarer_position || playerPosition === gameState.partner_position
-                const isAnnouncementByDeclarerTeam =
-                  announcement.player_position === gameState.declarer_position ||
-                  announcement.player_position === gameState.partner_position
-
-                const canContra = isMyTurn && !announcement.contra && isDeclarerTeam !== isAnnouncementByDeclarerTeam
-                const canRecontra = isMyTurn && announcement.contra && !announcement.recontra && isDeclarerTeam === isAnnouncementByDeclarerTeam
-
-                return (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="bg-slate-800/65 border border-slate-600/40 rounded-lg p-2"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      {/* Left side - Announcement info */}
-                      <div className="flex items-center gap-2 flex-1">
-                        <span className="text-xl">{announcementInfo?.icon}</span>
-                        <div className="flex-1">
-                          <div className="text-white font-semibold text-sm">
-                            {announcementInfo?.label}
-                          </div>
-                          <div className="text-slate-400 text-xs">
-                            {gameState.players[announcement.player_position]?.name}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Right side - Status and buttons */}
-                      <div className="flex items-center gap-2">
-                        {/* Status badges */}
-                        <div className="flex flex-col gap-1">
-                          <div className={`text-xs font-semibold px-2 py-0.5 rounded ${announcement.announced ? 'bg-yellow-600' : 'bg-slate-500'}`}>
-                            {announcement.announced ? 'Open' : 'Silent'}
-                          </div>
-                          {announcement.contra && (
-                            <div className="text-xs font-semibold px-2 py-0.5 rounded bg-red-600 text-white">
-                              Contra
-                            </div>
-                          )}
-                          {announcement.recontra && (
-                            <div className="text-xs font-semibold px-2 py-0.5 rounded bg-orange-600 text-white">
-                              Recontra
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Contra/Recontra buttons */}
-                        {canContra && (
-                          <button
-                            onClick={() => socketManager.contraAnnouncement(announcement.announcement_type)}
-                            className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded transition-colors"
-                          >
-                            Contra
-                          </button>
-                        )}
-                        {canRecontra && (
-                          <button
-                            onClick={() => socketManager.recontraAnnouncement(announcement.announcement_type)}
-                            className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold rounded transition-colors"
-                          >
-                            Recontra
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </motion.div>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
-        {isMyTurn ? (
-          <div className="space-y-3">
-            {/* Info */}
-            <div className="bg-blue-900/25 border border-blue-700/50 rounded-lg p-2 text-xs text-blue-200">
-              Select one or more announcements.
-            </div>
-
-            {/* Announcement Selection Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {announcementTypes.map((announcement) => {
-                const isValid = validAnnouncements.includes(announcement.value)
-                const isSelected = selectedAnnouncements.includes(announcement.value)
-
-                return (
-                  <motion.button
-                    key={announcement.value}
-                    disabled={!isValid}
-                    whileHover={isValid ? { scale: 1.05 } : undefined}
-                    whileTap={isValid ? { scale: 0.95 } : undefined}
-                    onClick={() => {
-                      if (isValid) {
-                        toggleAnnouncement(announcement.value)
-                      }
-                    }}
-                    className={`
-                      px-3 py-4 rounded-lg font-semibold text-left border border-white/10
-                      transition-all duration-200
-                      ${
-                        isSelected
-                          ? 'bg-blue-600 text-white ring-4 ring-blue-400 scale-105'
-                          : isValid
-                          ? 'bg-slate-700 text-white hover:bg-slate-600'
-                          : 'bg-slate-800 text-slate-600 cursor-not-allowed opacity-50'
-                      }
-                    `}
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-2xl">{announcement.icon}</span>
-                      <span className="text-sm font-bold">{announcement.label}</span>
-                    </div>
-                    <div className="text-xs opacity-80 mb-1">{announcement.description}</div>
-                    <div className="text-xs opacity-70">
-                      Open +{announcement.points.announced} | Silent +{announcement.points.silent}
-                    </div>
-                    {isSelected && (
-                      <div className="mt-2 text-center text-xs font-bold text-blue-100">
-                        Selected
-                      </div>
-                    )}
-                  </motion.button>
-                )
-              })}
-            </div>
-
-            {/* Selected Announcements Summary */}
-            {selectedAnnouncements.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-green-900/30 border border-green-700/50 rounded-lg p-2"
-              >
-                <h4 className="text-green-200 font-semibold mb-1.5 text-xs">
-                  Selected ({selectedAnnouncements.length}):
-                </h4>
-                <div className="flex flex-wrap gap-1.5">
-                  {selectedAnnouncements.map((announcementType) => {
-                    const info = announcementTypes.find((a) => a.value === announcementType)
-                    return (
-                      <div
-                        key={announcementType}
-                        className="bg-slate-700 text-white px-2 py-0.5 rounded text-[10px] flex items-center gap-1"
-                      >
-                        <span>{info?.icon}</span>
-                        <span>{info?.label}</span>
-                        <span>Open</span>
-                      </div>
-                    )
-                  })}
-                </div>
-              </motion.div>
-            )}
-
-            {/* Action Buttons */}
-            <div className="grid grid-cols-2 gap-2">
-              <motion.button
-                whileHover={selectedAnnouncements.length > 0 ? { scale: 1.02 } : undefined}
-                whileTap={selectedAnnouncements.length > 0 ? { scale: 0.98 } : undefined}
-                onClick={handleConfirmAnnouncements}
-                disabled={selectedAnnouncements.length === 0}
-                className={`
-                  btn px-3 py-2 rounded-lg font-semibold text-white text-sm
-                  transition-all duration-200
-                  ${
-                    selectedAnnouncements.length > 0
-                      ? 'btn-success'
-                      : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                  }
-                `}
-              >
-                {selectedAnnouncements.length > 0
-                  ? `Confirm (${selectedAnnouncements.length})`
-                  : 'Confirm'}
-              </motion.button>
-
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handlePass}
-                className="btn btn-muted px-3 py-2 text-sm"
-              >
-                Pass
-              </motion.button>
-            </div>
-          </div>
-        ) : (
-          /* Waiting Message */
-          <div className="text-center py-4">
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
-              className="mx-auto mb-3 h-10 w-10 rounded-full border-4 border-slate-600 border-t-yellow-300"
-            />
-            <p className="text-slate-400 text-sm">Waiting for {currentPlayer.name}...</p>
-          </div>
-        )}
-      </motion.div>
-
-      {/* Player's Hand - Always visible during announcements */}
-      {myPlayer.hand && myPlayer.hand.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="glass-panel mt-4 rounded-xl px-4 py-4"
-        >
-          <div className="mb-2 flex justify-center">
-            <PlayerAvatar
-              player={myPlayer}
-              isCurrentTurn={gameState.current_turn === playerPosition}
-              position={playerPosition as 0 | 1 | 2 | 3}
-              isLocalPlayer={true}
-            />
-          </div>
-
-          <Hand
-            cards={myPlayer.hand}
-            layout="fan"
-            size="md"
-          />
-        </motion.div>
-      )}
-    </div>
+    <GameLayout
+      wide={wide}
+      focus="hand"
+      top={top}
+      hint={<HintBox hint={hint} hand={myHand} />}
+      hand={<HandGrid cards={myHand} />}
+      actions={actions}
+    />
   )
 }

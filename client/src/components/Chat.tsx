@@ -1,110 +1,70 @@
 import { useState, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
+import Sheet from './Sheet'
 import { useGameStore } from '@/store/gameStore'
 import { socketManager } from '@/services/socketManager'
 
-interface ChatProps {
-  className?: string
+const formatTime = (timestamp: number) => {
+  const d = new Date(timestamp)
+  return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`
 }
 
-export default function Chat({ className = '' }: ChatProps) {
+/** Table chat in a sheet. */
+export default function ChatSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { t } = useTranslation()
   const [message, setMessage] = useState('')
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const chatMessages = useGameStore((state) => state.chatMessages)
-  const playerName = useGameStore((state) => state.playerName)
+  const endRef = useRef<HTMLDivElement>(null)
+  const chatMessages = useGameStore((s) => s.chatMessages)
+  const playerName = useGameStore((s) => s.playerName)
+  const markChatRead = useGameStore((s) => s.markChatRead)
 
-  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [chatMessages])
+    if (open) {
+      markChatRead()
+      endRef.current?.scrollIntoView({ block: 'end' })
+    }
+  }, [open, chatMessages, markChatRead])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const submit = (e: React.FormEvent) => {
     e.preventDefault()
-
     if (!message.trim()) return
-
-    // Send message via socket
     socketManager.sendChatMessage(message.trim())
-
-    // Clear input
     setMessage('')
   }
 
-  const formatTimestamp = (timestamp: number) => {
-    const date = new Date(timestamp)
-    const hours = date.getHours().toString().padStart(2, '0')
-    const minutes = date.getMinutes().toString().padStart(2, '0')
-    return `${hours}:${minutes}`
-  }
-
   return (
-    <div className={`glass-panel flex flex-col rounded-xl ${className}`}>
-      {/* Chat header */}
-      <div className="px-4 py-3 border-b border-slate-700/70">
-        <h3 className="text-lg font-semibold text-white">Chat</h3>
-      </div>
-
-      {/* Messages area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
-        <AnimatePresence initial={false}>
+    <Sheet open={open} title={t('chat.title')} onClose={onClose} tall>
+      <div className="h-full flex flex-col">
+        <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-2">
+          {chatMessages.length === 0 && <p className="text-center text-sm text-slate-400 py-6">{t('chat.empty')}</p>}
           {chatMessages.map((msg) => {
-            const isOwnMessage = msg.player_name === playerName
-
+            const own = msg.player_name === playerName
             return (
-              <motion.div
-                key={msg.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.2 }}
-                className={`flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'}`}
-              >
-                <div
-                  className={`
-                    max-w-[80%] rounded-lg px-3 py-2
-                    ${isOwnMessage
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-slate-700 text-gray-100'
-                    }
-                  `}
-                >
-                  {!isOwnMessage && (
-                    <div className="text-xs font-semibold text-gray-300 mb-1">
-                      {msg.player_name}
-                    </div>
-                  )}
-                  <div className="text-sm break-words">{msg.message}</div>
+              <div key={msg.id} className={`flex flex-col ${own ? 'items-end' : 'items-start'}`}>
+                <div className={`max-w-[85%] rounded-xl px-3 py-2 ${own ? 'bg-blue-700' : 'bg-slate-700'}`}>
+                  {!own && <div className="text-xs font-semibold text-slate-300">{msg.player_name}</div>}
+                  <div className="text-sm break-words text-white">{msg.message}</div>
                 </div>
-                <div className="text-xs text-slate-400 mt-1 px-1">
-                  {formatTimestamp(msg.timestamp)}
-                </div>
-              </motion.div>
+                <div className="text-[0.65rem] text-slate-500 px-1">{formatTime(msg.timestamp)}</div>
+              </div>
             )
           })}
-        </AnimatePresence>
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Input area */}
-      <form onSubmit={handleSubmit} className="p-4 border-t border-slate-700/70">
-        <div className="flex gap-2">
+          <div ref={endRef} />
+        </div>
+        <form onSubmit={submit} className="flex gap-2 p-3 border-t border-slate-700/70 flex-none">
           <input
             type="text"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="Type a message..."
+            placeholder={t('chat.placeholder')}
             maxLength={500}
-            className="input-field flex-1 text-sm"
+            className="input-field flex-1 text-base"
           />
-          <button
-            type="submit"
-            disabled={!message.trim()}
-            className="btn btn-primary px-6 py-2 text-sm disabled:bg-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed"
-          >
-            Send
+          <button type="submit" disabled={!message.trim()} className="tap tap-blue">
+            {t('chat.send')}
           </button>
-        </div>
-      </form>
-    </div>
+        </form>
+      </div>
+    </Sheet>
   )
 }

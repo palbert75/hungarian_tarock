@@ -1,92 +1,59 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useGameStore } from '@/store/gameStore'
+import { socketManager } from '@/services/socketManager'
+import { takeInviteFromUrl } from '@/utils/invite'
 import ConnectionScreen from '@/screens/ConnectionScreen'
 import LobbyScreen from '@/screens/LobbyScreen'
 import WaitingRoomScreen from '@/screens/WaitingRoomScreen'
 import GameScreen from '@/screens/GameScreen'
 import Toast from '@/components/Toast'
+import ConnectionBanner from '@/components/ConnectionBanner'
 
-function App() {
-  const connectionStatus = useGameStore((state) => state.connectionStatus)
-  const roomState = useGameStore((state) => state.roomState)
-  const gameState = useGameStore((state) => state.gameState)
+// An invite link (?room=…) is remembered before anything else happens
+const invited = takeInviteFromUrl()
+if (invited) {
+  const state = useGameStore.getState()
+  // An invite to another table replaces the seat we remembered
+  if (state.roomId && state.roomId !== invited) state.resetRoomSession()
+  state.setPendingRoomId(invited)
+}
 
-  // Determine which screen to show
-  const getCurrentScreen = () => {
-    console.log('[App] Determining screen...', {
-      connectionStatus,
-      hasRoomState: !!roomState,
-      gameStarted: roomState?.game_started,
-      hasGameState: !!gameState,
-    })
+function Screen() {
+  const { t } = useTranslation()
+  const playerName = useGameStore((s) => s.playerName)
+  const roomId = useGameStore((s) => s.roomId)
+  const pendingRoomId = useGameStore((s) => s.pendingRoomId)
+  const roomState = useGameStore((s) => s.roomState)
+  const gameState = useGameStore((s) => s.gameState)
 
-    // Not connected? Show connection screen
-    if (connectionStatus !== 'connected') {
-      console.log('[App] → ConnectionScreen (not connected)')
-      return <ConnectionScreen />
-    }
-
-    // Connected but no room? Show lobby
-    if (!roomState) {
-      console.log('[App] → LobbyScreen (no room)')
-      return <LobbyScreen />
-    }
-
-    // In room, game not started? Show waiting room
-    if (roomState && !roomState.game_started) {
-      console.log('[App] → WaitingRoomScreen (game not started)')
-      return <WaitingRoomScreen />
-    }
-
-    // Game started? Show game screen
-    if (roomState?.game_started && gameState) {
-      console.log('[App] → GameScreen (game started)')
-      return <GameScreen />
-    }
-
-    // Fallback
-    console.log('[App] → LobbyScreen (fallback)')
-    return <LobbyScreen />
+  if (!playerName) return <ConnectionScreen />
+  if (roomState && !roomState.game_started) return <WaitingRoomScreen />
+  if (roomState && gameState) return <GameScreen />
+  if (roomState || roomId || pendingRoomId) {
+    // On the way back to our seat
+    return (
+      <div className="h-full flex items-center justify-center game-felt text-slate-200">
+        {t('connection.returning')}
+      </div>
+    )
   }
+  return <LobbyScreen />
+}
 
-  // Handle page visibility changes
+export default function App() {
+  const playerName = useGameStore((s) => s.playerName)
+
+  // Online from the moment we have a name; the connection repairs itself
   useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        console.log('[App] Tab hidden')
-      } else {
-        console.log('[App] Tab visible')
-        // Could trigger a state refresh here
-      }
-    }
-
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-    }
-  }, [])
-
-  // Handle beforeunload (warn before closing)
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (roomState && roomState.game_started) {
-        e.preventDefault()
-        e.returnValue = 'Game in progress. Are you sure you want to leave?'
-      }
-    }
-
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload)
-    }
-  }, [roomState])
+    if (playerName && !socketManager.isStarted()) socketManager.connect()
+  }, [playerName])
 
   return (
-    <div className="w-full h-full app-backdrop">
-      {getCurrentScreen()}
+    <div className="w-full h-full">
+      <Screen />
+      <ConnectionBanner />
       <Toast />
     </div>
   )
 }
-
-export default App

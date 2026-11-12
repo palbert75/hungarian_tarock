@@ -47,6 +47,10 @@ export interface Announcement {
   player_position: number
   announcement_type: AnnouncementType
   announced: boolean
+  contra?: boolean
+  recontra?: boolean
+  contra_by?: number | null
+  recontra_by?: number | null
   points: number
   multiplier: number
 }
@@ -60,11 +64,15 @@ export interface Player {
   is_ready: boolean
   is_declarer: boolean
   is_partner?: boolean
+  is_bot?: boolean
+  bot_controlled?: boolean
+  vacant?: boolean
+  total_score?: number
+  ready_next?: boolean
   total_points: number
   tricks_won_count: number
   hand?: Card[] // Only visible for your own hand
-  score?: number // Game score
-  has_discarded?: boolean // Whether player has discarded
+  talon_card_ids?: string[] // Cards you received from the talon this hand
 }
 
 export interface TrickCard {
@@ -80,11 +88,10 @@ export interface CompletedTrick {
   lead_suit: string | null
 }
 
-export interface TrickWinnerAnimation {
-  winner_position: number
-  winner_name: string
+/** The trick that was just completed, shown briefly before it is collected. */
+export interface FinishedTrick {
   cards: TrickCard[]
-  winning_card_index: number
+  winner: number
   trick_number: number
 }
 
@@ -95,45 +102,52 @@ export interface GameState {
   dealer_position: number
   current_turn: number
   bid_history: Bid[]
+  winning_bid?: Bid | null
   declarer_position: number | null
   partner_position: number | null
   partner_revealed: boolean
+  called_card_rank?: string | null
   trick_number: number
+  trick_leader?: number | null
   current_trick: TrickCard[]
   talon: Card[]
   announcements: Announcement[]
   trick_history: CompletedTrick[]
-  valid_announcements?: AnnouncementType[]
+  players_who_discarded?: number[]
   announcement_history?: (Announcement | null)[]
-  valid_cards?: string[]
-  called_card?: Card | null
+  announcement_turn_log?: { position: number; passed: boolean }[]
+  game_contra?: boolean
+  game_contra_by?: number | null
+  declarer_alone?: boolean
+  hand_number?: number
 }
+
+export interface RoomPlayer {
+  id: string
+  name: string
+  position: number
+  is_connected: boolean
+  is_ready: boolean
+  ready_next?: boolean
+  is_bot?: boolean
+  bot_controlled?: boolean
+  total_score?: number
+}
+
+export type BotSpeed = 'fast' | 'normal' | 'slow'
 
 export interface RoomState {
   room_id: string
-  players: Array<{
-    id: string
-    name: string
-    position: number
-    is_connected: boolean
-    is_ready: boolean
-  }>
+  owner_id?: string | null
+  bot_speed?: BotSpeed
+  phase?: GamePhase
+  hand_number?: number
+  players: RoomPlayer[]
   is_full: boolean
   game_started: boolean
 }
 
-export interface AvailableRoom {
-  room_id: string
-  players: Array<{
-    id: string
-    name: string
-    position: number
-    is_ready: boolean
-    is_connected: boolean
-  }>
-  is_full: boolean
-  game_started: boolean
-}
+export type AvailableRoom = RoomState
 
 export type ConnectionStatus =
   | 'disconnected'
@@ -142,16 +156,55 @@ export type ConnectionStatus =
   | 'reconnecting'
   | 'error'
 
+/** A recommended action with a translatable reason (tutorial hint). */
+export interface Hint {
+  action: 'bid' | 'discard' | 'call_partner' | 'announce' | 'pass_announcement' | 'play_card'
+  payload: {
+    bid_type?: BidType
+    card_ids?: string[]
+    tarokk_rank?: string
+    announcement_types?: AnnouncementType[]
+    card_id?: string
+  }
+  reason_key: string
+  reason_params: Record<string, unknown>
+}
+
 export interface YourTurnData {
   valid_actions: string[]
   valid_bids?: BidType[]
   valid_announcements?: AnnouncementType[]
   valid_cards?: string[]
+  discard_count?: number
+  hint?: Hint
+}
+
+export interface GameOverData {
+  declarer: number
+  partner: number | null
+  declarer_alone?: boolean
+  declarer_team_points: number
+  opponent_team_points: number
+  winner: 'declarer_team' | 'opponent_team'
+  base_game_value: number
+  game_multiplier: number
+  final_game_value: number
+  game_contra?: boolean
+  player_scores: Record<string, number>
+  total_scores?: number[]
+  hand_number?: number
+  announcement_details: {
+    type: AnnouncementType
+    player_position: number
+    announced: boolean
+    points: number
+    achieved: boolean
+    contra?: boolean
+    recontra?: boolean
+  }[]
 }
 
 // UI-specific types
-
-export type ModalType = 'rules' | 'settings' | 'score' | null
 
 export interface ToastMessage {
   id: string
@@ -166,3 +219,5 @@ export interface ChatMessage {
   message: string
   timestamp: number
 }
+
+export type Seat = 'S' | 'E' | 'N' | 'W'

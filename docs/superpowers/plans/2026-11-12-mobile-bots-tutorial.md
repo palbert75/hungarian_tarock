@@ -96,8 +96,8 @@
 - Types extended for Task 1 to 3 server fields; `socketManager` gains `swapSeats`, `setBotSpeed`, `nextHand`, handles `player_connection` (toast "X lost connection" / "X is online again"), reconnection attempts unlimited, and all toasts go through `t()`.
 - Invite link: on load, `?room=<id>` is remembered and joined after the name is entered.
 
-- [ ] Vitest: `seats.test.ts` (all 16 combinations), `keys.test.ts` (same key set in both files).
-- [ ] `npx tsc --noEmit`, `npx vitest run`, commit.
+- [x] Vitest: `seats.test.ts` (all 16 combinations), `keys.test.ts` (same key set in both files).
+- [x] `npx tsc --noEmit`, `npx vitest run`, commit.
 
 ### Task 5: Shared game components
 
@@ -113,7 +113,7 @@
 - `SettingsSheet`: tutorial, language, sound; bot speed shown only to the owner.
 - `ConnectionBanner`: "No connection, reconnecting…" whenever the socket is not connected.
 
-- [ ] `npx tsc --noEmit`, build, commit.
+- [x] `npx tsc --noEmit`, build, commit.
 
 ### Task 6: Game phase screens
 
@@ -127,7 +127,7 @@ Behaviour per spec 4.2, 4.3, 4.4 and the mockups. Specific decisions:
 - Seats with `is_connected === false` show "lost connection".
 - Game over: result, per-player hand score and running total, collapsed announcement details, buttons "Next hand" (shows who is still waited for) and "Leave table".
 
-- [ ] `npx tsc --noEmit`, build, play one full hand in four browser tabs against the local server at 390x844 and at desktop width, commit.
+- [x] `npx tsc --noEmit`, build, play one full hand in four browser tabs against the local server at 390x844 and at desktop width, commit.
 
 ### Task 7: Connection, lobby, waiting room, PWA
 
@@ -137,7 +137,7 @@ Behaviour per spec 4.2, 4.3, 4.4 and the mockups. Specific decisions:
 - Waiting room: four seats on a table via `BigTable`; owner drags seats (pointer events, works with touch; tap-seat-then-tap-seat as fallback); "Share invite" (`navigator.share`, else clipboard); "I'm ready"; chat sheet.
 - PWA: `vite-plugin-pwa` with `registerType: 'autoUpdate'`, manifest name "Tarokk", `display: 'standalone'`, `orientation: 'portrait'`, theme/background `#0f3d2e`, icons 192/512/maskable, precache app shell only; `viewport-fit=cover`.
 
-- [ ] Build; confirm `dist/manifest.webmanifest` and `dist/sw.js` exist; hand check at 360x640; commit.
+- [x] Build; confirm `dist/manifest.webmanifest` and `dist/sw.js` exist; hand check at 360x640; commit.
 
 ## Part C: bots (piece 2)
 
@@ -180,7 +180,7 @@ Behaviour per spec 4.2, 4.3, 4.4 and the mockups. Specific decisions:
 - Lobby: "Play against bots" = create table, fill bots, ready.
 - In game: robot marker on bot-controlled seats; owner sees "Replace with bot" on a disconnected seat.
 
-- [ ] tsc, build, play one hand against three bots locally on a phone-sized viewport, commit.
+- [x] tsc, build, play one hand against three bots locally on a phone-sized viewport, commit.
 
 ## Part D: tutorial hints (piece 3)
 

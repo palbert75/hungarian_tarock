@@ -1,0 +1,217 @@
+{
+  "common": {
+    "close": "Close"
+  },
+  "welcome": {
+    "subtitle": "Hungarian tarokk for four",
+    "invited": "You are invited to a table. What should we call you?",
+    "name": "Your name",
+    "namePlaceholder": "e.g. Kata",
+    "go": "Let's play"
+  },
+  "connection": {
+    "connecting": "Connecting…",
+    "reconnecting": "Connection lost – reconnecting…",
+    "returning": "Back to your seat…"
+  },
+  "lobby": {
+    "playBots": "Play against bots",
+    "newTable": "New table",
+    "openTables": "Open tables",
+    "noTables": "No open table right now. Start one!",
+    "emptyTable": "Empty table",
+    "seats": "{{taken}} / 4 seats taken",
+    "betweenHands": "between hands",
+    "join": "Join",
+    "haveCode": "Got a table code?",
+    "codePlaceholder": "Table code"
+  },
+  "room": {
+    "code": "Table {{code}}",
+    "waitingPlayers": "Free seats: {{count}}",
+    "waitingReady": "Waiting for everyone to be ready",
+    "freeSeat": "Free seat",
+    "addBot": "Bot",
+    "removeBot": "Remove bot",
+    "fillBots": "Fill with bots",
+    "ready": "ready",
+    "notReady": "not ready",
+    "owner": "host",
+    "imReady": "I'm ready",
+    "readyWaiting": "Ready – waiting for players (tap to undo)",
+    "readyWaitingOthers": "Ready – waiting for the others (tap to undo)",
+    "ownerHelp": "You are the host: drag a player to another seat, or tap a player and then a seat.",
+    "pickTarget": "Now tap the seat to move them to.",
+    "guestHelp": "{{name}} is the host and decides who sits where."
+  },
+  "invite": {
+    "share": "Invite",
+    "text": "Join my tarokk table!",
+    "copied": "Invite link copied"
+  },
+  "seat": {
+    "you": "You",
+    "bot": "bot",
+    "declarer": "declarer",
+    "partner": "partner",
+    "dealer": "dealer",
+    "dropped": "dropped out"
+  },
+  "game": {
+    "yourTurn": "Your turn",
+    "waitingFor": "Waiting for {{name}}",
+    "hand": "Hand {{number}}",
+    "dealing": "Dealing…",
+    "called": "called: {{card}}",
+    "alone": "declarer alone",
+    "dropped": "{{name}} dropped out – waiting for them to come back",
+    "replaceWithBot": "Replace with bot",
+    "ownerCanReplace": "the host can seat a bot"
+  },
+  "bid": {
+    "pass": "Pass",
+    "three": "Three",
+    "two": "Two",
+    "one": "One",
+    "solo": "Solo",
+    "hold": "Hold"
+  },
+  "discard": {
+    "goingToSkart": "Going to the skart: {{count}} / {{total}}",
+    "done": "done",
+    "new": "new",
+    "protected": "Greyed cards cannot be discarded (kings, honours, XX)",
+    "confirm": "Discard ({{count}})",
+    "selectMore": "Choose {{count}} more",
+    "waitingOthers": "Waiting for the others to discard"
+  },
+  "call": {
+    "choose": "Which tarokk do you call as partner?",
+    "yours": "yours",
+    "confirm": "Call the {{card}}",
+    "waiting": "{{name}} is calling a partner"
+  },
+  "announcement": {
+    "trull": "Trull",
+    "four_kings": "Four kings",
+    "double_game": "Double game",
+    "volat": "Volát",
+    "pagat_ultimo": "Pagát ultimo",
+    "xxi_catch": "XXI catch"
+  },
+  "announce": {
+    "choose": "Announce…",
+    "confirm": "Announce ({{count}})",
+    "contra": "Kontra: {{what}}",
+    "recontra": "Rekontra: {{what}}",
+    "contraShort": "kontra",
+    "recontraShort": "rekontra",
+    "contraGame": "kontra game"
+  },
+  "play": {
+    "tricks": "tricks: {{count}}",
+    "tookTrick": "{{name}} takes the trick",
+    "yourHandTap": "Your hand – tap to enlarge",
+    "yourHand": "Your hand",
+    "greyedCards": "Greyed cards cannot be played now",
+    "playCard": "Play {{card}}",
+    "selectCard": "Choose a card"
+  },
+  "over": {
+    "title": "End of hand",
+    "youWon": "You won",
+    "youLost": "You lost",
+    "declarerWon": "The declarer's side won the game",
+    "defendersWon": "The defenders won the game",
+    "declarerSide": "Declarer's side",
+    "defenderSide": "Defenders",
+    "gameValue": "Game value: {{value}}",
+    "bonuses": "Bonuses",
+    "silent": "silent",
+    "player": "Player",
+    "thisHand": "This hand",
+    "total": "Total",
+    "freeSeat": "Free seat",
+    "needFour": "Four players are needed for the next hand.",
+    "nextHand": "Next hand",
+    "waitingOthers": "Waiting for the others…",
+    "leave": "Leave table"
+  },
+  "card": {
+    "skiz": "Skíz",
+    "rank": {
+      "K": "K",
+      "Q": "Q",
+      "C": "C",
+      "J": "J",
+      "10": "10"
+    }
+  },
+  "suit": {
+    "hearts": "hearts",
+    "diamonds": "diamonds",
+    "spades": "spades",
+    "clubs": "clubs",
+    "tarokk": "tarokk"
+  },
+  "chat": {
+    "title": "Chat",
+    "empty": "No messages yet",
+    "placeholder": "Message…",
+    "send": "Send"
+  },
+  "settings": {
+    "title": "Settings",
+    "tutorial": "Tutorial hints",
+    "tutorialDetail": "Shows what to do on your turn, and why",
+    "language": "Language",
+    "sound": "Sounds",
+    "botSpeed": "Bot speed",
+    "botSpeedDetail": "How long bots think",
+    "ownerOnly": "Set by the host",
+    "fast": "Fast",
+    "normal": "Normal",
+    "slow": "Slow",
+    "leave": "Leave table",
+    "leaveConfirm": "Leave the table in the middle of the game?"
+  },
+  "hint": {
+    "fallback": "Suggested move"
+  },
+  "toast": {
+    "reconnected": "You are online again",
+    "playerBack": "{{name}} is online again",
+    "playerReplaced": "A bot plays for {{name}} now",
+    "playerDropped": "{{name}} dropped out",
+    "allPassed": "Everyone passed – new deal",
+    "talonReceived": "Cards from the talon: {{count}}",
+    "tarokksDiscarded": "{{name}} discarded tarokks: {{count}}",
+    "partnerCalled": "Called partner: {{card}}",
+    "partnerRevealed": "{{name}} is the partner",
+    "contraGame": "{{name}} discarded the called card: kontra on the game, the declarer plays alone",
+    "contra": "{{name}}: kontra {{what}}",
+    "recontra": "{{name}}: rekontra {{what}}"
+  },
+  "error": {
+    "generic": "Something went wrong",
+    "roomGone": "That table no longer exists",
+    "roomFull": "That table is full",
+    "NOT_OWNER": "Only the host can do that",
+    "BID_ERROR": "That bid is not possible now",
+    "DISCARD_ERROR": "These cards cannot be discarded",
+    "CALL_PARTNER_ERROR": "That card cannot be called",
+    "ANNOUNCEMENT_ERROR": "That cannot be announced",
+    "PASS_ANNOUNCEMENT_ERROR": "You cannot pass now",
+    "CONTRA_ERROR": "You cannot kontra that",
+    "RECONTRA_ERROR": "You cannot rekontra that",
+    "PLAY_CARD_ERROR": "That card cannot be played now",
+    "READY_ERROR": "Could not change ready state",
+    "NEXT_HAND_ERROR": "The next hand cannot start yet",
+    "SEAT_ERROR": "That seat change is not possible",
+    "BOT_ERROR": "Could not change the bots",
+    "CREATE_ROOM_ERROR": "Could not open a table",
+    "LEAVE_ROOM_ERROR": "Could not leave the table",
+    "LIST_ROOMS_ERROR": "Could not load the tables",
+    "CHAT_ERROR": "Message not sent"
+  }
+}
