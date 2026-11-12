@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Card as CardType } from '@/types'
 import { SUIT_SYMBOL, rankLabel } from '@/utils/cardNames'
@@ -18,9 +19,14 @@ interface CardProps {
 const colorOf = (suit: string): string =>
   suit === 'hearts' || suit === 'diamonds' ? '#b91c1c' : suit === 'tarokk' ? '#3730a3' : '#111827'
 
-/** A playing card whose print scales with its width. */
+/** Painted card faces live in public/cards (made by scripts/slice-cards.py). */
+const artOf = (card: CardType): string =>
+  `/cards/${card.suit}-${card.suit === 'tarokk' && card.rank.toLowerCase() === 'skiz' ? 'skiz' : card.rank}.webp`
+
+/** A playing card. The painted face is used when it loads; the drawn one is the fallback. */
 export default function Card({ card, width, selected, dimmed, winner, hinted, tag, onClick, className = '' }: CardProps) {
   const { t } = useTranslation()
+  const [artFailed, setArtFailed] = useState(false)
   const isTarokk = card.suit === 'tarokk'
   const label = rankLabel(card, t)
   const symbol = SUIT_SYMBOL[card.suit]
@@ -71,6 +77,19 @@ export default function Card({ card, width, selected, dimmed, winner, hinted, ta
         )}
         {card.points > 1 && <div className="tcard-points">{card.points}</div>}
       </div>
+      {!artFailed && (
+        <>
+          <img
+            className="tcard-art"
+            src={artOf(card)}
+            alt=""
+            draggable={false}
+            onError={() => setArtFailed(true)}
+          />
+          {/* The court cards carry no letter in the painting */}
+          {!isTarokk && card.rank !== '10' && <span className="tcard-rank" style={{ color }}>{label}</span>}
+        </>
+      )}
     </div>
   )
 }
