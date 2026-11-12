@@ -36,7 +36,7 @@ class BiddingManager:
 
         # Check HOLD conditions
         if bid_type == BidType.HOLD and not can_hold(player.position, bid_history):
-            return False, "Cannot HOLD - only an earlier bidder may hold a later, higher bid"
+            return False, "Cannot HOLD - only a player who has already bid may hold a later, higher bid"
 
         # Check if bid is higher than current highest (except PASS and HOLD)
         if bid_type not in [BidType.PASS, BidType.HOLD]:

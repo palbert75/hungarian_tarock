@@ -195,7 +195,7 @@ class GameState(BaseModel):
 
         # Check if HOLD is allowed
         if bid_type == BidType.HOLD and not can_hold(player_position, self.bid_history):
-            raise ValueError("Cannot HOLD - only an earlier bidder may hold a later, higher bid")
+            raise ValueError("Cannot HOLD - only a player who has already bid may hold a later, higher bid")
 
         # Create bid
         bid = Bid(player_position=player_position, bid_type=bid_type)
