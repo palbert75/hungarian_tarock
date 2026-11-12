@@ -167,10 +167,10 @@ Behaviour per spec 4.2, 4.3, 4.4 and the mockups. Specific decisions:
 - Reason keys are namespaced `hint.<phase>.<rule>` (for example `hint.bid.xxi_always`, `hint.bid.skiz_strong_pass`, `hint.lead.partner_last_tarokk`), each with params naming the cards.
 - Runner uses `decide`.
 
-- [ ] Strategy tests, one per rule in 5.2 and 5.3 from fixed hands, including: XXI bids up to one then passes at solo; skíz with 4 other tarokks passes, with 3 bids; pagát with 8 tarokks opens, with 7 passes, and does not overbid; partner with 6 tarokks announces four kings; partner with 5 tarokks above XIII announces double game; bot never repeats an announcement; defender leads tarokk when the revealed fellow defender plays last, a suit otherwise and before reveal; rule off when trull announced or XXI played or held; skíz catches an opponent's XXI; XXI not played while skíz is out and an opponent follows; discard never contains a protected card and has the right count; call is XX, or the highest tarokk below XX not held.
-- [ ] `test_view_hides_hidden_info`: the view has no other hands, no talon, no unrevealed partner.
-- [ ] `test_bot_simulation`: 300 seeded four-bot hands through `act_*` with zero delay; assert no exception, every hand reaches GAME_END within 200 actions, card points total 94 per hand, per-hand player scores sum to zero.
-- [ ] Suite green, commit.
+- [x] Strategy tests, one per rule in 5.2 and 5.3 from fixed hands, including: XXI bids up to one then passes at solo; skíz with 4 other tarokks passes, with 3 bids; pagát with 8 tarokks opens, with 7 passes, and does not overbid; partner with 6 tarokks announces four kings; partner with 5 tarokks above XIII announces double game; bot never repeats an announcement; defender leads tarokk when the revealed fellow defender plays last, a suit otherwise and before reveal; rule off when trull announced or XXI played or held; skíz catches an opponent's XXI; XXI not played while skíz is out and an opponent follows; discard never contains a protected card and has the right count; call is XX, or the highest tarokk below XX not held.
+- [x] `test_view_hides_hidden_info`: the view has no other hands, no talon, no unrevealed partner.
+- [x] `test_bot_simulation`: 300 seeded four-bot hands through `act_*` with zero delay; assert no exception, every hand reaches GAME_END within 200 actions, card points total 94 per hand, per-hand player scores sum to zero.
+- [x] Suite green, commit.
 
 ### Task 10: Bot UI
 
@@ -191,9 +191,9 @@ Behaviour per spec 4.2, 4.3, 4.4 and the mockups. Specific decisions:
 - `your_turn` gains `hint: {action, payload, reason_key, reason_params}` computed with `decide(build_view(...))` for non-bot seats.
 - Client: `HintBox` shows `t(reason_key, reason_params)` between the top band and the hand when the tutorial setting is on; the recommended button, chip or card(s) get a soft highlight. Card params are translated to display names on the client.
 
-- [ ] `test_hint_equals_bot_decision` across a seeded hand in every phase; `test_hint_absent_for_bots`.
-- [ ] English text for every `hint.*` key the strategy can emit (`test_all_reason_keys_have_text` reads `client/src/i18n/en.json`).
-- [ ] Suite green, tsc, build, commit.
+- [x] `test_hint_equals_bot_decision` across a seeded hand in every phase; `test_hint_absent_for_bots`.
+- [x] English text for every `hint.*` key the strategy can emit (`test_all_reason_keys_have_text` reads `client/src/i18n/en.json`).
+- [x] Suite green, tsc, build, commit.
 
 ## Part E: Hungarian (piece 4)
 
@@ -204,7 +204,7 @@ Behaviour per spec 4.2, 4.3, 4.4 and the mockups. Specific decisions:
 - Translate every key using the vocabulary in spec section 7. Server error codes map to translated messages, falling back to the server text.
 - Grep the client for leftover hard-coded user-visible English.
 
-- [ ] `keys.test.ts` green; hand check of every screen in Hungarian at 360x640; commit.
+- [x] `keys.test.ts` green; hand check of every screen in Hungarian at 360x640; commit.
 
 ### Task 13: Wrap-up
 

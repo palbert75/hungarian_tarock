@@ -1,5 +1,22 @@
 # Hungarian Tarokk Client - Implementation Status
 
+> **Update, November 2026.** The client was rebuilt for phones. The list
+> below this note is the history of the first version and no longer describes
+> the screens. Current state:
+>
+> - Screens: name (`ConnectionScreen`), lobby, waiting room with seats around
+>   the table, game (`GameScreen` + one file per phase in `screens/phases/`),
+>   result with running totals (`GameOverScreen`).
+> - Layout: `GameLayout` (table band / hand / buttons), `Seats` + `TableView`
+>   (compass table), `Hand` (`HandGrid`, `HandStrip`), `Card`.
+> - Texts: `src/i18n/en.json` and `hu.json`, kept in step by `keys.test.ts`.
+> - Settings (`SettingsSheet`): tutorial hints, language, sounds, bot speed.
+> - Installable app: `vite-plugin-pwa` in `vite.config.ts`, icons made by
+>   `scripts/make-icons.py`.
+> - Checks: `npx tsc --noEmit`, `npm test`, `npm run build`.
+> - Design and plan: `docs/superpowers/specs/2026-11-12-mobile-bots-tutorial-design.md`,
+>   `docs/superpowers/plans/2026-11-12-mobile-bots-tutorial.md`.
+
 ## ✅ Completed
 
 ### 1. Project Setup & Configuration

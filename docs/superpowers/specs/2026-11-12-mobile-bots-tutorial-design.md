@@ -332,8 +332,11 @@ because it holds the called card)
 
 **Announcements beyond 5.2**
 
-- Trull: only when the bot holds all three honours.
-- Pagát ulti: only when the bot holds the pagát and at least 7 tarokks.
+- Trull: only when the bot holds all three honours and at least 7 tarokks.
+- Pagát ulti: only when the bot holds the pagát and at least 9 tarokks, or 8
+  tarokks of which three are XVII or higher. (Changed during the build: with
+  the first rule, 7 tarokks, the simulation showed the ulti failing three
+  times out of four and the trull more often than not.)
 - Never volát, never XXI catch, never kontra or rekontra.
 - A bot never repeats an announcement and otherwise passes, so the phase
   always ends.

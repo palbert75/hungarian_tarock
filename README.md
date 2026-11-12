@@ -13,6 +13,12 @@ A complete implementation of Hungarian Tarokk (Illustrated Hungarian Tarokk / XX
 - **Full Game Flow**: Bidding → Talon → Discard → Partner Call → Trick-Taking → Scoring
 - **Rule Validation**: Enforces all game rules (follow suit, honour requirements, etc.)
 - **Test Environment**: Interactive and automated testing tools
+- **Phone-First Web App**: Three-band game screen (table, hand, thumb buttons), installable to the home screen (PWA)
+- **Bots**: Fill free seats with rule-based bots, or let the host hand a dropped player's seat to a bot
+- **Tutorial Hints**: Optional hints in every phase, with the reason; the same rules the bots follow
+- **Hungarian and English**: Switch in settings; Hungarian is the default on Hungarian devices
+- **Table Play**: Fixed seats arranged by the host, rotating dealer, next hand at the same table, running totals
+- **Graceful Drop-Outs**: A dropped player's seat is held; everyone sees who dropped out and who is back
 
 ## 🚀 Quick Start
 
@@ -31,6 +37,34 @@ cd test_client
 pip install -r requirements.txt
 python interactive_test.py
 ```
+
+### Play in the browser (web client)
+
+```bash
+# Terminal 1: server on port 8000
+cd server
+python main.py
+
+# Terminal 2: web client on http://localhost:3003
+cd client
+npm install
+VITE_SERVER_URL=http://localhost:8000 npm run dev
+```
+
+Open the page, enter a name and tap **Play against bots**. Without
+`VITE_SERVER_URL` the client talks to the hosted server.
+
+Checks: `cd server && python -m pytest` and
+`cd client && npx tsc --noEmit && npm test && npm run build`.
+
+### Bots and hints
+
+The bot rules live in `server/bots/` (`strategy.py` decides, `view.py` is what
+a seat may see, `counting.py` counts tarokks). A bot never sees another hand,
+the talon or an unrevealed partner. The tutorial hint a player gets is exactly
+what a bot would do in that seat. `server/tests/test_bot_simulation.py` plays
+300 whole hands with four bots; `server/tests/test_bot_strategy.py` has one
+test per rule.
 
 ## 📁 Project Structure
 

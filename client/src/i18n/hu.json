@@ -176,7 +176,56 @@
     "leaveConfirm": "Felállsz az asztaltól a játék közepén?"
   },
   "hint": {
-    "fallback": "Javasolt lépés"
+    "fallback": "Javasolt lépés",
+    "bid": {
+      "no_honour": "Nincs honőröd (skíz, XXI vagy pagát), ezért csak passzolhatsz.",
+      "nothing_left": "Nem maradt licit, amit mondhatnál: passz.",
+      "xxi_always": "Nálad a XXI: licitálj ({{bid}}), és próbáld megszerezni a talont, legfeljebb „egy”-ig.",
+      "xxi_stop_solo": "Már csak a szóló maradt. Ez a XXI-gyel is sok: passz.",
+      "skiz_strong_pass": "Nálad a skíz és még {{count}} tarokk. A lapod így is erős, passzolj, ne áruld el.",
+      "skiz_weak_bid": "Nálad a skíz, de csak {{count}} másik tarokkod van: licitálj ({{bid}}), hogy a talonból javíts a lapodon.",
+      "limit_reached": "A licit már „{{bid}}”-nél tart. Ez ehhez a laphoz túl magas: passz.",
+      "pagat_few_tarokks": "Az egyetlen honőröd a pagát, és {{count}} tarokkod van. Csak legalább nyolccal érdemes indulni: passz.",
+      "pagat_many_tarokks": "Az egyetlen honőröd a pagát, de {{count}} tarokkod van: licitálj ({{bid}})."
+    },
+    "discard": {
+      "suits": "Tedd a skartba: {{cards}}. A király nélküli rövid színeidet ürítsd ki, a legértékesebb lapokkal kezdve.",
+      "with_tarokks": "Tedd a skartba: {{cards}}. Kevés a skartolható színes lapod, ezért a legkisebb tarokkjaid is mennek."
+    },
+    "call": {
+      "xx": "Hívd a {{rank}}-ast: akinél van, az lesz a partnered.",
+      "lower": "A XX nálad van, ezért hívd ezt: {{rank}} – a legnagyobb tarokk a XX alatt, ami nincs nálad."
+    },
+    "announce": {
+      "pass": "Ezzel a lappal nincs mit bemondani: passz.",
+      "four_kings": "Te vagy a felvevő partnere, és {{count}} tarokkod van: mondd be a négy királyt. Ezzel jelzed a partnerednek, hogy hosszú vagy tarokkban.",
+      "double_game": "Te vagy a felvevő partnere, és {{count}} tarokkod van a XIII fölött: mondd be a duplajátékot.",
+      "trull": "Nálad van mindhárom honőr (skíz, XXI, pagát) és elég tarokk: mondd be a tuletroát.",
+      "pagat_ultimo": "Nálad a pagát és {{count}} tarokk: mondd be a pagátultimót, és tartsd meg a pagátot az utolsó ütésre.",
+      "several": "Ez a lap {{count}} bemondást is megér, kezdve ezzel: {{announcement}}.",
+      "double_after_signal": "A négy király elárulta, hogy a partnered hosszú tarokkban, nálad pedig {{count}} tarokk és nagy honőr van: válaszolj duplajátékkal."
+    },
+    "lead": {
+      "ulti_draw": "Pagátultimót mondtál: hívd ezt: {{card}}, hogy kihúzd a többieknél még lehetséges {{count}} tarokkot.",
+      "ulti_keep_pagat": "Pagátultimót mondtál: hívd ezt: {{card}}, a pagátot tartsd meg az utolsó ütésre.",
+      "ulti_support": "A társad pagátultimót mondott: hívd ezt: {{card}}, segíts kihúzni a többiek tarokkjait.",
+      "keep_tarokk_for_ulti": "Az ellenfél pagátultimót mondott. Tartsd meg ezt: {{kept_card}}, hogy az utolsó ütésben üsd a pagátot; most ezt hívd: {{card}}.",
+      "partner_last_tarokk": "Tegyük fel, hogy a XXI az ellenjátékos társadnál van. Ő tesz utolsónak ebben az ütésben, ezért hívj tarokkot ({{card}}): így biztonságban hazaviheti a XXI-et.",
+      "suit_protect_xxi": "Tegyük fel, hogy a XXI az ellenjátékos társadnál van. Nem ő tenne utolsónak, ezért ne tarokkot hívj, hanem ezt: {{card}}.",
+      "draw_tarokks": "A ti oldalatok erősebb tarokkban (még {{count}} van kint): hívd ezt: {{card}}, húzd ki őket.",
+      "long_suit": "Hívd ezt: {{card}} – a leghosszabb színed legkisebb lapja.",
+      "low_tarokk": "Már csak tarokkod van: hívd a legkisebbet, ezt: {{card}}.",
+      "only_card": "Már csak ezt érdemes hívni: {{card}}."
+    },
+    "follow": {
+      "only_card": "Csak ezt a lapot teheted: {{card}}.",
+      "catch_xxi": "Az ellenfél kijátszotta a XXI-et: fogd meg ezzel: {{card}}!",
+      "pagat_home": "Ez az ütés biztosan a tiéd vagy a társadé: vidd haza most a pagátot.",
+      "feed_teammate": "A társad viszi ezt az ütést: add neki a legértékesebb lapodat, ezt: {{card}}.",
+      "teammate_wins_low": "A társad viszi ezt az ütést: ne pazarolj erős lapot, tedd ezt: {{card}}.",
+      "win_cheap": "Ezt az ütést érdemes elvinni: üsd meg a legkisebb lappal, ami még üt: {{card}}.",
+      "low": "Nem éri meg, vagy nem tudod elvinni: tedd a legolcsóbb lapodat, ezt: {{card}}."
+    }
   },
   "toast": {
     "reconnected": "Újra online vagy",

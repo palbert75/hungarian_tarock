@@ -176,7 +176,56 @@
     "leaveConfirm": "Leave the table in the middle of the game?"
   },
   "hint": {
-    "fallback": "Suggested move"
+    "fallback": "Suggested move",
+    "bid": {
+      "no_honour": "You hold no honour (skíz, XXI or pagát), so you may only pass.",
+      "nothing_left": "There is no bid left for you: pass.",
+      "xxi_always": "You hold the XXI: bid ({{bid}}) and try to win the talon, up to \"one\".",
+      "xxi_stop_solo": "Only solo is left. Even with the XXI that is too much: pass.",
+      "skiz_strong_pass": "You hold the skíz and {{count}} more tarokks. Your hand is strong as it is, so pass and do not show it.",
+      "skiz_weak_bid": "You hold the skíz but only {{count}} more tarokks: bid ({{bid}}) to improve your hand from the talon.",
+      "limit_reached": "The bidding is already at \"{{bid}}\". That is too high for this hand: pass.",
+      "pagat_few_tarokks": "Your only honour is the pagát and you have {{count}} tarokks. Open only with at least eight: pass.",
+      "pagat_many_tarokks": "Your only honour is the pagát, but you have {{count}} tarokks: bid ({{bid}})."
+    },
+    "discard": {
+      "suits": "Put {{cards}} into the skart: empty your short suits that have no king, the dearest cards first.",
+      "with_tarokks": "Put {{cards}} into the skart. You have too few suit cards that may be discarded, so your lowest tarokks go as well."
+    },
+    "call": {
+      "xx": "Call the {{rank}}: whoever holds it will be your partner.",
+      "lower": "You hold the XX yourself, so call the {{rank}}, the highest tarokk below it that you do not have."
+    },
+    "announce": {
+      "pass": "Nothing worth announcing with this hand: pass.",
+      "four_kings": "You are the caller's partner and hold {{count}} tarokks: announce four kings. It tells your partner that you are long in tarokks.",
+      "double_game": "You are the caller's partner with {{count}} tarokks above the XIII: announce double game.",
+      "trull": "You hold all three honours (skíz, XXI, pagát) and enough tarokks: announce trull.",
+      "pagat_ultimo": "You hold the pagát and {{count}} tarokks: announce pagát ultimo and keep the pagát for the last trick.",
+      "several": "This hand is good for {{count}} announcements, starting with {{announcement}}.",
+      "double_after_signal": "The four kings told you your partner is long in tarokks, and you hold {{count}} tarokks with a great honour: answer with double game."
+    },
+    "lead": {
+      "ulti_draw": "You announced pagát ultimo: lead {{card}} to draw out the {{count}} tarokks the others may still hold.",
+      "ulti_keep_pagat": "You announced pagát ultimo: lead {{card}} and keep the pagát for the last trick.",
+      "ulti_support": "Your teammate announced pagát ultimo: lead {{card}} to help draw out the others' tarokks.",
+      "keep_tarokk_for_ulti": "The other side announced pagát ultimo. Keep {{kept_card}} to beat the pagát in the last trick: lead {{card}}.",
+      "partner_last_tarokk": "Assume your fellow defender holds the XXI. They play last in this trick, so lead a tarokk ({{card}}): they can bring the XXI home safely.",
+      "suit_protect_xxi": "Assume your fellow defender holds the XXI. They would not play last, so do not lead a tarokk: lead {{card}}.",
+      "draw_tarokks": "Your side has the upper hand in tarokks ({{count}} still out): lead {{card}} to draw them.",
+      "long_suit": "Lead {{card}}, the lowest card of your longest suit.",
+      "low_tarokk": "You have only tarokks left: lead your lowest, {{card}}.",
+      "only_card": "{{card}} is the only sensible card left to lead."
+    },
+    "follow": {
+      "only_card": "{{card}} is the only card you may play.",
+      "catch_xxi": "An opponent played the XXI: catch it with {{card}}!",
+      "pagat_home": "This trick is safely yours or your teammate's: bring the pagát home now.",
+      "feed_teammate": "Your teammate is winning this trick: give them your most valuable card, {{card}}.",
+      "teammate_wins_low": "Your teammate is winning this trick: do not waste a strong card, play {{card}}.",
+      "win_cheap": "This trick is worth taking: win it with {{card}}, the lowest card that wins.",
+      "low": "Not worth winning, or you cannot win it: play your cheapest card, {{card}}."
+    }
   },
   "toast": {
     "reconnected": "You are online again",
