@@ -429,3 +429,14 @@ def test_leads_the_suit_a_teammate_is_void_in():
     trull = Announcement(player_position=1, announcement_type=AnnouncementType.TRULL)
     view = play_view("hQ hJ h10 dJ", declarer=1, partner=2, history=history, announcements=[trull])
     assert played(decide_card(view), view) == "dJ"
+
+
+def test_called_partner_with_great_honour_announces_trull():
+    for hand in ("skiz X hK hQ hJ h10 dQ dJ d10", "XXI X hK hQ hJ h10 dQ dJ d10"):
+        d = decide_announcement(announce_view(hand, partner=True))
+        assert d.payload["announcement_types"] == ["trull"] and d.reason_key == "hint.announce.trull_partner"
+
+
+def test_partner_without_great_honour_or_non_partner_does_not_announce_trull():
+    assert decide_announcement(announce_view("I X hK hQ hJ h10 dQ dJ d10", partner=True)).action == "pass_announcement"
+    assert decide_announcement(announce_view("skiz X hK hQ hJ h10 dQ dJ d10")).action == "pass_announcement"

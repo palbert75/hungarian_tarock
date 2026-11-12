@@ -150,7 +150,11 @@ def decide_announcement(view: SeatView) -> Decision:
             wanted.append(("four_kings", "hint.announce.four_kings", {"count": tarokk_count}))
         if high >= 5:
             wanted.append(("double_game", "hint.announce.double_game", {"count": high}))
-    if view.holds("skiz") and view.holds("XXI") and view.holds("I") and tarokk_count >= TRULL_MIN_TAROKKS:
+        # The called partner holding a great honour announces trull
+        if view.holds("skiz") or view.holds("XXI"):
+            wanted.append(("trull", "hint.announce.trull_partner", {}))
+    if (not any(w[0] == "trull" for w in wanted) and view.holds("skiz") and view.holds("XXI")
+            and view.holds("I") and tarokk_count >= TRULL_MIN_TAROKKS):
         wanted.append(("trull", "hint.announce.trull", {}))
     top = len([c for c in view.tarokks if c.tarokk_value() >= 17])
     ulti_hand = tarokk_count >= ULTI_SURE_TAROKKS or (tarokk_count >= ULTI_MIN_TAROKKS and top >= ULTI_MIN_HIGH)
