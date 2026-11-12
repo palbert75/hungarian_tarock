@@ -108,3 +108,17 @@ def test_skiz_on_partners_xxi_is_no_catch():
     assert "xxi_catch" not in [k for k, _ in kinds(score("hK", history=history))]
     history[0]["cards"][1]["player_position"] = 1
     assert ("xxi_catch", False) in kinds(score("hK", history=history))
+
+
+def test_xxi_catch_from_recorded_trick_format():
+    # Same shape the game records: card.to_dict() per play
+    skiz, xxi = cards("skiz XXI")
+    history = [{"trick_number": 3, "winner": 3, "winner_name": "x", "lead_suit": "tarokk", "cards": [
+        {"player_position": 0, "card": xxi.to_dict()},
+        {"player_position": 3, "card": skiz.to_dict()},
+    ]}]
+    result = score("hK", history=history)
+    catch = [a for a in result["announcement_details"] if a["type"] == "xxi_catch"]
+    assert len(catch) == 1 and catch[0]["team"] == "opponent_team" and catch[0]["points"] == 21
+    assert result["player_scores"][0] == result["player_scores"][2]
+    assert result["player_scores"][1] == result["player_scores"][3] == 50 + 2 * result["final_game_value"] + 21
