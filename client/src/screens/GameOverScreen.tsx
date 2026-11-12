@@ -82,9 +82,22 @@ export default function GameOverScreen({ table }: { table: Table }) {
                     {a.achieved ? '✓' : '✗'} {t(`announcement.${a.type}`)}
                     {!a.announced ? ` (${t('over.silent')})` : ''}
                     {a.recontra ? ` · ${t('announce.recontraShort')}` : a.contra ? ` · ${t('announce.contraShort')}` : ''}
-                    <span className="text-slate-300"> – {table.nameAt(a.player_position)}</span>
+                    <span className="text-slate-300">
+                      {' – '}
+                      {a.announced
+                        ? table.nameAt(a.player_position)
+                        : declarerTeam.has(a.player_position)
+                          ? t('over.declarerSide')
+                          : t('over.defenderSide')}
+                    </span>
                   </span>
-                  <span className="flex-none font-semibold">{a.points}</span>
+                  <span className="flex-none font-semibold">
+                    {a.type === 'double_game' || a.type === 'volat'
+                      ? a.achieved && a.multiplier
+                        ? `×${a.multiplier}`
+                        : '–'
+                      : signed(a.points)}
+                  </span>
                 </div>
               ))}
             </div>

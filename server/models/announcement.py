@@ -68,9 +68,9 @@ class Announcement(BaseModel):
         Returns 1 if no multiplier effect.
         """
         if self.announcement_type == AnnouncementType.DOUBLE_GAME:
-            return 2 if self.announced else 1  # Doubles if announced
+            return 4 if self.announced else 2  # Announced: 4x the game, silent: 2x
         elif self.announcement_type == AnnouncementType.VOLAT:
-            return 3 if self.announced else 1  # Triples if announced
+            return 6 if self.announced else 3  # Announced: 6x the game, silent: 3x
         return 1
 
     def to_dict(self) -> dict:

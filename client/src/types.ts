@@ -198,6 +198,8 @@ export interface GameOverData {
     player_position: number
     announced: boolean
     points: number
+    multiplier?: number
+    team?: 'declarer_team' | 'opponent_team'
     achieved: boolean
     contra?: boolean
     recontra?: boolean

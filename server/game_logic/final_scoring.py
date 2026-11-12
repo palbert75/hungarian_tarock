@@ -104,7 +104,8 @@ def calculate_final_score(
 
     # Check for silent achievements
     silent_achievements = check_silent_achievements(
-        players, declarer_position, partner_position, announcements
+        players, declarer_position, partner_position, announcements,
+        trick_history, declarer_team_points, opponent_team_points
     )
     achieved_announcements.extend(silent_achievements)
 
@@ -149,61 +150,38 @@ def calculate_final_score(
     declarer_team_players = list(declarer_team)
     opponent_team_players = list(opponent_team)
 
+    def settle(announcement: Announcement, achieved: bool) -> None:
+        """
+        A figure is won or lost by the whole side. Two against two, every
+        player gets or pays the points once; a player alone settles with
+        each of the three others.
+        """
+        player_pos = announcement.player_position
+        own = declarer_team_players if player_pos in declarer_team else opponent_team_players
+        other = opponent_team_players if player_pos in declarer_team else declarer_team_players
+        points = announcement.get_points()
+        sign = 1 if achieved else -1
+        for i in own:
+            player_scores[i] += sign * points * max(1, len(other) // len(own))
+        for i in other:
+            player_scores[i] -= sign * points * max(1, len(own) // len(other))
+
+        announcement_details.append({
+            "type": announcement.announcement_type.value,
+            "player_position": player_pos,
+            "team": "declarer_team" if player_pos in declarer_team else "opponent_team",
+            "announced": announcement.announced,
+            "points": sign * points,
+            "multiplier": announcement.get_multiplier(),
+            "achieved": achieved,
+            "contra": announcement.contra,
+            "recontra": announcement.recontra
+        })
+
     for announcement in achieved_announcements:
-        player_pos = announcement.player_position
-        is_declarer_team = player_pos in declarer_team
-        points = announcement.get_points()
-
-        # Announcement achieved: announcing player's team receives points
-        # Each member of opposing team pays the announcing player
-        if is_declarer_team:
-            # Declarer team member achieved: each opponent pays
-            for i in opponent_team_players:
-                player_scores[player_pos] += points
-                player_scores[i] -= points
-        else:
-            # Opponent achieved: each declarer team member pays
-            for i in declarer_team_players:
-                player_scores[player_pos] += points
-                player_scores[i] -= points
-
-        announcement_details.append({
-            "type": announcement.announcement_type.value,
-            "player_position": player_pos,
-            "announced": announcement.announced,
-            "points": points,
-            "achieved": True,
-            "contra": announcement.contra,
-            "recontra": announcement.recontra
-        })
-
-    # Failed announcements: announcing player's team PAYS the points
+        settle(announcement, True)
     for announcement in failed_announcements:
-        player_pos = announcement.player_position
-        is_declarer_team = player_pos in declarer_team
-        points = announcement.get_points()
-
-        # Failed announcement: announcing player pays to each opposing team member
-        if is_declarer_team:
-            # Declarer team failed: they pay each opponent
-            for i in opponent_team_players:
-                player_scores[player_pos] -= points
-                player_scores[i] += points
-        else:
-            # Opponent failed: they pay each declarer team member
-            for i in declarer_team_players:
-                player_scores[player_pos] -= points
-                player_scores[i] += points
-
-        announcement_details.append({
-            "type": announcement.announcement_type.value,
-            "player_position": player_pos,
-            "announced": announcement.announced,
-            "points": -points,  # Negative to show it's a penalty
-            "achieved": False,
-            "contra": announcement.contra,
-            "recontra": announcement.recontra
-        })
+        settle(announcement, False)
 
     return {
         "declarer_team_points": declarer_team_points,

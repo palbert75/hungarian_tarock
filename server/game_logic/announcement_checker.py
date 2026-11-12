@@ -1,42 +1,38 @@
 """Check if announcements were achieved using trick history."""
 
-from typing import List, Dict
+from typing import List, Dict, Optional, Set
 from models.player import Player
 from models.announcement import Announcement, AnnouncementType
 
 
-def check_trull(player: Player) -> bool:
-    """
-    Check if player collected all 3 honours (skíz, XXI, pagát).
-
-    Args:
-        player: Player to check
-
-    Returns:
-        True if player has all 3 honours in tricks_won
-    """
-    honours = [c for c in player.tricks_won if c.is_honour()]
-
-    # Must have exactly 3 honours, and they must be the specific ones
-    if len(honours) != 3:
-        return False
-
-    honour_ranks = {c.rank.lower() for c in honours}
-    return {'skiz', 'xxi', 'i'} == honour_ranks
+def team_positions(
+    position: int,
+    declarer_position: int,
+    partner_position: Optional[int],
+    num_players: int = 4
+) -> Set[int]:
+    """Positions of everyone on the same side as `position`."""
+    declarer_side = {declarer_position}
+    if partner_position is not None:
+        declarer_side.add(partner_position)
+    if position in declarer_side:
+        return declarer_side
+    return {i for i in range(num_players) if i not in declarer_side}
 
 
-def check_four_kings(player: Player) -> bool:
-    """
-    Check if player collected all 4 kings.
+def team_cards(players: List[Player], positions: Set[int]) -> list:
+    """All cards a side captured in tricks."""
+    return [c for p in players if p.position in positions for c in p.tricks_won]
 
-    Args:
-        player: Player to check
 
-    Returns:
-        True if player has all 4 kings in tricks_won
-    """
-    kings = [c for c in player.tricks_won if c.is_king()]
-    return len(kings) == 4
+def check_trull(cards: list) -> bool:
+    """True if these captured cards hold all three honours (skíz, XXI, pagát)."""
+    return {c.rank.lower() for c in cards if c.is_honour()} == {'skiz', 'xxi', 'i'}
+
+
+def check_four_kings(cards: list) -> bool:
+    """True if these captured cards hold all four kings."""
+    return len([c for c in cards if c.is_king()]) == 4
 
 
 def check_double_game(team_points: int) -> bool:
@@ -65,78 +61,49 @@ def check_volat(team_tricks: int) -> bool:
     return team_tricks == 9
 
 
-def check_pagat_ultimo(trick_history: List[dict], player_position: int) -> bool:
-    """
-    Check if pagát won the last trick (trick 9) and was played by the specified player.
+def _is_tarokk(card: dict, rank: str) -> bool:
+    return card['suit'] == 'tarokk' and card['rank'].lower() == rank
 
-    Args:
-        trick_history: Complete history of all tricks
-        player_position: Position of player who announced pagát ultimó
 
-    Returns:
-        True if pagát won the last trick for this player
-    """
+def pagat_ultimo_winner(trick_history: List[dict]) -> Optional[int]:
+    """Position of the player whose pagát won the last trick, or None."""
     if len(trick_history) < 9:
-        return False
-
-    last_trick = trick_history[8]  # 9th trick (0-indexed)
+        return None
+    last_trick = trick_history[8]
     winner = last_trick['winner']
-
-    # Check if the player won the last trick
-    if winner != player_position:
-        return False
-
-    # Check if pagát was the winning card (played by the winner)
     for card_info in last_trick['cards']:
-        if card_info['player_position'] == winner:
-            card = card_info['card']
-            # Pagát is tarokk rank I
-            if card['suit'] == 'tarokk' and card['rank'] == 'I':
-                return True
-
-    return False
+        if card_info['player_position'] == winner and _is_tarokk(card_info['card'], 'i'):
+            return winner
+    return None
 
 
-def check_xxi_catch(trick_history: List[dict], player_position: int) -> bool:
+def check_pagat_ultimo(trick_history: List[dict], team: Set[int]) -> bool:
+    """True if a member of `team` won the last trick with the pagát."""
+    return pagat_ultimo_winner(trick_history) in team
+
+
+def xxi_catcher(trick_history: List[dict], declarer_side: Set[int]) -> Optional[int]:
     """
-    Check if skíz captured opponent's XXI in any trick.
-
-    Args:
-        trick_history: Complete history of all tricks
-        player_position: Position of player who announced XXI catch
-
-    Returns:
-        True if skíz captured XXI
+    Position of the player whose skíz captured the other side's XXI, or None.
+    A skíz that falls on a teammate's XXI is not a catch.
     """
     for trick in trick_history:
-        winner = trick['winner']
-
-        # Check if this player won the trick
-        if winner != player_position:
-            continue
-
-        # Check if skíz was played by winner
-        winner_played_skiz = False
-        opponent_played_xxi = False
-
+        skiz_by = xxi_by = None
         for card_info in trick['cards']:
-            card = card_info['card']
-            card_player = card_info['player_position']
+            if _is_tarokk(card_info['card'], 'skiz'):
+                skiz_by = card_info['player_position']
+            elif _is_tarokk(card_info['card'], 'xxi'):
+                xxi_by = card_info['player_position']
+        if skiz_by is not None and xxi_by is not None:
+            if (skiz_by in declarer_side) != (xxi_by in declarer_side):
+                return skiz_by
+            return None
+    return None
 
-            if card_player == player_position:
-                # Check if this player played skíz
-                if card['suit'] == 'tarokk' and card['rank'].lower() == 'skiz':
-                    winner_played_skiz = True
-            else:
-                # Check if opponent played XXI
-                if card['suit'] == 'tarokk' and card['rank'] == 'XXI':
-                    opponent_played_xxi = True
 
-        # If skíz captured XXI, this is a catch
-        if winner_played_skiz and opponent_played_xxi:
-            return True
-
-    return False
+def check_xxi_catch(trick_history: List[dict], team: Set[int], declarer_side: Set[int]) -> bool:
+    """True if a member of `team` caught the other side's XXI with the skíz."""
+    return xxi_catcher(trick_history, declarer_side) in team
 
 
 def check_announcement_achieved(
@@ -163,33 +130,33 @@ def check_announcement_achieved(
     Returns:
         True if the announcement was achieved
     """
-    player = players[announcement.player_position]
-    is_declarer_team = player.position in [declarer_position, partner_position]
+    team = team_positions(
+        announcement.player_position, declarer_position, partner_position, len(players)
+    )
+    declarer_side = team_positions(
+        declarer_position, declarer_position, partner_position, len(players)
+    )
+    is_declarer_team = announcement.player_position in declarer_side
+    kind = announcement.announcement_type
 
-    if announcement.announcement_type == AnnouncementType.TRULL:
-        return check_trull(player)
+    # Every figure belongs to the side, not to the player who announced it.
+    if kind == AnnouncementType.TRULL:
+        return check_trull(team_cards(players, team))
 
-    elif announcement.announcement_type == AnnouncementType.FOUR_KINGS:
-        return check_four_kings(player)
+    if kind == AnnouncementType.FOUR_KINGS:
+        return check_four_kings(team_cards(players, team))
 
-    elif announcement.announcement_type == AnnouncementType.DOUBLE_GAME:
-        team_points = declarer_team_points if is_declarer_team else opponent_team_points
-        return check_double_game(team_points)
+    if kind == AnnouncementType.DOUBLE_GAME:
+        return check_double_game(declarer_team_points if is_declarer_team else opponent_team_points)
 
-    elif announcement.announcement_type == AnnouncementType.VOLAT:
-        # Calculate team tricks
-        team_tricks = sum(
-            len(p.tricks_won) // 4
-            for p in players
-            if (p.position in [declarer_position, partner_position]) == is_declarer_team
-        )
-        return check_volat(team_tricks)
+    if kind == AnnouncementType.VOLAT:
+        return check_volat(len(team_cards(players, team)) // 4)
 
-    elif announcement.announcement_type == AnnouncementType.PAGAT_ULTIMO:
-        return check_pagat_ultimo(trick_history, announcement.player_position)
+    if kind == AnnouncementType.PAGAT_ULTIMO:
+        return check_pagat_ultimo(trick_history, team)
 
-    elif announcement.announcement_type == AnnouncementType.XXI_CATCH:
-        return check_xxi_catch(trick_history, announcement.player_position)
+    if kind == AnnouncementType.XXI_CATCH:
+        return check_xxi_catch(trick_history, team, declarer_side)
 
     return False
 
@@ -197,45 +164,60 @@ def check_announcement_achieved(
 def check_silent_achievements(
     players: List[Player],
     declarer_position: int,
-    partner_position: int,
-    announcements: List[Announcement]
+    partner_position: Optional[int],
+    announcements: List[Announcement],
+    trick_history: Optional[List[dict]] = None,
+    declarer_team_points: int = 0,
+    opponent_team_points: int = 0
 ) -> List[Announcement]:
     """
-    Check for silently achieved bonuses (not announced but achieved).
-    Only checks trull and four kings (silent achievements).
+    Figures a side made without announcing them.
 
-    Args:
-        players: All players
-        declarer_position: Declarer's position
-        partner_position: Partner's position
-        announcements: List of announced bonuses
+    Judged per side. A side that announced a figure gets no silent one of the
+    same kind, whether the announced one was made or lost. The silent figure
+    is booked on the declarer (declarer's side) or on the first defender.
 
     Returns:
-        List of silent achievements as Announcement objects
+        List of silent achievements as Announcement objects (announced=False)
     """
-    silent_bonuses = []
-    announced_types_by_player = {
-        (a.player_position, a.announcement_type) for a in announcements
-    }
+    trick_history = trick_history or []
+    declarer_side = team_positions(
+        declarer_position, declarer_position, partner_position, len(players)
+    )
+    defenders = {p.position for p in players} - declarer_side
+    silent_bonuses: List[Announcement] = []
 
-    # Check each player for trull and four kings
-    for player in players:
-        # Check for silent Trull
-        if (player.position, AnnouncementType.TRULL) not in announced_types_by_player:
-            if check_trull(player):
+    for team, points in (
+        (declarer_side, declarer_team_points),
+        (defenders, opponent_team_points),
+    ):
+        if not team:
+            continue
+        holder = declarer_position if team is declarer_side else min(team)
+        announced = {
+            a.announcement_type for a in announcements if a.player_position in team
+        }
+        cards = team_cards(players, team)
+
+        def add(kind: AnnouncementType, position: int = holder) -> None:
+            if kind not in announced:
                 silent_bonuses.append(Announcement(
-                    player_position=player.position,
-                    announcement_type=AnnouncementType.TRULL,
-                    announced=False
+                    player_position=position, announcement_type=kind, announced=False
                 ))
 
-        # Check for silent Four Kings
-        if (player.position, AnnouncementType.FOUR_KINGS) not in announced_types_by_player:
-            if check_four_kings(player):
-                silent_bonuses.append(Announcement(
-                    player_position=player.position,
-                    announcement_type=AnnouncementType.FOUR_KINGS,
-                    announced=False
-                ))
+        if check_trull(cards):
+            add(AnnouncementType.TRULL)
+        if check_four_kings(cards):
+            add(AnnouncementType.FOUR_KINGS)
+        if check_volat(len(cards) // 4):
+            add(AnnouncementType.VOLAT)
+        elif check_double_game(points):
+            add(AnnouncementType.DOUBLE_GAME)
+        ulti_by = pagat_ultimo_winner(trick_history)
+        if ulti_by in team:
+            add(AnnouncementType.PAGAT_ULTIMO, ulti_by)
+        caught_by = xxi_catcher(trick_history, declarer_side)
+        if caught_by in team:
+            add(AnnouncementType.XXI_CATCH, caught_by)
 
     return silent_bonuses
