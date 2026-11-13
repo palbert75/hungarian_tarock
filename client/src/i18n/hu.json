@@ -176,7 +176,15 @@
     "normal": "Normál",
     "slow": "Lassú",
     "leave": "Felállok az asztaltól",
-    "leaveConfirm": "Felállsz az asztaltól a játék közepén?"
+    "leaveConfirm": "Felállsz az asztaltól a játék közepén?",
+    "install": "Telepítés alkalmazásként",
+    "installDetail": "Saját ikon a kezdőképernyőn, teljes képernyőn fut",
+    "installGo": "Telepítés",
+    "installIos": "iPhone-on: koppints a Megosztás gombra, majd „Főképernyőhöz adás”.",
+    "installed": "Telepítve",
+    "donate": "Támogasd a játékot",
+    "donateDetail": "A játék ingyenes; a szervert egy kávé árából tartjuk fenn",
+    "donateGo": "Támogatom"
   },
   "hint": {
     "fallback": "Javasolt lépés",

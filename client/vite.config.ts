@@ -12,14 +12,17 @@ export default defineConfig({
     // shell is cached: it opens instantly and then connects.
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icons/apple-touch-icon.png'],
+      includeAssets: ['icons/apple-touch-icon.png', 'robots.txt', 'sitemap.xml'],
       manifest: {
-        name: 'Tarokk',
+        id: '/',
+        name: 'Tarokk – magyar tarokk online',
         short_name: 'Tarokk',
-        description: 'Magyar tarokk – négy játékos, élőben',
+        description: 'Magyar tarokk – négy játékos, élőben, barátokkal vagy gépek ellen',
         lang: 'hu',
+        categories: ['games', 'entertainment'],
         display: 'standalone',
-        orientation: 'portrait',
+        // Phones play upright; a desktop window may be wide
+        orientation: 'any',
         start_url: '/',
         scope: '/',
         theme_color: '#0f3d2e',
@@ -32,7 +35,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,svg,webp,woff2}'],
-        navigateFallbackDenylist: [/^\/socket\.io/],
+        navigateFallbackDenylist: [/^\/socket\.io/, /^\/robots\.txt$/, /^\/sitemap\.xml$/, /^\/og\.jpg$/],
       },
     }),
   ],

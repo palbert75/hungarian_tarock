@@ -5,6 +5,8 @@ import { deviceLanguage, useSettings } from '@/store/settingsStore'
 import { selectIsOwner, useGameStore } from '@/store/gameStore'
 import { socketManager } from '@/services/socketManager'
 import { shareInvite } from '@/utils/invite'
+import { useInstall } from '@/hooks/useInstall'
+import { DONATE_URL } from '@/utils/donate'
 import type { BotSpeed } from '@/types'
 
 function Row({ label, detail, children }: { label: string; detail?: string; children: ReactNode }) {
@@ -63,6 +65,7 @@ export default function SettingsSheet({ open, onClose }: { open: boolean; onClos
   const isOwner = useGameStore(selectIsOwner)
   const addToast = useGameStore((s) => s.addToast)
   const language = settings.language ?? deviceLanguage()
+  const { state: installState, install } = useInstall()
 
   const leave = () => {
     if (roomState?.game_started && !window.confirm(t('settings.leaveConfirm'))) return
@@ -110,6 +113,26 @@ export default function SettingsSheet({ open, onClose }: { open: boolean; onClos
             ) : (
               <span className="text-xs text-slate-300">{t(`settings.${roomState.bot_speed || 'normal'}`)}</span>
             )}
+          </Row>
+        )}
+        {installState === 'prompt' && (
+          <Row label={t('settings.install')} detail={t('settings.installDetail')}>
+            <button type="button" className="chip chip-on" onClick={() => install()}>
+              ⬇︎ {t('settings.installGo')}
+            </button>
+          </Row>
+        )}
+        {installState === 'ios' && <Row label={t('settings.install')} detail={t('settings.installIos')}>{null}</Row>}
+        {installState === 'installed' && (
+          <Row label={t('settings.install')}>
+            <span className="text-xs text-green-400">✓ {t('settings.installed')}</span>
+          </Row>
+        )}
+        {DONATE_URL && (
+          <Row label={t('settings.donate')} detail={t('settings.donateDetail')}>
+            <a className="chip chip-on" href={DONATE_URL} target="_blank" rel="noopener noreferrer">
+              ☕ {t('settings.donateGo')}
+            </a>
           </Row>
         )}
         {roomState && (

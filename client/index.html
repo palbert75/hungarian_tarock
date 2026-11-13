@@ -10,8 +10,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Tarokk" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
-    <meta name="description" content="Magyar tarokk négy játékosnak, telefonon és gépen. Ülj le az asztalhoz!" />
-    <title>Tarokk</title>
+    <meta name="description" content="Játssz magyar tarokkot online, ingyen: négy játékos élőben, barátokkal vagy gépek ellen, telefonon és gépen. Oktató tippekkel kezdőknek is." />
+    <meta name="keywords" content="tarokk, magyar tarokk, tarokk online, paskievics, húszashívásos tarokk, kártyajáték, Hungarian tarokk, tarock" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://huntarokk.netlify.app/" />
+    <title>Tarokk online – magyar tarokk négy játékosnak, ingyen</title>
     <!-- Link preview in messengers (the invite link is this page with ?room=…) -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Tarokk" />
@@ -32,9 +35,45 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": ["WebApplication", "VideoGame"],
+        "name": "Tarokk",
+        "alternateName": ["Magyar tarokk online", "Hungarian Tarokk"],
+        "url": "https://huntarokk.netlify.app/",
+        "image": "https://huntarokk.netlify.app/og.jpg",
+        "description": "Magyar (húszashívásos, Paskievics) tarokk négy játékosnak: élő asztalok barátokkal, gépi játékosok, oktató tippek, magyarul és angolul.",
+        "inLanguage": ["hu", "en"],
+        "applicationCategory": "GameApplication",
+        "genre": "Card game",
+        "operatingSystem": "Any",
+        "browserRequirements": "Requires JavaScript",
+        "numberOfPlayers": { "@type": "QuantitativeValue", "minValue": 1, "maxValue": 4 },
+        "playMode": ["MultiPlayer", "SinglePlayer"],
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" }
+      }
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Shown until the app starts, and to readers without JavaScript; the app replaces it -->
+      <main style="max-width: 40rem; margin: 0 auto; padding: 2rem 1rem; font-family: system-ui, sans-serif; color: #e2e8f0; background: #0f3d2e; min-height: 100vh">
+        <h1>Tarokk online – magyar tarokk négy játékosnak</h1>
+        <p>
+          Játssz magyar (húszashívásos, Paskievics) tarokkot a böngészőben, ingyen és regisztráció nélkül. Ülj le élő
+          asztalhoz a barátaiddal egy meghívó linkkel, vagy töltsd fel az asztalt gépi játékosokkal.
+        </p>
+        <ul>
+          <li>Licit, skart, hívás, bemondások (tuletroá, négy király, duplajáték, volát, pagátultimó, XXI-fogás), kontra</li>
+          <li>Gépi játékosok és oktató tippek, amelyek minden lépésnél megmondják, mit érdemes tenni és miért</li>
+          <li>Telefonra tervezve, telepíthető alkalmazásként; magyarul és angolul</li>
+        </ul>
+        <p lang="en">Hungarian Tarokk (tarock) online: a free four-player trick-taking card game with live tables, bots and tutorial hints.</p>
+        <noscript><p>A játékhoz engedélyezd a JavaScriptet a böngésződben.</p></noscript>
+      </main>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

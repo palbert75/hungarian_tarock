@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameStore } from '@/store/gameStore'
 import { deviceLanguage, useSettings } from '@/store/settingsStore'
+import { useInstall } from '@/hooks/useInstall'
+import { DONATE_URL } from '@/utils/donate'
 
 /** First visit: who are you? */
 export default function ConnectionScreen() {
@@ -10,6 +12,7 @@ export default function ConnectionScreen() {
   const invited = useGameStore((s) => !!s.pendingRoomId)
   const language = useSettings((s) => s.language) ?? deviceLanguage()
   const setLanguage = useSettings((s) => s.setLanguage)
+  const { state: installState, install } = useInstall()
   const [name, setName] = useState('')
   const clean = name.trim().slice(0, 20)
 
@@ -54,6 +57,21 @@ export default function ConnectionScreen() {
             </button>
           ))}
         </div>
+        {(installState === 'prompt' || installState === 'ios' || DONATE_URL) && (
+          <div className="flex flex-col items-center gap-2 pt-2 text-xs text-slate-300">
+            {installState === 'prompt' && (
+              <button type="button" className="chip" onClick={() => install()}>
+                ⬇︎ {t('settings.installGo')}
+              </button>
+            )}
+            {installState === 'ios' && <p className="text-center">{t('settings.installIos')}</p>}
+            {DONATE_URL && (
+              <a className="chip" href={DONATE_URL} target="_blank" rel="noopener noreferrer">
+                ☕ {t('settings.donate')}
+              </a>
+            )}
+          </div>
+        )}
       </form>
     </div>
   )

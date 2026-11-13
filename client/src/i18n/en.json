@@ -176,7 +176,15 @@
     "normal": "Normal",
     "slow": "Slow",
     "leave": "Leave table",
-    "leaveConfirm": "Leave the table in the middle of the game?"
+    "leaveConfirm": "Leave the table in the middle of the game?",
+    "install": "Install as an app",
+    "installDetail": "Its own icon on your home screen, runs full screen",
+    "installGo": "Install",
+    "installIos": "On iPhone: tap Share, then \"Add to Home Screen\".",
+    "installed": "Installed",
+    "donate": "Support the game",
+    "donateDetail": "The game is free; a coffee keeps the server running",
+    "donateGo": "Donate"
   },
   "hint": {
     "fallback": "Suggested move",
