@@ -445,6 +445,13 @@ html, body {
 .compass > .seat-S { grid-area: 3 / 2; }
 .compass > .seat-C { grid-area: 2 / 2; }
 .compass-big { grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); }
+/* Small table (my hand has the room): two rows only, the side seats sit beside them */
+.compass:not(.compass-big) { grid-template-rows: auto auto; row-gap: 2px; }
+.compass:not(.compass-big) > .seat-N { grid-area: 1 / 2; }
+.compass:not(.compass-big) > .seat-S { grid-area: 2 / 2; }
+.compass:not(.compass-big) > .seat-W { grid-area: 1 / 1 / 3 / 2; }
+.compass:not(.compass-big) > .seat-E { grid-area: 1 / 3 / 3 / 4; }
+.compass:not(.compass-big) > .seat-C { grid-area: 1 / 2 / 3 / 3; }
 
 /* Hand: cards sized from the space that is left (width and height) */
 .hand-box {

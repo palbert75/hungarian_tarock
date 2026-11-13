@@ -106,6 +106,8 @@ export default function PlayingPhase({ table }: { table: Table }) {
           )
         }
         // An empty place for whoever still has to play
+        // While I choose on a phone my own empty place is left out: the hand needs the room
+        if (position === table.me && !useBig) return null
         return position === game.current_turn && !showingFinished ? <CardSlot width={cardWidth} /> : (
           <div style={{ width: cardWidth, aspectRatio: '5 / 8' }} />
         )

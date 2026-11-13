@@ -27,7 +27,7 @@ export default function TarokkCounter({ table, currentTrick }: { table: Table; c
       <span>
         {t('counter.gone')} <b>{played + discarded}</b>/{TAROKKS_IN_DECK}
       </span>
-      <span className="text-slate-300">
+      <span className="text-slate-300 hidden sm:inline">
         ({t('counter.played', { count: played })}, {t('counter.discarded', { count: discarded })})
       </span>
       <span>
