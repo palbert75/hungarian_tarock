@@ -289,5 +289,18 @@
     "LEAVE_ROOM_ERROR": "Could not leave the table",
     "LIST_ROOMS_ERROR": "Could not load the tables",
     "CHAT_ERROR": "Message not sent"
+  },
+  "side": {
+    "declarer": "Declarers",
+    "opponent": "Defenders",
+    "unknown": "not known yet",
+    "you": "you"
+  },
+  "counter": {
+    "gone": "Tarokks gone:",
+    "played": "{{count}} played",
+    "discarded": "{{count}} in the skart",
+    "mine": "yours:",
+    "others": "others still hold:"
   }
 }

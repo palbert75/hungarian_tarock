@@ -5,7 +5,7 @@ import { useTable, type Table } from '@/hooks/useTable'
 import TopBar from '@/components/TopBar'
 import SettingsSheet from '@/components/SettingsSheet'
 import ChatSheet from '@/components/Chat'
-import { TurnStatus } from '@/components/Seats'
+import { SideLegend, TurnStatus } from '@/components/Seats'
 import { tarokkName } from '@/utils/cardNames'
 import BiddingPhase from './phases/BiddingPhase'
 import DiscardingPhase from './phases/DiscardingPhase'
@@ -28,8 +28,11 @@ function ContractLine({ table }: { table: Table }) {
     parts.push(`${t(`announcement.${a.announcement_type}`)}${mark}`)
   }
   return (
-    <div className="flex-none safe-x py-1 text-center text-[0.72rem] text-slate-200/90 bg-black/25 truncate">
-      {parts.join(' · ')}
+    <div className="flex-none safe-x py-1 text-center text-[0.72rem] text-slate-200/90 bg-black/25">
+      <div className="truncate">{parts.join(' · ')}</div>
+      <div className="pt-0.5 text-[0.65rem]">
+        <SideLegend table={table} />
+      </div>
     </div>
   )
 }

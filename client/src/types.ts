@@ -73,6 +73,8 @@ export interface Player {
   tricks_won_count: number
   hand?: Card[] // Only visible for your own hand
   talon_card_ids?: string[] // Cards you received from the talon this hand
+  /** How many tarokks this player put into the skart (declared at the table) */
+  tarokks_discarded?: number
 }
 
 export interface TrickCard {

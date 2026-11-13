@@ -289,5 +289,18 @@
     "LEAVE_ROOM_ERROR": "Nem sikerült felállni az asztaltól",
     "LIST_ROOMS_ERROR": "Nem sikerült betölteni az asztalokat",
     "CHAT_ERROR": "Az üzenet nem ment el"
+  },
+  "side": {
+    "declarer": "Felvevők",
+    "opponent": "Ellenfelek",
+    "unknown": "még nem tudni",
+    "you": "te"
+  },
+  "counter": {
+    "gone": "Tarokk kiment:",
+    "played": "{{count}} kijátszva",
+    "discarded": "{{count}} skartban",
+    "mine": "nálad:",
+    "others": "másoknál még:"
   }
 }

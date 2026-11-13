@@ -191,6 +191,8 @@ class Player(BaseModel):
             "vacant": self.vacant,
             "total_score": self.total_score,
             "ready_next": self.ready_next,
+            # Tarokks put into the skart are declared at the table, so the count is public
+            "tarokks_discarded": sum(1 for card in self.discard_pile if card.is_tarokk()),
         }
 
         # Only reveal partner status if partner has been revealed

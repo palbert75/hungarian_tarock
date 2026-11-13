@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameStore } from '@/store/gameStore'
 import { socketManager } from '@/services/socketManager'
@@ -9,9 +9,14 @@ import Seats from '@/components/Seats'
 import Card, { CardSlot } from '@/components/Card'
 import { HandGrid, HandStrip } from '@/components/Hand'
 import HintBox, { useHint } from '@/components/HintBox'
+import TarokkCounter from '@/components/TarokkCounter'
+import { useSettings } from '@/store/settingsStore'
 import Sheet from '@/components/Sheet'
 import { cardShortName } from '@/utils/cardNames'
 import type { Card as CardType, TrickCard } from '@/types'
+
+/** How long the finished trick lies still before it slides to its winner (ms) */
+const COLLECT_AFTER_MS = 1150
 
 /** Cards I may play now: follow suit, else tarokk, else anything. */
 export function legalCardIds(hand: CardType[], trick: TrickCard[]): string[] {
@@ -32,6 +37,32 @@ export default function PlayingPhase({ table }: { table: Table }) {
   const yourTurnData = useGameStore((s) => s.yourTurnData)
   const finishedTrick = useGameStore((s) => s.finishedTrick)
   const [handOpen, setHandOpen] = useState(false)
+  const tutorial = useSettings((st) => st.tutorial)
+  const tableRef = useRef<HTMLDivElement>(null)
+  // Where each card of the finished trick has to travel to reach the winner's seat
+  const [collect, setCollect] = useState<Record<number, { dx: number; dy: number }> | null>(null)
+  const finishedKey = finishedTrick ? `${finishedTrick.trick_number}-${finishedTrick.winner}` : null
+
+  useEffect(() => {
+    setCollect(null)
+    if (!finishedTrick) return
+    const timer = window.setTimeout(() => {
+      const root = tableRef.current
+      const target = root?.querySelector(`[data-seat-pos="${finishedTrick.winner}"]`)?.getBoundingClientRect()
+      if (!root || !target) return
+      const moves: Record<number, { dx: number; dy: number }> = {}
+      root.querySelectorAll<HTMLElement>('[data-trick-pos]').forEach((el) => {
+        const r = el.getBoundingClientRect()
+        moves[Number(el.dataset.trickPos)] = {
+          dx: target.left + target.width / 2 - (r.left + r.width / 2),
+          dy: target.top + target.height / 2 - (r.top + r.height / 2),
+        }
+      })
+      setCollect(moves)
+    }, COLLECT_AFTER_MS)
+    return () => window.clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [finishedKey])
 
   // While the finished trick is on show, everybody looks at the table
   const showingFinished = finishedTrick !== null
@@ -63,7 +94,16 @@ export default function PlayingPhase({ table }: { table: Table }) {
       content={(position) => {
         const card = cardAt(position)
         if (card) {
-          return <Card card={card} width={cardWidth} winner={showingFinished && finishedTrick.winner === position} />
+          const move = showingFinished ? collect?.[position] : undefined
+          return (
+            <div
+              data-trick-pos={position}
+              className="trick-card"
+              style={move ? { transform: `translate(${move.dx}px, ${move.dy}px) scale(0.35)`, opacity: 0 } : undefined}
+            >
+              <Card card={card} width={cardWidth} winner={showingFinished && finishedTrick.winner === position} />
+            </div>
+          )
         }
         // An empty place for whoever still has to play
         return position === game.current_turn && !showingFinished ? <CardSlot width={cardWidth} /> : (
@@ -118,8 +158,15 @@ export default function PlayingPhase({ table }: { table: Table }) {
       <GameLayout
         wide={wide}
         focus={choosing ? 'hand' : 'table'}
-        top={tableView}
-        hint={<HintBox hint={hint} hand={myHand} />}
+        top={<div ref={tableRef} className="w-full h-full">{tableView}</div>}
+        hint={
+          tutorial ? (
+            <div className="flex flex-col gap-2">
+              <TarokkCounter table={table} currentTrick={trick} />
+              <HintBox hint={hint} hand={myHand} />
+            </div>
+          ) : undefined
+        }
         hand={hand}
         actions={actions}
       />

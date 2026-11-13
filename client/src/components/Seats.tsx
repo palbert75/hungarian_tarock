@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import TableView, { SeatLabel } from './TableView'
 import type { Table } from '@/hooks/useTable'
+import { useSides } from '@/hooks/useSides'
 import type { Seat } from '@/types'
 
 interface SeatsProps {
@@ -24,6 +25,7 @@ interface SeatsProps {
 export default function Seats({ table, content, detail, turn, big, center }: SeatsProps) {
   const { game, me } = table
   const turnPos = turn === undefined ? game.current_turn : turn
+  const { sideOf, known } = useSides(table)
   const seats: Partial<Record<Seat, ReactNode>> = {}
 
   for (const seat of ['N', 'W', 'E', 'S'] as Seat[]) {
@@ -37,13 +39,14 @@ export default function Seats({ table, content, detail, turn, big, center }: Sea
         isDealer={position === game.dealer_position}
         isDeclarer={position === game.declarer_position}
         isPartner={game.partner_revealed && position === game.partner_position}
+        side={known ? sideOf(position) : undefined}
         detail={detail?.(position)}
         small={!big}
       />
     )
     const body = <div className="flex items-center justify-center min-h-[1.5rem]">{content(position)}</div>
     seats[seat] = (
-      <div className={`flex flex-col items-center gap-1 max-w-full ${big ? 'p-1' : 'px-1'}`}>
+      <div data-seat-pos={position} className={`flex flex-col items-center gap-1 max-w-full ${big ? 'p-1' : 'px-1'}`}>
         {seat === 'N' ? (
           <>
             {label}
@@ -60,6 +63,21 @@ export default function Seats({ table, content, detail, turn, big, center }: Sea
   }
 
   return <TableView seats={seats} center={center} big={big} />
+}
+
+/** A small key to the seat colours: who plays with whom. */
+export function SideLegend({ table }: { table: Table }) {
+  const { t } = useTranslation()
+  const { sideOf, known, mySide } = useSides(table)
+  if (!known) return null
+  const anyUnknown = [0, 1, 2, 3].some((p) => sideOf(p) === 'unknown')
+  return (
+    <span className="inline-flex items-center gap-2 align-middle">
+      <span className="side-pill side-declarer">{t('side.declarer')}{mySide === 'declarer' ? ` · ${t('side.you')}` : ''}</span>
+      <span className="side-pill side-opponent">{t('side.opponent')}{mySide === 'opponent' ? ` · ${t('side.you')}` : ''}</span>
+      {anyUnknown && <span className="side-pill side-unknown">{t('side.unknown')}</span>}
+    </span>
+  )
 }
 
 /** "Waiting for X" / "Your turn" for the top bar. */

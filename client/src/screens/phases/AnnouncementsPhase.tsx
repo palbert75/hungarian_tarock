@@ -4,6 +4,7 @@ import { useGameStore } from '@/store/gameStore'
 import { socketManager } from '@/services/socketManager'
 import type { Table } from '@/hooks/useTable'
 import { useIsWide } from '@/hooks/useIsWide'
+import { useSides } from '@/hooks/useSides'
 import GameLayout from '@/components/GameLayout'
 import Seats from '@/components/Seats'
 import { HandGrid } from '@/components/Hand'
@@ -11,27 +12,6 @@ import HintBox, { useHint } from '@/components/HintBox'
 import type { Announcement, AnnouncementType } from '@/types'
 
 const ORDER: AnnouncementType[] = ['trull', 'four_kings', 'double_game', 'volat', 'pagat_ultimo', 'xxi_catch']
-
-type Side = 'declarer' | 'opponent' | 'unknown'
-
-/** Which side a seat is on, as far as I can know it. */
-function useSides(table: Table) {
-  const { game, me, myHand } = table
-  const declarer = game.declarer_position
-  const called = (game.called_card_rank || '').toLowerCase()
-  const iHoldCalled = !!called && myHand.some((c) => c.suit === 'tarokk' && c.rank.toLowerCase() === called)
-  const iAmPartner = (game.partner_revealed && game.partner_position === me) || iHoldCalled
-  const mySide: Side = me === declarer || iAmPartner ? 'declarer' : 'opponent'
-
-  const sideOf = (position: number): Side => {
-    if (position === me) return mySide
-    if (position === declarer) return 'declarer'
-    if (game.partner_revealed && position === game.partner_position) return 'declarer'
-    if (iAmPartner || game.declarer_alone) return 'opponent'
-    return 'unknown'
-  }
-  return { mySide, sideOf }
-}
 
 export default function AnnouncementsPhase({ table }: { table: Table }) {
   const { t } = useTranslation()

@@ -31,19 +31,26 @@ interface SeatLabelProps {
   isDealer?: boolean
   isDeclarer?: boolean
   isPartner?: boolean
+  /** Which side the seat is on, as far as the viewer knows; omitted before the bidding ends */
+  side?: 'declarer' | 'opponent' | 'unknown'
   /** Extra line under the name (tricks won, "ready"…) */
   detail?: ReactNode
   small?: boolean
 }
 
 /** A player's name with the badges everybody at the table may know. */
-export function SeatLabel({ player, isMe, isTurn, isDealer, isDeclarer, isPartner, detail, small }: SeatLabelProps) {
+export function SeatLabel({ player, isMe, isTurn, isDealer, isDeclarer, isPartner, side, detail, small }: SeatLabelProps) {
   const { t } = useTranslation()
   if (!player) return null
   const dropped = !player.is_connected && !player.bot_controlled
   return (
     <div className={`max-w-full text-center leading-tight ${small ? 'text-[0.68rem]' : 'text-xs'}`}>
-      <div className={`flex items-center justify-center gap-1 ${isTurn ? 'text-yellow-300 font-bold' : 'text-slate-100'}`}>
+      <div
+        className={`flex items-center justify-center gap-1 ${side ? `side-pill side-${side}` : ''} ${
+          isTurn ? (side ? 'side-turn font-bold' : 'text-yellow-300 font-bold') : 'text-slate-100'
+        }`}
+        title={side && side !== 'unknown' ? t(`side.${side}`) : undefined}
+      >
         {player.bot_controlled && <span aria-label={t('seat.bot')}>🤖</span>}
         <span className="truncate max-w-[6.5rem]">{isMe ? t('seat.you') : player.name}</span>
         {isDeclarer && <span title={t('seat.declarer')} aria-label={t('seat.declarer')}>👑</span>}
