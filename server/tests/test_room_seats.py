@@ -172,3 +172,56 @@ def test_room_info_has_owner_and_bot_flags():
     assert info["is_full"] is True
     bot = next(p for p in info["players"] if p["position"] == 3)
     assert bot["is_bot"] and bot["is_ready"] and bot["name"].startswith("Bot ")
+
+
+def test_owner_leaving_mid_game_hands_the_table_to_the_next_person():
+    manager = RoomManager()
+    room = table_of_four(manager)
+    room.game_state.phase = GamePhase.PLAYING
+    assert manager.leave_room("s0") is room
+    assert room.is_owner(room.player_at(1).id)
+
+
+def test_last_person_leaving_mid_game_closes_the_table():
+    manager = RoomManager()
+    room = manager.create_room("s0", "Anna")
+    room.fill_bots()
+    room.game_state.phase = GamePhase.PLAYING
+    assert manager.leave_room("s0") is None
+    assert room.room_id not in manager.rooms
+
+
+def test_table_stays_while_a_dropped_person_may_still_come_back():
+    manager = RoomManager()
+    room = table_of_four(manager)
+    room.game_state.phase = GamePhase.PLAYING
+    for sid in ("s2", "s3"):
+        manager.leave_room(sid)
+    manager.disconnect_session("s1")           # dropped a moment ago
+    assert manager.leave_room("s0") is room    # Bela may be back
+    bela = room.player_at(1)
+    later = room.dropped_at[bela.id] + 1000
+    assert manager.expire_seat(room.room_id, bela.id, now=later) is None
+    assert room.room_id not in manager.rooms
+
+
+def test_last_person_dropping_mid_game_closes_the_table_after_the_grace_period():
+    manager = RoomManager()
+    room = manager.create_room("s0", "Anna")
+    room.fill_bots()
+    room.game_state.phase = GamePhase.PLAYING
+    owner = room.player_at(0)
+    manager.disconnect_session("s0")
+    assert manager.expire_seat(room.room_id, owner.id, now=room.dropped_at[owner.id] + 5) is room
+    assert manager.expire_seat(room.room_id, owner.id, now=room.dropped_at[owner.id] + 1000) is None
+    assert room.room_id not in manager.rooms
+
+
+def test_dropped_person_mid_game_keeps_the_seat_while_others_play_on():
+    manager = RoomManager()
+    room = table_of_four(manager)
+    room.game_state.phase = GamePhase.PLAYING
+    bela = room.player_at(1)
+    manager.disconnect_session("s1")
+    assert manager.expire_seat(room.room_id, bela.id, now=room.dropped_at[bela.id] + 1000) is room
+    assert bela in room.seated() and not bela.vacant

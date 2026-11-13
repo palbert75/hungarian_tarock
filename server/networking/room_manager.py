@@ -391,9 +391,17 @@ class RoomManager:
             return self.rooms.get(room_id)
         return None
 
-    def _delete_if_no_humans(self, room: Room) -> bool:
-        """A table with no human seat left is closed."""
-        if not room.humans():
+    def _humans_present(self, room: Room, now: Optional[float] = None) -> List[Player]:
+        """People at the table: connected, or dropped so recently that they may be back."""
+        now = time.time() if now is None else now
+        return [
+            p for p in room.humans()
+            if p.is_connected or now - room.dropped_at.get(p.id, float("-inf")) < WAITING_GRACE_SECONDS - 1
+        ]
+
+    def _delete_if_no_humans(self, room: Room, now: Optional[float] = None) -> bool:
+        """A table nobody sits at any more is closed, together with its game."""
+        if not self._humans_present(room, now):
             self.rooms.pop(room.room_id, None)
             for sid in [s for s, rid in self.session_to_room.items() if rid == room.room_id]:
                 del self.session_to_room[sid]
@@ -433,14 +441,14 @@ class RoomManager:
         if not room:
             return None
         player = room.game_state.get_player_by_id(player_id)
-        if (player is None or player.vacant or player.is_connected or player.bot_controlled
-                or not room.can_change_seats()):
+        if player is None or player.vacant or player.is_connected:
             return room
         if now is not None and now - room.dropped_at.get(player_id, 0) < WAITING_GRACE_SECONDS - 1:
             return room  # came back and dropped again: a newer timer is running
         room.dropped_at.pop(player_id, None)
-        room.vacate(player_id)
-        if self._delete_if_no_humans(room):
+        if room.can_change_seats() and not player.bot_controlled:
+            room.vacate(player_id)
+        if self._delete_if_no_humans(room, now):
             return None
         return room
 
@@ -450,6 +458,7 @@ class RoomManager:
 
         Before the game and between hands the seat is freed at once.
         Mid-game the seat is kept (the owner may hand it to a bot).
+        The table goes to the next person; with nobody left it is closed.
 
         Returns:
             The room they left, or None if the room was deleted
@@ -468,7 +477,7 @@ class RoomManager:
                 if room.is_owner(player.id):
                     room.pass_ownership()
 
-        if room.can_change_seats() and self._delete_if_no_humans(room):
+        if self._delete_if_no_humans(room):
             return None
         return room
 

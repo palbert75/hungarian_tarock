@@ -82,7 +82,7 @@ def owner_seat_of(sid: str) -> Tuple[Room, Player]:
 
 
 async def hold_seat_then_free(room_id: str, player_id: str) -> None:
-    """A dropped player's seat is held for a while before the game and between hands."""
+    """A dropped player's seat is held for a while; a table left with nobody is closed."""
     await asyncio.sleep(WAITING_GRACE_SECONDS)
     if not room_manager.get_room(room_id):
         return
@@ -116,8 +116,7 @@ async def disconnect(sid: str):
     await service.broadcast_room_state(room)
     if room.game_state.phase != GamePhase.WAITING:
         await service.broadcast_game_state(room)
-    if room.can_change_seats():
-        asyncio.create_task(hold_seat_then_free(room.room_id, player.id))
+    asyncio.create_task(hold_seat_then_free(room.room_id, player.id))
     await auto_save_room(room)
 
 
