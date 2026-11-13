@@ -24,15 +24,18 @@ export function useSides(table: Table): Sides {
   }
   const called = (game.called_card_rank || '').toLowerCase()
   const iHoldCalled = !!called && myHand.some((c) => c.suit === 'tarokk' && c.rank.toLowerCase() === called)
-  const iAmPartner = (game.partner_revealed && game.partner_position === me) || iHoldCalled
+  // An accepted invit or a yielded game tells the whole table who the partner is
+  const shownPartner = game.partner_revealed ? game.partner_position : game.convention_partner ?? null
+  const partnerKnown = shownPartner !== null && shownPartner !== undefined
+  const iAmPartner = (partnerKnown && shownPartner === me) || iHoldCalled
   const mySide: Side = me === declarer || iAmPartner ? 'declarer' : 'opponent'
 
   const sideOf = (position: number): Side => {
     if (position === me) return mySide
     if (position === declarer) return 'declarer'
-    if (game.partner_revealed && position === game.partner_position) return 'declarer'
+    if (partnerKnown && position === shownPartner) return 'declarer'
     // Everyone else is a defender once both declarer-side seats are known to me
-    if (iAmPartner || game.declarer_alone || game.partner_revealed) return 'opponent'
+    if (iAmPartner || game.declarer_alone || partnerKnown) return 'opponent'
     return 'unknown'
   }
   const relationOf = (position: number): Relation => {

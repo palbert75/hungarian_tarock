@@ -89,7 +89,8 @@
     "choose": "Melyik tarokkot hívod partnernek?",
     "yours": "nálad",
     "confirm": "Hívom: {{card}}",
-    "waiting": "{{name}} partnert hív"
+    "waiting": "{{name}} partnert hív",
+    "required": "A licit kötelez: a {{card}} hívandó ({{name}} lapja)."
   },
   "announcement": {
     "trull": "Tuletroá",
@@ -106,7 +107,8 @@
     "recontra": "Rekontra: {{what}}",
     "contraShort": "kontra",
     "recontraShort": "rekontra",
-    "contraGame": "kontra játék"
+    "contraGame": "kontra játék",
+    "mustUlti": "Pagáttal adtál invitet: a pagátultimó kötelező."
   },
   "play": {
     "tricks": "ütés: {{count}}",
@@ -204,7 +206,12 @@
       "limit_reached": "A licit már „{{bid}}”-nél tart. Ez ehhez a laphoz túl magas: passz.",
       "pagat_few_tarokks": "Az egyetlen honőröd a pagát, és {{count}} tarokkod van. Csak legalább nyolccal érdemes indulni: passz.",
       "pagat_many_tarokks": "Az egyetlen honőröd a pagát, de {{count}} tarokkod van: licitálj ({{bid}}).",
-      "two_over_three": "Az előtted ülő hármat mondott, és van honőröd: mondj „{{bid}}”-t. Ha rajtad marad, erős partnert kapsz; ha nem, legalább több lapot cserélsz a talonból."
+      "two_over_three": "Az előtted ülő hármat mondott, és van honőröd: mondj „{{bid}}”-t. Ha rajtad marad, erős partnert kapsz; ha nem, legalább több lapot cserélsz a talonból.",
+      "invit_taken": "Valaki fogadta az invitedet: passzolj, a {{card}} tarokkodat fogja hívni.",
+      "invit_accept": "Invit van az asztalon, és nálad nagy honőr van: licitálj ({{bid}}), vedd fel a játékot, és hívd a {{card}} tarokkot – erős partnert kapsz.",
+      "invit_give": "Nálad a {{card}}, egy nagy honőr és sok tarokk: ugorj a licitben ({{bid}}). Ez invit: aki felveszi, a {{card}} tarokkodat hívja.",
+      "yield": "Nálad a XX és egy nagy honőr: passzold el a kettőt (engedett játék). A passzod jelzi, hogy téged kell hívni.",
+      "must_hold": "Itt a passz engedett játék lenne, ahhoz pedig XX és nagy honőr kell. Nincs meg, ezért tartanod kell ({{bid}})."
     },
     "discard": {
       "suits": "Tedd a skartba: {{cards}}. A király nélküli rövid színeidet ürítsd ki, a legértékesebb lapokkal kezdve.",
@@ -213,7 +220,9 @@
     },
     "call": {
       "xx": "Hívd a {{rank}}-ast: akinél van, az lesz a partnered.",
-      "lower": "A XX nálad van, ezért hívd ezt: {{rank}} – a legnagyobb tarokk a XX alatt, ami nincs nálad."
+      "lower": "A XX nálad van, ezért hívd ezt: {{rank}} – a legnagyobb tarokk a XX alatt, ami nincs nálad.",
+      "invit": "Invitet fogadtál: a {{rank}} tarokkot kell hívnod, az invitet adó lesz a partnered.",
+      "yielded": "Engedett játék: a {{rank}} tarokkot kell hívnod; aki elpasszolta a kettőt, az a partnered."
     },
     "announce": {
       "pass": "Ezzel a lappal nincs mit bemondani: passz.",
@@ -225,7 +234,9 @@
       "several": "Ez a lap {{count}} bemondást is megér, kezdve ezzel: {{announcement}}.",
       "double_after_signal": "A négy király elárulta, hogy a partnered hosszú tarokkban, nálad pedig {{count}} tarokk és nagy honőr van: válaszolj duplajátékkal.",
       "kontra_four_kings": "Az ellenfél négy királyt mondott, neked pedig {{count}} tarokkod van, köztük nagyok: valamelyik királyuk nálad vagy a partnerednél fog elesni. Mondj kontrát.",
-      "kontra_ulti": "Az ellenfél pagátultimót mondott, de neked {{count}} tarokkod van: nem tudják mind kihajtani. Mondj kontrát."
+      "kontra_ulti": "Az ellenfél pagátultimót mondott, de neked {{count}} tarokkod van: nem tudják mind kihajtani. Mondj kontrát.",
+      "ulti_obligatory": "Pagáttal adtál invitet, nagy honőr nélkül: most kötelező pagátultimót mondanod.",
+      "trull_invit": "Invitet fogadtál ({{card}}), és nálad nagy honőr van: mondd be a tuletroát."
     },
     "lead": {
       "ulti_draw": "Pagátultimót mondtál: hívd ezt: {{card}}, hogy kihúzd a többieknél még lehetséges {{count}} tarokkot.",
@@ -323,5 +334,10 @@
     "downloadLater": "A fájl a játszma végén tölthető le, mert mindenki lapja benne van.",
     "failed": "Nem sikerült elküldeni. Próbáld újra.",
     "another": "Új jelentés"
+  },
+  "bidding": {
+    "invit": "invit {{card}}",
+    "yielded": "engedett játék",
+    "invitHelp": "Az ugrás invit: csak akkor mondhatod, ha nálad van a jelzett tarokk."
   }
 }

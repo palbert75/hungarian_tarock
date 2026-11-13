@@ -89,7 +89,8 @@
     "choose": "Which tarokk do you call as partner?",
     "yours": "yours",
     "confirm": "Call the {{card}}",
-    "waiting": "{{name}} is calling a partner"
+    "waiting": "{{name}} is calling a partner",
+    "required": "The bidding binds you: call the {{card}} ({{name}} holds it)."
   },
   "announcement": {
     "trull": "Trull",
@@ -106,7 +107,8 @@
     "recontra": "Rekontra: {{what}}",
     "contraShort": "kontra",
     "recontraShort": "rekontra",
-    "contraGame": "kontra game"
+    "contraGame": "kontra game",
+    "mustUlti": "You invited with the pagát: pagát ulti is obligatory."
   },
   "play": {
     "tricks": "tricks: {{count}}",
@@ -204,7 +206,12 @@
       "limit_reached": "The bidding is already at \"{{bid}}\". That is too high for this hand: pass.",
       "pagat_few_tarokks": "Your only honour is the pagát and you have {{count}} tarokks. Open only with at least eight: pass.",
       "pagat_many_tarokks": "Your only honour is the pagát, but you have {{count}} tarokks: bid ({{bid}}).",
-      "two_over_three": "The player before you said \"three\" and you hold an honour: say \"{{bid}}\". If it is left to you, you get a strong partner; if not, you have at least taken more cards from the talon."
+      "two_over_three": "The player before you said \"three\" and you hold an honour: say \"{{bid}}\". If it is left to you, you get a strong partner; if not, you have at least taken more cards from the talon.",
+      "invit_taken": "Somebody took your invit: pass, they will call your {{card}}.",
+      "invit_accept": "There is an invit and you hold a great honour: bid ({{bid}}), become declarer and call the {{card}} – you get a strong partner.",
+      "invit_give": "You hold the {{card}}, a great honour and many tarokks: jump in the bidding ({{bid}}). That is an invit: whoever takes the game calls your {{card}}.",
+      "yield": "You hold the XX and a great honour: pass the \"two\" (yielded game). Your pass tells the declarer to call you.",
+      "must_hold": "A pass here would be a yielded game, which needs the XX and a great honour. You lack them, so you have to stay in ({{bid}})."
     },
     "discard": {
       "suits": "Put {{cards}} into the skart: empty your short suits that have no king, the dearest cards first.",
@@ -213,7 +220,9 @@
     },
     "call": {
       "xx": "Call the {{rank}}: whoever holds it will be your partner.",
-      "lower": "You hold the XX yourself, so call the {{rank}}, the highest tarokk below it that you do not have."
+      "lower": "You hold the XX yourself, so call the {{rank}}, the highest tarokk below it that you do not have.",
+      "invit": "You took an invit: you must call the {{rank}}; the inviter is your partner.",
+      "yielded": "Yielded game: you must call the {{rank}}; the player who passed the \"two\" is your partner."
     },
     "announce": {
       "pass": "Nothing worth announcing with this hand: pass.",
@@ -225,7 +234,9 @@
       "several": "This hand is good for {{count}} announcements, starting with {{announcement}}.",
       "double_after_signal": "The four kings told you your partner is long in tarokks, and you hold {{count}} tarokks with a great honour: answer with double game.",
       "kontra_four_kings": "The other side announced four kings, and you hold {{count}} tarokks with high ones among them: one of their kings will fall to you or your partner. Say kontra.",
-      "kontra_ulti": "The other side announced pagát ultimo, but you hold {{count}} tarokks: they cannot draw them all. Say kontra."
+      "kontra_ulti": "The other side announced pagát ultimo, but you hold {{count}} tarokks: they cannot draw them all. Say kontra.",
+      "ulti_obligatory": "You invited with the pagát and no great honour: you must announce pagát ulti now.",
+      "trull_invit": "You took an invit ({{card}}) and hold a great honour: announce trull."
     },
     "lead": {
       "ulti_draw": "You announced pagát ultimo: lead {{card}} to draw out the {{count}} tarokks the others may still hold.",
@@ -323,5 +334,10 @@
     "downloadLater": "The file can be downloaded once the hand is over, because it holds everybody's cards.",
     "failed": "Could not send it. Please try again.",
     "another": "Another report"
+  },
+  "bidding": {
+    "invit": "invit {{card}}",
+    "yielded": "yielded game",
+    "invitHelp": "A jump is an invit: you may only bid it if you hold the tarokk it shows."
   }
 }

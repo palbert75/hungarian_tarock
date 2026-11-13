@@ -28,6 +28,9 @@ BID_LEVEL = {"three": 1, "two": 2, "one": 3, "solo": 4}
 # "signal_double" (the declarer answers the four-kings signal with double game) won
 # while a lost double game cost nothing; now that it costs four times the game it
 # loses about a quarter point per hand, so it is off.
+# "invit_give" (jump bid with the XIX, a great honour and six tarokks) is off too: such
+# a hand wins more by bidding normally (-0.18 per hand; -0.13 with seven tarokks, -0.03
+# with eight). Bots follow an invit somebody else gives; they do not start one.
 ADOPTED = frozenset({
     "voids",           # lead suits a teammate cannot follow, avoid those an opponent cannot
     "stop_foe",        # take a trick a known opponent is winning
@@ -47,6 +50,9 @@ ADOPTED = frozenset({
     "pagat_catch",     # with trull announced on my side, draw tarokks until the pagát falls
     "ulti_keep_small", # the ulti announcer's teammate keeps a small tarokk for last
     "kontra",          # kontra four kings and pagát ulti with a long, high tarokk hand
+    "invit_accept",    # a great honour takes the auction after somebody's invit
+    "invit_trull",     # the owner's rule: whoever takes an invit with a great honour announces trull
+    "yield_game",      # pass a "three" to a lone "two" with the XX and a great honour
 })
 TACTICS: set = set(ADOPTED)
 
@@ -61,6 +67,10 @@ KONTRA_KINGS_TAROKKS = 6
 KONTRA_ULTI_TAROKKS = 7
 # Tarokks needed (with all three honours) before a bot announces trull
 TRULL_MIN_TAROKKS = 7
+# Tarokks needed (with the invited card and a great honour) to give an invit
+INVIT_MIN_TAROKKS = 6
+# Tarokks needed to accept an invit at solo level
+INVIT_SOLO_TAROKKS = 6
 
 
 # ------------------------------------------------------------------ bidding
@@ -80,6 +90,16 @@ def _level_of(view: SeatView, bid: str) -> int:
 
 
 def decide_bid(view: SeatView) -> Decision:
+    decision = _decide_bid(view)
+    if decision.payload["bid_type"] == "pass" and "pass" not in view.valid_bids:
+        # Passing here would be a yielded game, which needs the XX and a great honour
+        bid = _next_bid(view)
+        if bid is not None:
+            return Decision("bid", {"bid_type": bid}, "hint.bid.must_hold", {"bid": bid})
+    return decision
+
+
+def _decide_bid(view: SeatView) -> Decision:
     def pass_(key: str, **params) -> Decision:
         return Decision("bid", {"bid_type": "pass"}, key, params)
 
@@ -92,6 +112,24 @@ def decide_bid(view: SeatView) -> Decision:
     if bid is None:
         return pass_("hint.bid.nothing_left")
     level = _level_of(view, bid)
+    big = has_skiz or has_xxi
+
+    invit = view.invit
+    if invit and invit["by"] == view.position:
+        if view.highest_bidder != view.position:
+            # Somebody took my invit: they will call my card
+            return pass_("hint.bid.invit_taken", card=invit["card"])
+    elif invit and "invit_accept" in TACTICS and big:
+        # The inviter holds that card and a strong hand: become declarer and call it
+        if level < BID_LEVEL["solo"] or tarokk_count >= INVIT_SOLO_TAROKKS:
+            return Decision("bid", {"bid_type": bid}, "hint.bid.invit_accept", {"bid": bid, "card": invit["card"]})
+    if "invit_give" in TACTICS and big and tarokk_count >= INVIT_MIN_TAROKKS:
+        jumps = [b for b, card in view.invit_bids.items() if card == "XIX" and BID_LEVEL[b] <= BID_LEVEL["one"]]
+        if jumps:
+            return Decision("bid", {"bid_type": jumps[0]}, "hint.bid.invit_give", {"bid": jumps[0], "card": "XIX"})
+    if "yield_game" in TACTICS and view.yield_turn and "pass" in view.valid_bids:
+        # The pass itself says: I hold the XX and a great honour, call me
+        return pass_("hint.bid.yield")
 
     if has_xxi:
         # Always bid with the XXI, up to "one"; never solo
@@ -127,6 +165,9 @@ def decide_bid(view: SeatView) -> Decision:
 def decide_discard(view: SeatView) -> Decision:
     count = view.discard_count
     allowed = [c for c in view.hand if c.can_be_discarded()]
+    if view.invit and view.invit["by"] == view.position:
+        # The card I invited with stays in my hand
+        allowed = [c for c in allowed if not (c.is_tarokk() and c.rank == view.invit["card"])]
     suit_cards = [c for c in allowed if not c.is_tarokk()]
     tarokks = sorted((c for c in allowed if c.is_tarokk()), key=lambda c: c.tarokk_value())
 
@@ -159,6 +200,10 @@ def decide_discard(view: SeatView) -> Decision:
 # ------------------------------------------------------------- partner call
 
 def decide_call(view: SeatView) -> Decision:
+    if view.required_call:
+        rank = view.required_call
+        key = "hint.call.invit" if view.invit and view.invit["by"] != view.position else "hint.call.yielded"
+        return Decision("call_partner", {"tarokk_rank": rank}, key, {"rank": rank})
     held = {c.rank for c in view.tarokks}
     rank = next((r for r in CALL_ORDER if r not in held), CALL_ORDER[0])
     key = "hint.call.xx" if rank == CALL_ORDER[0] else "hint.call.lower"
@@ -181,6 +226,14 @@ def decide_announcement(view: SeatView) -> Decision:
     high = len([c for c in view.tarokks if c.tarokk_value() > 13])
     wanted = []  # (type, reason key, params)
 
+    if view.must_ulti:
+        wanted.append(("pagat_ultimo", "hint.announce.ulti_obligatory", {}))
+    accepted_invit = (view.invit is not None and view.position == view.declarer_position
+                      and view.invit["by"] != view.position and view.called_rank == view.invit["card"])
+    if "invit_trull" in TACTICS and accepted_invit and (view.holds("skiz") or view.holds("XXI")):
+        # Whoever takes an invit with a great honour announces trull
+        wanted.append(("trull", "hint.announce.trull_invit", {"card": view.invit["card"]}))
+
     if view.i_am_partner:
         if tarokk_count >= 6:
             wanted.append(("four_kings", "hint.announce.four_kings", {"count": tarokk_count}))
@@ -194,7 +247,7 @@ def decide_announcement(view: SeatView) -> Decision:
         wanted.append(("trull", "hint.announce.trull", {}))
     top = len([c for c in view.tarokks if c.tarokk_value() >= 17])
     ulti_hand = tarokk_count >= ULTI_SURE_TAROKKS or (tarokk_count >= ULTI_MIN_TAROKKS and top >= ULTI_MIN_HIGH)
-    if view.holds("I") and ulti_hand:
+    if view.holds("I") and ulti_hand and not view.must_ulti:
         wanted.append(("pagat_ultimo", "hint.announce.pagat_ultimo", {"count": tarokk_count}))
 
     if ("signal_double" in TACTICS and view.position == view.declarer_position and tarokk_count >= 6

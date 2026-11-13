@@ -39,6 +39,82 @@ def can_hold(position: int, bid_history: List[Bid]) -> bool:
     return bool(own) and own[-1].game_value < highest.game_value
 
 
+# ---- conventional bidding: invit and yielded game --------------------------
+
+BID_LEVEL = {BidType.THREE: 1, BidType.TWO: 2, BidType.ONE: 3, BidType.SOLO: 4}
+# A jump of one step over the cheapest bid invites the XIX, a jump of two the XVIII
+INVIT_CARD = {1: TarokkRank.XIX.value, 2: TarokkRank.XVIII.value}
+
+
+def cheapest_level(position: int, bid_history: List[Bid]) -> int:
+    """Level (1 = three … 4 = solo) of the cheapest way for this seat to stay in: hold if allowed, else one higher."""
+    highest = highest_bid_of(bid_history)
+    if highest is None:
+        return 1
+    return highest.game_value if can_hold(position, bid_history) else highest.game_value + 1
+
+
+def invit_of(bid_history: List[Bid]) -> Optional[dict]:
+    """
+    The invit given in this auction, as {"by": seat, "card": "XIX" | "XVIII"}, or None.
+
+    A bid that jumps over the cheapest possible bid is an invit: its bidder holds the
+    XIX (one step) or the XVIII (two steps) and asks whoever wins the auction to call
+    it. Only the first jump counts, and the bid of a fourth player after three passes
+    never does (nobody is left to accept it).
+    """
+    for index, bid in enumerate(bid_history):
+        if bid.bid_type not in BID_LEVEL:
+            continue
+        before = bid_history[:index]
+        if len(before) >= 3 and all(b.bid_type == BidType.PASS for b in before):
+            return None
+        steps = BID_LEVEL[bid.bid_type] - cheapest_level(bid.player_position, before)
+        if steps in INVIT_CARD:
+            return {"by": bid.player_position, "card": INVIT_CARD[steps]}
+    return None
+
+
+def invit_card_for(position: int, bid_type: BidType, bid_history: List[Bid]) -> Optional[str]:
+    """The tarokk this bid would invite, if it would be an invit."""
+    if bid_type not in BID_LEVEL or invit_of(bid_history) is not None:
+        return None
+    invit = invit_of(list(bid_history) + [Bid(player_position=position, bid_type=bid_type)])
+    return invit["card"] if invit else None
+
+
+def _yield_shape(bid_history: List[Bid]) -> Optional[Tuple[int, int]]:
+    """(first bidder, overbidder) when the only bids so far are "three" and then "two" by another seat."""
+    real = [b for b in bid_history if b.bid_type != BidType.PASS]
+    if len(real) != 2 or real[0].bid_type != BidType.THREE or real[1].bid_type != BidType.TWO:
+        return None
+    if real[0].player_position == real[1].player_position:
+        return None
+    return real[0].player_position, real[1].player_position
+
+
+def is_yield_turn(position: int, bid_history: List[Bid]) -> bool:
+    """
+    Would a pass by this seat now be a yielded game? One player said three, another
+    two, the other two passed, and the first is to speak: passing shows the XX and
+    a great honour.
+    """
+    shape = _yield_shape(bid_history)
+    if shape is None or shape[0] != position:
+        return False
+    passed = {b.player_position for b in bid_history if b.bid_type == BidType.PASS}
+    return passed == {0, 1, 2, 3} - set(shape)
+
+
+def yielded_by(bid_history: List[Bid]) -> Optional[int]:
+    """The seat that yielded the game (passed its "three" to a single "two"), or None."""
+    shape = _yield_shape(bid_history)
+    if shape is None:
+        return None
+    passed = {b.player_position for b in bid_history if b.bid_type == BidType.PASS}
+    return shape[0] if passed == {0, 1, 2, 3} - {shape[1]} else None
+
+
 class GamePhase(str, Enum):
     """Game phases in Hungarian Tarokk."""
     WAITING = "waiting"              # Waiting for players
@@ -245,18 +321,67 @@ class GameState(BaseModel):
 
         self.bid_history.append(bid)
 
-        # Solo ends the auction immediately
-        if bid_type == BidType.SOLO:
-            self.end_bidding()
-        elif not self.is_bidding_complete():
-            # Move to the next player who has not passed
+        # Move to the next player who has not passed. Over a solo only a player who
+        # bid before can still speak (to hold it): the others pass by themselves.
+        while not self.is_bidding_complete():
             passed = self.passed_positions()
             nxt = self.next_position(self.current_turn)
             while nxt in passed:
                 nxt = self.next_position(nxt)
             self.current_turn = nxt
+            top = self.get_highest_bid()
+            if top is None or top.game_value < BID_LEVEL[BidType.SOLO] or can_hold(nxt, self.bid_history):
+                break
+            self.bid_history.append(Bid(player_position=nxt, bid_type=BidType.PASS))
 
         return bid
+
+    # ---- conventional bidding ------------------------------------------------
+
+    def invit(self) -> Optional[dict]:
+        """The invit of this auction: {"by": seat, "card": rank} or None."""
+        return invit_of(self.bid_history)
+
+    def required_call(self) -> Optional[str]:
+        """
+        The tarokk the declarer has to call: the invited card when somebody else
+        gave an invit, the XX in a yielded game. None when the call is free.
+        """
+        if self.declarer_position is None:
+            return None
+        invit = self.invit()
+        if invit and invit["by"] != self.declarer_position:
+            return invit["card"]
+        yielder = yielded_by(self.bid_history)
+        if yielder is not None and yielder != self.declarer_position:
+            return TarokkRank.XX.value
+        return None
+
+    def convention_partner(self) -> Optional[int]:
+        """The seat the whole table knows to be the partner once the required card was called."""
+        required = self.required_call()
+        if not required or self.called_card_rank != required or self.declarer_alone:
+            return None
+        invit = self.invit()
+        if invit and invit["by"] != self.declarer_position:
+            return invit["by"]
+        return yielded_by(self.bid_history)
+
+    def owes_pagat_ulti(self, position: int) -> bool:
+        """
+        An invit given with the pagát as the only honour obliges its giver to
+        announce pagát ulti at the first chance after the call.
+        """
+        invit = self.invit()
+        if not invit or invit["by"] != position or position == self.declarer_position:
+            return False
+        if self.called_card_rank != invit["card"]:
+            return False
+        if any(a.announcement_type.value == "pagat_ultimo" for a in self.announcements):
+            return False
+        ranks = {c.rank for c in self.players[position].hand if c.is_tarokk()}
+        return (TarokkRank.PAGAT.value in ranks and TarokkRank.SKIZ.value not in ranks
+                and TarokkRank.XXI.value not in ranks)
 
     def passed_positions(self) -> set:
         """Seats that have passed in this auction. A pass is final."""
@@ -275,8 +400,9 @@ class GameState(BaseModel):
         if not self.bid_history:
             return False
 
-        # Solo ends bidding
-        if any(b.bid_type == BidType.SOLO for b in self.bid_history):
+        # A held solo ends bidding: nothing higher is left
+        highest = self.get_highest_bid()
+        if highest is not None and highest.bid_type == BidType.HOLD and highest.game_value >= BID_LEVEL[BidType.SOLO]:
             return True
 
         active = [p for p in range(4) if p not in self.passed_positions()]
@@ -665,6 +791,11 @@ class GameState(BaseModel):
             # Known to everyone only once the obligatory kontra has been said
             "declarer_alone": self.declarer_alone if (self.game_contra or include_all_hands) else False,
             "hand_number": self.hand_number,
+            # Conventional bidding, readable by everyone from the bids
+            "invit": self.invit(),
+            "yielded_by": yielded_by(self.bid_history),
+            "required_call": self.required_call(),
+            "convention_partner": self.convention_partner(),
         }
         if include_all_hands:
             result["called_card_discarded_by"] = self.called_card_discarded_by

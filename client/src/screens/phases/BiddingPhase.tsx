@@ -18,6 +18,7 @@ export default function BiddingPhase({ table }: { table: Table }) {
   const yourTurnData = useGameStore((s) => s.yourTurnData)
   const hint = useHint(yourTurnData?.hint, table.isMyTurn)
   const validBids = table.isMyTurn ? yourTurnData?.valid_bids ?? ['pass'] : []
+  const invitBids = (table.isMyTurn && yourTurnData?.invit_bids) || {}
 
   const highest = [...game.bid_history].reverse().find((b) => b.bid_type !== 'pass')
   const lastBidOf = (position: number) =>
@@ -31,9 +32,14 @@ export default function BiddingPhase({ table }: { table: Table }) {
         if (bid) {
           const leading = highest && bid === highest
           return (
-            <span className={`bubble ${leading ? 'bubble-hi' : ''} ${bid.bid_type === 'pass' ? 'bubble-muted' : ''}`}>
-              {t(`bid.${bid.bid_type}`)}
-            </span>
+            <div className="flex flex-col items-center gap-0.5">
+              <span className={`bubble ${leading ? 'bubble-hi' : ''} ${bid.bid_type === 'pass' ? 'bubble-muted' : ''}`}>
+                {t(`bid.${bid.bid_type}`)}
+              </span>
+              {game.invit?.by === position && (
+                <span className="bubble bubble-invit">{t('bidding.invit', { card: game.invit.card })}</span>
+              )}
+            </div>
           )
         }
         return <span className="bubble bubble-muted">{position === game.current_turn ? '…' : '–'}</span>
@@ -42,18 +48,28 @@ export default function BiddingPhase({ table }: { table: Table }) {
   )
 
   const actions = (
-    <div className="grid grid-cols-3 gap-2">
-      {BID_BUTTONS.map((bid) => (
-        <button
-          key={bid}
-          type="button"
-          disabled={!validBids.includes(bid)}
-          onClick={() => socketManager.placeBid(bid)}
-          className={`tap ${bid === 'pass' ? 'tap-pass' : 'tap-blue'} ${hint?.payload.bid_type === bid ? 'tap-hint' : ''}`}
-        >
-          {t(`bid.${bid}`)}
-        </button>
-      ))}
+    <div className="flex flex-col gap-1.5">
+      <div className="grid grid-cols-3 gap-2">
+        {BID_BUTTONS.map((bid) => (
+          <button
+            key={bid}
+            type="button"
+            disabled={!validBids.includes(bid)}
+            onClick={() => socketManager.placeBid(bid)}
+            className={`tap ${bid === 'pass' ? 'tap-pass' : 'tap-blue'} ${hint?.payload.bid_type === bid ? 'tap-hint' : ''}`}
+          >
+            <span className="flex flex-col items-center leading-tight">
+              {t(`bid.${bid}`)}
+              {invitBids[bid] && validBids.includes(bid) && (
+                <span className="text-[0.62rem] font-semibold text-yellow-200">
+                  {t('bidding.invit', { card: invitBids[bid] })}
+                </span>
+              )}
+            </span>
+          </button>
+        ))}
+      </div>
+      {table.isMyTurn && !game.invit && <div className="text-center text-[0.65rem] text-slate-300">{t('bidding.invitHelp')}</div>}
     </div>
   )
 

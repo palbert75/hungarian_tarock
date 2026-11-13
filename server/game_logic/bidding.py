@@ -4,7 +4,24 @@ from typing import List, Optional
 from models.bid import Bid, BidType
 from models.player import Player
 from validation.rules import has_honour
-from models.game_state import can_hold, highest_bid_of
+from models.card import TarokkRank
+from models.game_state import can_hold, highest_bid_of, invit_card_for, is_yield_turn
+
+
+def _holds(player: Player, rank: str) -> bool:
+    return any(c.is_tarokk() and c.rank == rank for c in player.hand)
+
+
+def convention_error(player: Player, bid_type: BidType, bid_history: List[Bid]) -> Optional[str]:
+    """Why this bid breaks the rules of conventional bidding, or None if it does not."""
+    card = invit_card_for(player.position, bid_type, bid_history)
+    if card and not _holds(player, card):
+        return f"A jump bid here is an invit: you need the {card} for it"
+    if bid_type == BidType.PASS and is_yield_turn(player.position, bid_history):
+        big = _holds(player, TarokkRank.SKIZ.value) or _holds(player, TarokkRank.XXI.value)
+        if not (_holds(player, TarokkRank.XX.value) and big):
+            return "Passing here yields the game: you need the XX and the skíz or the XXI for it"
+    return None
 
 
 class BiddingManager:
@@ -45,6 +62,10 @@ class BiddingManager:
 
             if not new_bid.is_higher_than(highest_bid):
                 return False, "Bid must be higher than current highest bid"
+
+        error = convention_error(player, bid_type, bid_history)
+        if error:
+            return False, error
 
         return True, "OK"
 
@@ -129,21 +150,19 @@ class BiddingManager:
         Returns:
             List of valid bid types
         """
-        valid_bids = [BidType.PASS]  # Can always pass
-
         if not has_honour(player.hand):
             # No honour: can only pass
-            return valid_bids
+            return [BidType.PASS]
 
-        # Determine which bids are higher than current highest
-        highest_bid = BiddingManager.get_highest_bid(bid_history)
+        candidates = [BidType.PASS, BidType.THREE, BidType.TWO, BidType.ONE, BidType.SOLO, BidType.HOLD]
+        return [b for b in candidates if BiddingManager.can_player_bid(player, b, bid_history)[0]]
 
-        for bid_type in [BidType.THREE, BidType.TWO, BidType.ONE, BidType.SOLO]:
-            test_bid = Bid(player_position=player.position, bid_type=bid_type)
-            if test_bid.is_higher_than(highest_bid):
-                valid_bids.append(bid_type)
-
-        if can_hold(player.position, bid_history):
-            valid_bids.append(BidType.HOLD)
-
-        return valid_bids
+    @staticmethod
+    def invit_bids(player: Player, bid_history: List[Bid]) -> dict:
+        """Of the bids this player may make, those that would be an invit: {bid: invited tarokk}."""
+        result = {}
+        for bid_type in BiddingManager.get_valid_bid_types(player, bid_history):
+            card = invit_card_for(player.position, bid_type, bid_history)
+            if card:
+                result[bid_type.value] = card
+        return result

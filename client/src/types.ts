@@ -122,6 +122,14 @@ export interface GameState {
   game_contra_by?: number | null
   declarer_alone?: boolean
   hand_number?: number
+  /** Conventional bidding: a jump bid shows the XIX or XVIII */
+  invit?: { by: number; card: string } | null
+  /** The seat that passed its "three" to a lone "two": it holds the XX and a great honour */
+  yielded_by?: number | null
+  /** The tarokk the declarer is obliged to call */
+  required_call?: string | null
+  /** The partner everybody knows from the bidding, once the required card was called */
+  convention_partner?: number | null
 }
 
 export interface RoomPlayer {
@@ -179,6 +187,10 @@ export interface YourTurnData {
   valid_announcements?: AnnouncementType[]
   valid_cards?: string[]
   discard_count?: number
+  /** Bids of mine that would be an invit, with the tarokk each one shows */
+  invit_bids?: Partial<Record<BidType, string>>
+  /** Announcements I am obliged to make now (pagát ulti after an invit with the pagát alone) */
+  must_announce?: AnnouncementType[]
   hint?: Hint
 }
 

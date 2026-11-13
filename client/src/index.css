@@ -393,6 +393,7 @@ html, body {
 }
 .bubble-hi { background: #a16207; border-color: #facc15; }
 .bubble-muted { opacity: 0.7; font-weight: 500; }
+.bubble-invit { background: #6d28d9; border-color: #c4b5fd; font-size: 0.62rem; padding-top: 0; padding-bottom: 0; }
 
 /* Who plays with whom: the name sits on its side's colour */
 .side-pill {

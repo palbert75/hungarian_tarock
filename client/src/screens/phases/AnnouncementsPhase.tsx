@@ -29,6 +29,12 @@ export default function AnnouncementsPhase({ table }: { table: Table }) {
   const valid = table.isMyTurn ? yourTurnData?.valid_announcements ?? [] : []
   const options = ORDER.filter((a) => valid.includes(a))
   const hinted = hint?.payload.announcement_types ?? []
+  const must = (table.isMyTurn && yourTurnData?.must_announce) || []
+  const mustKey = must.join(',')
+  useEffect(() => {
+    // An obligatory announcement is ticked from the start
+    if (mustKey) setChosen((list) => [...new Set([...list, ...(mustKey.split(',') as AnnouncementType[])])])
+  }, [mustKey])
 
   const canContra = (a: Announcement) => !a.contra && a.player_position !== me && sideOf(a.player_position) !== mySide
   const canRecontra = (a: Announcement) =>
@@ -40,7 +46,7 @@ export default function AnnouncementsPhase({ table }: { table: Table }) {
     [...(game.announcement_turn_log || [])].reverse().find((entry) => entry.position === position)
 
   const toggle = (a: AnnouncementType) =>
-    setChosen((list) => (list.includes(a) ? list.filter((x) => x !== a) : [...list, a]))
+    must.includes(a) ? undefined : setChosen((list) => (list.includes(a) ? list.filter((x) => x !== a) : [...list, a]))
 
   const top = (
     <Seats
@@ -70,6 +76,7 @@ export default function AnnouncementsPhase({ table }: { table: Table }) {
 
   const actions = table.isMyTurn ? (
     <div className="flex flex-col gap-2">
+      {must.length > 0 && <div className="text-center text-xs text-yellow-200">{t('announce.mustUlti')}</div>}
       {options.length > 0 && (
         <div className="flex flex-wrap justify-center gap-1.5">
           {options.map((a) => (
@@ -113,6 +120,7 @@ export default function AnnouncementsPhase({ table }: { table: Table }) {
         <button
           type="button"
           className={`tap tap-pass ${hint?.action === 'pass_announcement' ? 'tap-hint' : ''}`}
+          disabled={must.length > 0}
           onClick={() => socketManager.passAnnouncement()}
         >
           {t('bid.pass')}

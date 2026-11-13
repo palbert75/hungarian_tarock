@@ -101,6 +101,7 @@ class GameService:
         if game_state.phase == GamePhase.BIDDING:
             data["valid_actions"] = ["place_bid"]
             data["valid_bids"] = [b.value for b in BiddingManager.get_valid_bid_types(player, game_state.bid_history)]
+            data["invit_bids"] = BiddingManager.invit_bids(player, game_state.bid_history)
         elif game_state.phase == GamePhase.DISCARDING:
             data["valid_actions"] = ["discard_cards"]
             data["discard_count"] = player.get_hand_size() - 9
@@ -109,6 +110,8 @@ class GameService:
         elif game_state.phase == GamePhase.ANNOUNCEMENTS:
             data["valid_actions"] = ["make_announcement", "pass_announcement"]
             data["valid_announcements"] = [a.value for a in self.valid_announcements(room, player)]
+            if game_state.owes_pagat_ulti(player.position):
+                data["must_announce"] = ["pagat_ultimo"]
         elif game_state.phase == GamePhase.PLAYING:
             data["valid_actions"] = ["play_card"]
             data["valid_cards"] = [c.id for c in self.legal_cards(room, player)]
@@ -346,6 +349,11 @@ class GameService:
         is_valid, error = validate_discard(cards_to_discard)
         if not is_valid:
             raise ValueError(error)
+        invit = game_state.invit()
+        if invit and invit["by"] == player.position and any(
+            c.is_tarokk() and c.rank == invit["card"] for c in cards_to_discard
+        ):
+            raise ValueError(f"The {invit['card']} you invited with cannot go into the skart")
 
         discarded = player.discard_cards(card_ids)
         game_state.players_who_discarded.append(player.position)
@@ -372,6 +380,9 @@ class GameService:
             raise ValueError("Only declarer can call partner")
         if not tarokk_rank:
             raise ValueError("Must specify tarokk rank")
+        required = game_state.required_call()
+        if required and tarokk_rank != required:
+            raise ValueError(f"The bidding obliges you to call the {required}")
 
         game_state.call_partner(tarokk_rank)
         await self.broadcast(room, MessageType.PARTNER_CALLED, {"called_card": tarokk_rank})
@@ -396,6 +407,8 @@ class GameService:
         self._require_turn(room, player, GamePhase.ANNOUNCEMENTS)
         if not announcement_types:
             raise ValueError("Must specify announcement type(s)")
+        if game_state.owes_pagat_ulti(player.position) and "pagat_ultimo" not in announcement_types:
+            raise ValueError("You invited with the pagát: you must announce pagát ulti now")
 
         already = {a.announcement_type for a in game_state.announcements}
         made = []
@@ -423,6 +436,8 @@ class GameService:
 
     async def act_pass_announcement(self, room: Room, player: Player) -> None:
         self._require_turn(room, player, GamePhase.ANNOUNCEMENTS)
+        if room.game_state.owes_pagat_ulti(player.position):
+            raise ValueError("You invited with the pagát: you must announce pagát ulti now")
         room.game_state.player_pass_announcement(player.position)
         await self.broadcast(room, MessageType.PASS_ANNOUNCEMENT, {"player_position": player.position})
         await self._finish_announcement_turn(room)
@@ -445,6 +460,8 @@ class GameService:
 
     async def act_contra(self, room: Room, player: Player, type_str: str) -> None:
         self._require_turn(room, player, GamePhase.ANNOUNCEMENTS)
+        if room.game_state.owes_pagat_ulti(player.position):
+            raise ValueError("You invited with the pagát: you must announce pagát ulti now")
         announcement = self._find_announcement(room, type_str)
         if announcement.contra:
             raise ValueError("This announcement has already been contra'd")

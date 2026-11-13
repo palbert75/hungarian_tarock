@@ -23,7 +23,10 @@ export default function PartnerCallPhase({ table }: { table: Table }) {
 
   const held = new Set(myHand.filter((c) => c.suit === 'tarokk').map((c) => c.rank))
   // Normally the XX; a declarer holding it calls the highest tarokk below that they do not hold
-  const usual = CALLABLE.find((rank) => !held.has(rank)) ?? 'XX'
+  // After an invit or a yielded game the bidding has already chosen the card
+  const required = game.required_call || null
+  const requiredFrom = game.invit && game.invit.by !== game.declarer_position ? game.invit.by : game.yielded_by
+  const usual = required ?? CALLABLE.find((rank) => !held.has(rank)) ?? 'XX'
   const [choice, setChoice] = useState(usual)
   useEffect(() => setChoice(usual), [usual])
 
@@ -41,12 +44,17 @@ export default function PartnerCallPhase({ table }: { table: Table }) {
 
   const actions = isDeclarer ? (
     <div className="flex flex-col gap-2">
-      <div className="text-center text-xs text-slate-200">{t('call.choose')}</div>
+      <div className="text-center text-xs text-slate-200">
+        {required
+          ? t('call.required', { card: tarokkName(required, t), name: table.nameAt(requiredFrom ?? 0) })
+          : t('call.choose')}
+      </div>
       <div className="grid grid-cols-5 gap-1.5">
         {CALLABLE.map((rank) => (
           <button
             key={rank}
             type="button"
+            disabled={!!required && rank !== required}
             onClick={() => setChoice(rank)}
             className={`chip !px-1 ${choice === rank ? 'chip-on' : ''} ${hint?.payload.tarokk_rank === rank ? 'tap-hint' : ''}`}
           >

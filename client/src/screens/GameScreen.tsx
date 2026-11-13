@@ -22,6 +22,10 @@ function ContractLine({ table }: { table: Table }) {
   if (game.declarer_position === null || !game.winning_bid || game.phase === 'bidding') return null
   const parts = [`${table.nameAt(game.declarer_position)}: ${t(`bid.${game.winning_bid.bid_type}`)}`]
   if (game.called_card_rank) parts.push(t('game.called', { card: tarokkName(game.called_card_rank, t) }))
+  if (game.required_call && game.invit) parts.push(`${t('bidding.invit', { card: game.invit.card })} (${table.nameAt(game.invit.by)})`)
+  else if (game.required_call && game.yielded_by !== null && game.yielded_by !== undefined) {
+    parts.push(`${t('bidding.yielded')} (${table.nameAt(game.yielded_by)})`)
+  }
   if (game.declarer_alone) parts.push(t('game.alone'))
   if (game.game_contra) parts.push(t('announce.contraGame'))
   for (const a of game.announcements) {

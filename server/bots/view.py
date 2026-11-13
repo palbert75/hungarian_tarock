@@ -7,7 +7,7 @@ from game_logic.bidding import BiddingManager
 from models.announcement import Announcement
 from models.bid import Bid
 from models.card import Card
-from models.game_state import GameState, GamePhase, highest_bid_of
+from models.game_state import GameState, GamePhase, highest_bid_of, is_yield_turn
 from validation.rules import get_legal_cards, get_valid_announcements
 
 Play = Tuple[int, Card]  # (seat, card)
@@ -25,6 +25,13 @@ class SeatView:
     bid_history: List[Bid] = field(default_factory=list)
     valid_bids: List[str] = field(default_factory=list)
     highest_bid: Optional[str] = None
+    highest_bidder: Optional[int] = None
+    # Conventional bidding
+    invit: Optional[dict] = None          # {"by": seat, "card": rank}
+    invit_bids: dict = field(default_factory=dict)  # bids of mine that would be an invit: {bid: card}
+    yield_turn: bool = False              # passing now would yield the game (shows the XX and a great honour)
+    required_call: Optional[str] = None   # the tarokk the declarer has to call
+    must_ulti: bool = False               # I invited with the pagát alone: pagát ulti is obligatory
 
     # Contract
     declarer_position: Optional[int] = None
@@ -115,7 +122,11 @@ def build_view(game_state: GameState, position: int) -> SeatView:
         bid_history=list(game_state.bid_history),
         declarer_position=game_state.declarer_position,
         called_rank=called,
-        partner_position=game_state.partner_position if partner_shown else None,
+        # An accepted invit or a yielded game shows the whole table who the partner is
+        partner_position=(game_state.partner_position if partner_shown
+                          else game_state.convention_partner() if phase != GamePhase.BIDDING else None),
+        invit=game_state.invit(),
+        required_call=game_state.required_call(),
         i_am_partner=i_am_partner,
         declarer_alone=game_state.declarer_alone and game_state.game_contra,
         announcements=list(game_state.announcements),
@@ -129,14 +140,18 @@ def build_view(game_state: GameState, position: int) -> SeatView:
 
     highest = highest_bid_of(game_state.bid_history)
     view.highest_bid = highest.bid_type.value if highest else None
+    view.highest_bidder = highest.player_position if highest else None
 
     if phase == GamePhase.BIDDING:
         view.valid_bids = [b.value for b in BiddingManager.get_valid_bid_types(player, game_state.bid_history)]
+        view.invit_bids = BiddingManager.invit_bids(player, game_state.bid_history)
+        view.yield_turn = is_yield_turn(position, game_state.bid_history)
     elif phase == GamePhase.DISCARDING:
         view.discard_count = max(len(hand) - 9, 0)
     elif phase == GamePhase.ANNOUNCEMENTS:
         already = {a.announcement_type for a in game_state.announcements}
         view.valid_announcements = [a.value for a in get_valid_announcements(hand) if a not in already]
+        view.must_ulti = game_state.owes_pagat_ulti(position)
     elif phase == GamePhase.PLAYING:
         is_first = len(game_state.current_trick) == 0
         lead_suit = None if is_first else game_state.current_trick[0][1].suit
