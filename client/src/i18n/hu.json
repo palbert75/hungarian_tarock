@@ -229,6 +229,7 @@
       "four_kings": "Te vagy a felvevő partnere, és {{count}} tarokkod van: mondd be a négy királyt. Ezzel jelzed a partnerednek, hogy hosszú vagy tarokkban.",
       "double_game": "Te vagy a felvevő partnere, és {{count}} tarokkod van a XIII fölött: mondd be a duplajátékot.",
       "trull": "Nálad van mindhárom honőr (skíz, XXI, pagát) és elég tarokk: mondd be a tuletroát.",
+      "trull_two": "Te vagy a felvevő, és nálad a skíz és a XXI is: mondj trullt.",
       "trull_partner": "Te vagy a felvevő partnere, és nálad van egy nagy honőr (skíz vagy XXI): mondd be a tuletroát.",
       "pagat_ultimo": "Nálad a pagát és {{count}} tarokk: mondd be a pagátultimót, és tartsd meg a pagátot az utolsó ütésre.",
       "several": "Ez a lap {{count}} bemondást is megér, kezdve ezzel: {{announcement}}.",

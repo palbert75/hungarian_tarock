@@ -617,3 +617,10 @@ def test_defender_with_the_skiz_never_gets_the_protect_xxi_advice():
         assert decide_card(view).reason_key not in ("hint.lead.partner_last_tarokk", "hint.lead.suit_protect_xxi")
     finally:
         S.TACTICS.clear(); S.TACTICS.update(saved)
+
+
+def test_declarer_with_both_great_honours_announces_trull():
+    hand = "skiz XXI XIX XII IX hQ hJ sK sJ"
+    assert decide_announcement(announce_view(hand)).action == "pass_announcement"  # not the declarer
+    d = decide_announcement(dataclasses.replace(announce_view(hand), position=0))
+    assert d.payload["announcement_types"] == ["trull"] and d.reason_key == "hint.announce.trull_two"

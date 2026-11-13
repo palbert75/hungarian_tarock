@@ -245,6 +245,10 @@ def decide_announcement(view: SeatView) -> Decision:
     if (not any(w[0] == "trull" for w in wanted) and view.holds("skiz") and view.holds("XXI")
             and view.holds("I") and tarokk_count >= TRULL_MIN_TAROKKS):
         wanted.append(("trull", "hint.announce.trull", {}))
+    if (not any(w[0] == "trull" for w in wanted) and view.holds("skiz") and view.holds("XXI")
+            and view.position == view.declarer_position):
+        # The owner's rule: the declarer holding both great honours announces trull
+        wanted.append(("trull", "hint.announce.trull_two", {}))
     top = len([c for c in view.tarokks if c.tarokk_value() >= 17])
     ulti_hand = tarokk_count >= ULTI_SURE_TAROKKS or (tarokk_count >= ULTI_MIN_TAROKKS and top >= ULTI_MIN_HIGH)
     if view.holds("I") and ulti_hand and not view.must_ulti:
