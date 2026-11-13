@@ -418,8 +418,9 @@ def _lead(view: SeatView) -> Decision:
         return _play(low_suit, "hint.lead.defender_suit")
 
     # The owner's rule for defenders: protect the fellow defender's XXI
+    # Only for a hand with neither great honour: the skíz wants to catch the XXI, not protect it
     if (defender and not _announced(view, "trull") and not xxi_played(view) and not view.holds("XXI")
-            and not _skiz_played(view)):
+            and not view.holds("skiz") and not _skiz_played(view)):
         last_seat = (view.position + 3) % 4
         if view.is_teammate(last_seat) and plain_tarokks:
             return _play(plain_tarokks[0], "hint.lead.partner_last_tarokk")

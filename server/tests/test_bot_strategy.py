@@ -587,3 +587,22 @@ def test_ulti_teammate_keeps_the_smallest_tarokk():
     assert played(decide_card(view), view) == "V"
     lead = play_view("XII V III hQ", declarer=0, partner=2, announcements=[ulti])
     assert played(decide_card(lead), lead) == "V"
+
+
+def test_defender_with_the_skiz_never_gets_the_protect_xxi_advice():
+    # Fellow defender (seat 3) would play last: without the skíz this is a tarokk lead
+    without = play_view("XVIII X V hQ h10 dJ", declarer=1, partner=2)
+    assert decide_card(without).reason_key == "hint.lead.partner_last_tarokk"
+    for partner in (2, 3):  # teammate last, or not last
+        view = play_view("skiz XVIII X V hQ h10 dJ", declarer=1, partner=partner)
+        d = decide_card(view)
+        assert d.reason_key == "hint.lead.skiz_suit" and not d.payload["card_id"].startswith("tarokk")
+    # Even with the waiting rule switched off, the protect-the-XXI rule does not apply to the skíz
+    import bots.strategy as S
+    saved = set(S.TACTICS)
+    try:
+        S.TACTICS.discard("skiz_hunt")
+        view = play_view("skiz XVIII X V hQ h10 dJ", declarer=1, partner=2)
+        assert decide_card(view).reason_key not in ("hint.lead.partner_last_tarokk", "hint.lead.suit_protect_xxi")
+    finally:
+        S.TACTICS.clear(); S.TACTICS.update(saved)
