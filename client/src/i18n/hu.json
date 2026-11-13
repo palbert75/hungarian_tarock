@@ -257,7 +257,8 @@
       "skiz_low_tarokk": "Nálad a skíz, és nincs már színed: hívd a legkisebb tarokkodat ({{card}}), a skízt tartsd meg a XXI-re.",
       "defender_suit": "A skíz vagy a XXI már kiment, nincs mit védeni: ellenjátékosként színt hívj: {{card}}.",
       "drive_for_skiz": "A mögötted ülő partnered a jelek szerint a skízzel a XXI-re vár: hívj nagy tarokkot ({{card}}), hogy kihajtsd elé a XXI-et.",
-      "catch_pagat": "A tuletroá be van mondva a ti oldalatokon, és a pagát még nem ment ki: hívd ezt: {{card}}, és tarokkozz, amíg a pagát el nem esik."
+      "catch_pagat": "A tuletroá be van mondva a ti oldalatokon, és a pagát még nem ment ki: hívd ezt: {{card}}, és tarokkozz, amíg a pagát el nem esik.",
+      "declarer_tarokk": "A felvevők oldalán állsz, és van tarokkod: hívj tarokkot ({{card}}). A felvevők tarokkot hívnak, hogy elfogyjon az ellenfél tarokkja."
     },
     "follow": {
       "only_card": "Csak ezt a lapot teheted: {{card}}.",

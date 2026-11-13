@@ -647,3 +647,14 @@ def test_partner_answers_the_declarers_tarokk_lead_with_the_called_card():
     assert decide_card(high).reason_key != "hint.follow.show_called"
     suit = play_view(hand, trick=[(0, "dK")], position=1, declarer=0, i_am_partner=True)
     assert decide_card(suit).reason_key != "hint.follow.show_called"
+
+
+def test_declarers_side_leads_a_tarokk_when_it_has_one():
+    view = play_view("XVII IX V hQ hJ dC sJ", position=1, declarer=1)
+    d = decide_card(view)
+    assert d.reason_key == "hint.lead.declarer_tarokk" and played(d, view) == "V"
+    # A defender with the same hand does not
+    assert decide_card(play_view("XVII IX V hQ hJ dC sJ", position=0, declarer=1)).reason_key != "hint.lead.declarer_tarokk"
+    # The XXI stays back while the skíz can catch it
+    only_xxi = play_view("XXI hQ hJ dC sJ", position=1, declarer=1)
+    assert played(decide_card(only_xxi), only_xxi) != "XXI"

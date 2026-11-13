@@ -257,7 +257,8 @@
       "skiz_low_tarokk": "You hold the skíz and have no suit left: lead your lowest tarokk, {{card}}, and keep the skíz for the XXI.",
       "defender_suit": "The skíz or the XXI is already played, so there is nothing left to protect: as a defender lead a suit, {{card}}.",
       "drive_for_skiz": "Your teammate behind you seems to wait with the skíz for the XXI: lead a high tarokk, {{card}}, to drive the XXI out in front of them.",
-      "catch_pagat": "Trull is announced on your side and the pagát has not shown yet: lead {{card}} and keep drawing tarokks until it falls."
+      "catch_pagat": "Trull is announced on your side and the pagát has not shown yet: lead {{card}} and keep drawing tarokks until it falls.",
+      "declarer_tarokk": "You are on the declarer's side and hold a tarokk: lead one ({{card}}). The declarers lead tarokks to run the defenders out of them."
     },
     "follow": {
       "only_card": "{{card}} is the only card you may play.",

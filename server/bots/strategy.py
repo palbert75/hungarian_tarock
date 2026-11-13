@@ -41,6 +41,7 @@ ADOPTED = frozenset({
     "partner_double",  # the owner's rule: the partner announces double game with five tarokks above the XIII
     "xx_cheap_skart",  # a non-declarer holding the XX discards cheap cards
     "skiz_hunt",       # the skíz waits for the other side's XXI: leads suits, ducks tricks
+    "declarer_tarokk", # the owner's rule: the declarer's side leads a tarokk whenever it has one
     "show_called",     # the owner's rule: the partner answers the declarer's tarokk lead with the called card
     "hit_hard",        # trump high when an opponent still plays after me and a king is at stake
     "hit_hard_lead",   # the same on a teammate's suit lead, to keep the lead on our side
@@ -509,6 +510,11 @@ def _lead(view: SeatView) -> Decision:
     # Declarer's side with the upper hand in tarokks: draw them
     if view.on_declarer_side and out and len(tarokks) > len(out) / 2 and strong_tarokks():
         return _play(strong_tarokks()[-1], "hint.lead.draw_tarokks", count=len(out))
+
+    # The owner's rule: the declarer's side leads a tarokk whenever it has one. The XXI-catch
+    # cases come first: the skíz waiting for the XXI (above), and the XXI kept back from the skíz.
+    if "declarer_tarokk" in TACTICS and view.on_declarer_side and strong_tarokks():
+        return _play(strong_tarokks()[0], "hint.lead.declarer_tarokk")
 
     if low_suit:
         return _play(low_suit, "hint.lead.long_suit")
