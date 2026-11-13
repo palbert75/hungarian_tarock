@@ -272,7 +272,8 @@
       "skiz_forced": "You cannot avoid this trick. Keep the skíz for the XXI: play {{card}}.",
       "hit_hard": "An opponent still plays after you and a king is at stake: do not save tarokks, hit hard with {{card}}.",
       "win_to_drive": "Your teammate behind you waits with the skíz: take this trick with {{card}} so you can lead a high tarokk next.",
-      "leave_to_short_hand": "You are the long hand and your teammate still plays after you. Leave this cheap trick to them and keep your high tarokks for the end: play {{card}}."
+      "leave_to_short_hand": "You are the long hand and your teammate still plays after you. Leave this cheap trick to them and keep your high tarokks for the end: play {{card}}.",
+      "show_called": "The declarer led a tarokk and you hold the called card: play it ({{card}}). The table sees who is with whom, and the opponents do not get the lead cheaply."
     }
   },
   "toast": {

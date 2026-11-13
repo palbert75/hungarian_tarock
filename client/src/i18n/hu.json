@@ -272,7 +272,8 @@
       "skiz_forced": "Ezt az ütést nem tudod elkerülni. A skízt tartsd meg a XXI-re: tedd ezt: {{card}}.",
       "hit_hard": "Utánad még ellenfél jön, és király forog kockán: ne spórolj a tarokkal, üss nagyot ezzel: {{card}}.",
       "win_to_drive": "A mögötted ülő partnered a skízzel vár: üsd el ezt az ütést ezzel: {{card}}, hogy utána nagy tarokkot hívhass.",
-      "leave_to_short_hand": "Te vagy a hosszabb tarokkos, és a partnered még utánad jön. Ezt az olcsó ütést hagyd rá (kurta üt), a nagy tarokkjaidat tartsd a végére: tedd ezt: {{card}}."
+      "leave_to_short_hand": "Te vagy a hosszabb tarokkos, és a partnered még utánad jön. Ezt az olcsó ütést hagyd rá (kurta üt), a nagy tarokkjaidat tartsd a végére: tedd ezt: {{card}}.",
+      "show_called": "A felvevő tarokkot hívott, és nálad a hívott lap: üsd meg vele ({{card}}). Így mindenki látja, ki kivel van, és az ellenfél nem jut olcsón híváshoz."
     }
   },
   "toast": {

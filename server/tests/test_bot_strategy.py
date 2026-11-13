@@ -634,3 +634,16 @@ def test_declarer_with_both_great_honours_announces_trull():
     assert decide_announcement(announce_view(hand)).action == "pass_announcement"  # not the declarer
     d = decide_announcement(dataclasses.replace(announce_view(hand), position=0))
     assert d.payload["announcement_types"] == ["trull"] and d.reason_key == "hint.announce.trull_two"
+
+
+def test_partner_answers_the_declarers_tarokk_lead_with_the_called_card():
+    """Problem report 20261113-152818-da8e4b."""
+    hand = "XX VIII IV I dQ dC h10 sC"
+    view = play_view(hand, trick=[(0, "V")], position=1, declarer=0, i_am_partner=True)
+    d = decide_card(view)
+    assert d.reason_key == "hint.follow.show_called" and played(d, view) == "XX"
+    # Not when a higher tarokk already lies there, and not on a suit lead
+    high = play_view(hand, trick=[(0, "XXI")], position=1, declarer=0, i_am_partner=True)
+    assert decide_card(high).reason_key != "hint.follow.show_called"
+    suit = play_view(hand, trick=[(0, "dK")], position=1, declarer=0, i_am_partner=True)
+    assert decide_card(suit).reason_key != "hint.follow.show_called"

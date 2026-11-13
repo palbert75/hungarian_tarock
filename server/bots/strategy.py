@@ -41,6 +41,7 @@ ADOPTED = frozenset({
     "partner_double",  # the owner's rule: the partner announces double game with five tarokks above the XIII
     "xx_cheap_skart",  # a non-declarer holding the XX discards cheap cards
     "skiz_hunt",       # the skíz waits for the other side's XXI: leads suits, ducks tricks
+    "show_called",     # the owner's rule: the partner answers the declarer's tarokk lead with the called card
     "hit_hard",        # trump high when an opponent still plays after me and a king is at stake
     "hit_hard_lead",   # the same on a teammate's suit lead, to keep the lead on our side
     "bid_over_three",  # with the pagát, say "two" over a "three" from the seat before me
@@ -531,6 +532,15 @@ def _follow(view: SeatView) -> Decision:
     skiz = next((c for c in legal if _is(c, SKIZ)), None)
     if skiz and any(_is(card, XXI) and not view.is_teammate(seat) for seat, card in trick):
         return _play(skiz, "hint.follow.catch_xxi")
+
+    # The declarer leads a tarokk: the called partner answers with the called card, so the
+    # table sees who is with whom and the opponents do not get the lead for a small tarokk
+    lead_seat, lead_card = trick[0]
+    called = next((c for c in legal if c.is_tarokk() and view.called_rank
+                   and c.rank.upper() == view.called_rank.upper()), None)
+    if ("show_called" in TACTICS and called and view.i_am_partner and foe_after
+            and lead_seat == view.declarer_position and lead_card.is_tarokk() and _beats(called, trick)):
+        return _play(called, "hint.follow.show_called")
 
     candidates = list(legal)
     # Do not walk the XXI into the skíz
