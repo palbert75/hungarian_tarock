@@ -20,7 +20,7 @@ class Decision:
     """
     What a seat should do now, and why.
 
-    action: bid | discard | call_partner | announce | pass_announcement | play_card
+    action: bid | discard | call_partner | announce | pass_announcement | contra | play_card
     payload: the action's arguments
     reason_key / reason_params: a translatable explanation (used for hints)
     """

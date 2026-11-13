@@ -188,11 +188,13 @@
       "skiz_weak_bid": "Nálad a skíz, de csak {{count}} másik tarokkod van: licitálj ({{bid}}), hogy a talonból javíts a lapodon.",
       "limit_reached": "A licit már „{{bid}}”-nél tart. Ez ehhez a laphoz túl magas: passz.",
       "pagat_few_tarokks": "Az egyetlen honőröd a pagát, és {{count}} tarokkod van. Csak legalább nyolccal érdemes indulni: passz.",
-      "pagat_many_tarokks": "Az egyetlen honőröd a pagát, de {{count}} tarokkod van: licitálj ({{bid}})."
+      "pagat_many_tarokks": "Az egyetlen honőröd a pagát, de {{count}} tarokkod van: licitálj ({{bid}}).",
+      "two_over_three": "Az előtted ülő hármat mondott, és van honőröd: mondj „{{bid}}”-t. Ha rajtad marad, erős partnert kapsz; ha nem, legalább több lapot cserélsz a talonból."
     },
     "discard": {
       "suits": "Tedd a skartba: {{cards}}. A király nélküli rövid színeidet ürítsd ki, a legértékesebb lapokkal kezdve.",
-      "with_tarokks": "Tedd a skartba: {{cards}}. Kevés a skartolható színes lapod, ezért a legkisebb tarokkjaid is mennek."
+      "with_tarokks": "Tedd a skartba: {{cards}}. Kevés a skartolható színes lapod, ezért a legkisebb tarokkjaid is mennek.",
+      "skiz_weaken": "Nálad a skíz, de a XXI nincs. A XXI-fogáshoz kerülnöd kell a hívást, ezért gyengítsd a lapodat: tedd a skartba ezeket: {{cards}} – a nagy tarokkokkal kezdve."
     },
     "call": {
       "xx": "Hívd a {{rank}}-ast: akinél van, az lesz a partnered.",
@@ -206,7 +208,9 @@
       "trull_partner": "Te vagy a felvevő partnere, és nálad van egy nagy honőr (skíz vagy XXI): mondd be a tuletroát.",
       "pagat_ultimo": "Nálad a pagát és {{count}} tarokk: mondd be a pagátultimót, és tartsd meg a pagátot az utolsó ütésre.",
       "several": "Ez a lap {{count}} bemondást is megér, kezdve ezzel: {{announcement}}.",
-      "double_after_signal": "A négy király elárulta, hogy a partnered hosszú tarokkban, nálad pedig {{count}} tarokk és nagy honőr van: válaszolj duplajátékkal."
+      "double_after_signal": "A négy király elárulta, hogy a partnered hosszú tarokkban, nálad pedig {{count}} tarokk és nagy honőr van: válaszolj duplajátékkal.",
+      "kontra_four_kings": "Az ellenfél négy királyt mondott, neked pedig {{count}} tarokkod van, köztük nagyok: valamelyik királyuk nálad vagy a partnerednél fog elesni. Mondj kontrát.",
+      "kontra_ulti": "Az ellenfél pagátultimót mondott, de neked {{count}} tarokkod van: nem tudják mind kihajtani. Mondj kontrát."
     },
     "lead": {
       "ulti_draw": "Pagátultimót mondtál: hívd ezt: {{card}}, hogy kihúzd a többieknél még lehetséges {{count}} tarokkot.",
@@ -221,7 +225,9 @@
       "only_card": "Már csak ezt érdemes hívni: {{card}}.",
       "skiz_suit": "Nálad a skíz, és a XXI még nem ment ki. Ne hívj tarokkot, mert alatta hazamenekülhet a XXI: hívd ezt: {{card}}, és várj.",
       "skiz_low_tarokk": "Nálad a skíz, és nincs már színed: hívd a legkisebb tarokkodat ({{card}}), a skízt tartsd meg a XXI-re.",
-      "defender_suit": "A skíz vagy a XXI már kiment, nincs mit védeni: ellenjátékosként színt hívj: {{card}}."
+      "defender_suit": "A skíz vagy a XXI már kiment, nincs mit védeni: ellenjátékosként színt hívj: {{card}}.",
+      "drive_for_skiz": "A mögötted ülő partnered a jelek szerint a skízzel a XXI-re vár: hívj nagy tarokkot ({{card}}), hogy kihajtsd elé a XXI-et.",
+      "catch_pagat": "A tuletroá be van mondva a ti oldalatokon, és a pagát még nem ment ki: hívd ezt: {{card}}, és tarokkozz, amíg a pagát el nem esik."
     },
     "follow": {
       "only_card": "Csak ezt a lapot teheted: {{card}}.",
@@ -234,7 +240,9 @@
       "skiz_duck_high": "A skízzel a XXI-re vársz, ezért ne kerülj hívásba: szabadulj meg egy nagy tarokktól, amely nem üt: {{card}}.",
       "skiz_duck": "A skízzel a XXI-re vársz: ezt az ütést ne vidd el, tedd ezt: {{card}}.",
       "skiz_forced": "Ezt az ütést nem tudod elkerülni. A skízt tartsd meg a XXI-re: tedd ezt: {{card}}.",
-      "hit_hard": "Utánad még ellenfél jön, és király forog kockán: ne spórolj a tarokkal, üss nagyot ezzel: {{card}}."
+      "hit_hard": "Utánad még ellenfél jön, és király forog kockán: ne spórolj a tarokkal, üss nagyot ezzel: {{card}}.",
+      "win_to_drive": "A mögötted ülő partnered a skízzel vár: üsd el ezt az ütést ezzel: {{card}}, hogy utána nagy tarokkot hívhass.",
+      "leave_to_short_hand": "Te vagy a hosszabb tarokkos, és a partnered még utánad jön. Ezt az olcsó ütést hagyd rá (kurta üt), a nagy tarokkjaidat tartsd a végére: tedd ezt: {{card}}."
     }
   },
   "toast": {

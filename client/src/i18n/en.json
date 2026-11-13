@@ -188,11 +188,13 @@
       "skiz_weak_bid": "You hold the skíz but only {{count}} more tarokks: bid ({{bid}}) to improve your hand from the talon.",
       "limit_reached": "The bidding is already at \"{{bid}}\". That is too high for this hand: pass.",
       "pagat_few_tarokks": "Your only honour is the pagát and you have {{count}} tarokks. Open only with at least eight: pass.",
-      "pagat_many_tarokks": "Your only honour is the pagát, but you have {{count}} tarokks: bid ({{bid}})."
+      "pagat_many_tarokks": "Your only honour is the pagát, but you have {{count}} tarokks: bid ({{bid}}).",
+      "two_over_three": "The player before you said \"three\" and you hold an honour: say \"{{bid}}\". If it is left to you, you get a strong partner; if not, you have at least taken more cards from the talon."
     },
     "discard": {
       "suits": "Put {{cards}} into the skart: empty your short suits that have no king, the dearest cards first.",
-      "with_tarokks": "Put {{cards}} into the skart. You have too few suit cards that may be discarded, so your lowest tarokks go as well."
+      "with_tarokks": "Put {{cards}} into the skart. You have too few suit cards that may be discarded, so your lowest tarokks go as well.",
+      "skiz_weaken": "You hold the skíz without the XXI. To catch the XXI you want to stay out of the lead, so weaken your hand: put {{cards}} into the skart, high tarokks first."
     },
     "call": {
       "xx": "Call the {{rank}}: whoever holds it will be your partner.",
@@ -206,7 +208,9 @@
       "trull_partner": "You are the declarer's partner and hold a great honour (skíz or XXI): announce trull.",
       "pagat_ultimo": "You hold the pagát and {{count}} tarokks: announce pagát ultimo and keep the pagát for the last trick.",
       "several": "This hand is good for {{count}} announcements, starting with {{announcement}}.",
-      "double_after_signal": "The four kings told you your partner is long in tarokks, and you hold {{count}} tarokks with a great honour: answer with double game."
+      "double_after_signal": "The four kings told you your partner is long in tarokks, and you hold {{count}} tarokks with a great honour: answer with double game.",
+      "kontra_four_kings": "The other side announced four kings, and you hold {{count}} tarokks with high ones among them: one of their kings will fall to you or your partner. Say kontra.",
+      "kontra_ulti": "The other side announced pagát ultimo, but you hold {{count}} tarokks: they cannot draw them all. Say kontra."
     },
     "lead": {
       "ulti_draw": "You announced pagát ultimo: lead {{card}} to draw out the {{count}} tarokks the others may still hold.",
@@ -221,7 +225,9 @@
       "only_card": "{{card}} is the only sensible card left to lead.",
       "skiz_suit": "You hold the skíz and the XXI is still out. Do not lead a tarokk, the XXI could slip home under it: lead {{card}} and wait.",
       "skiz_low_tarokk": "You hold the skíz and have no suit left: lead your lowest tarokk, {{card}}, and keep the skíz for the XXI.",
-      "defender_suit": "The skíz or the XXI is already played, so there is nothing left to protect: as a defender lead a suit, {{card}}."
+      "defender_suit": "The skíz or the XXI is already played, so there is nothing left to protect: as a defender lead a suit, {{card}}.",
+      "drive_for_skiz": "Your teammate behind you seems to wait with the skíz for the XXI: lead a high tarokk, {{card}}, to drive the XXI out in front of them.",
+      "catch_pagat": "Trull is announced on your side and the pagát has not shown yet: lead {{card}} and keep drawing tarokks until it falls."
     },
     "follow": {
       "only_card": "{{card}} is the only card you may play.",
@@ -234,7 +240,9 @@
       "skiz_duck_high": "You are waiting with the skíz for the XXI, so stay out of the lead: get rid of a high tarokk that does not win, {{card}}.",
       "skiz_duck": "You are waiting with the skíz for the XXI: do not take this trick, play {{card}}.",
       "skiz_forced": "You cannot avoid this trick. Keep the skíz for the XXI: play {{card}}.",
-      "hit_hard": "An opponent still plays after you and a king is at stake: do not save tarokks, hit hard with {{card}}."
+      "hit_hard": "An opponent still plays after you and a king is at stake: do not save tarokks, hit hard with {{card}}.",
+      "win_to_drive": "Your teammate behind you waits with the skíz: take this trick with {{card}} so you can lead a high tarokk next.",
+      "leave_to_short_hand": "You are the long hand and your teammate still plays after you. Leave this cheap trick to them and keep your high tarokks for the end: play {{card}}."
     }
   },
   "toast": {

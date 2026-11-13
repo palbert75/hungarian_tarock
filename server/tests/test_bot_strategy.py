@@ -501,3 +501,89 @@ def test_waiting_skiz_does_not_trump_hard():
     view = play_view("skiz XIX X dQ", trick=[(3, "hK")], declarer=0, partner=3)
     d = decide_card(view)
     assert d.reason_key == "hint.follow.skiz_forced" and played(d, view) == "X"
+
+
+# ---- tactics from the advice text
+
+def test_pagat_says_two_over_three_from_the_seat_before():
+    view = bid_view("I X IX hK hQ dQ dJ sJ c10", ["pass", "two"], highest="three")
+    view.bid_history = [Bid(player_position=3, bid_type=BidType.THREE)]
+    d = decide_bid(view)
+    assert d.payload["bid_type"] == "two" and d.reason_key == "hint.bid.two_over_three"
+
+
+def test_pagat_does_not_overbid_a_three_from_elsewhere():
+    view = bid_view("I X IX hK hQ dQ dJ sJ c10", ["pass", "two"], highest="three")
+    view.bid_history = [Bid(player_position=2, bid_type=BidType.THREE), Bid(player_position=3, bid_type=BidType.PASS)]
+    assert decide_bid(view).payload["bid_type"] == "pass"
+
+
+def test_skiz_without_xxi_discards_high_tarokks():
+    view = discard_view("skiz XIX XVII XII X VII V III II hQ dJ", 2)
+    d = decide_discard(view)
+    chosen = sorted(c.rank for c in view.hand if c.id in d.payload["card_ids"])
+    assert chosen == ["XIX", "XVII"] and d.reason_key == "hint.discard.skiz_weaken"
+
+
+def test_skiz_with_six_tarokks_discards_suits_as_usual():
+    view = discard_view("skiz XIX XVII XII X VII hQ dJ sJ c10 hK", 2)
+    assert decide_discard(view).reason_key == "hint.discard.suits"
+
+
+def kontra_view(hand: str, kind: AnnouncementType, by: int, declarer=1) -> SeatView:
+    view = announce_view(hand)
+    view.position, view.declarer_position = 0, declarer
+    view.announcements = [Announcement(player_position=by, announcement_type=kind)]
+    return view
+
+
+def test_kontra_four_kings_with_long_high_tarokks():
+    d = decide_announcement(kontra_view("XIX XVIII X IX VIII VII hQ hJ h10", AnnouncementType.FOUR_KINGS, by=1))
+    assert d.action == "contra" and d.payload == {"announcement_type": "four_kings"}
+
+
+def test_no_kontra_with_a_short_hand_or_against_an_unknown_side():
+    assert decide_announcement(
+        kontra_view("XIX XVIII X hK hQ hJ h10 dQ dJ", AnnouncementType.FOUR_KINGS, by=1)).action == "pass_announcement"
+    # Seat 2 is not known to be an opponent
+    assert decide_announcement(
+        kontra_view("XIX XVIII X IX VIII VII VI hJ h10", AnnouncementType.PAGAT_ULTIMO, by=2)).action == "pass_announcement"
+
+
+def test_kontra_pagat_ulti_with_seven_tarokks():
+    d = decide_announcement(kontra_view("XIX XVIII X IX VIII VII VI hJ h10", AnnouncementType.PAGAT_ULTIMO, by=1))
+    assert d.action == "contra" and d.reason_key == "hint.announce.kontra_ulti"
+
+
+def test_drive_high_tarokk_for_the_waiting_skiz_behind_me():
+    # Seat 3 (my teammate, last to play when I lead) threw the XVII under the XVIII
+    history = [[(1, "XVIII"), (2, "IV"), (3, "XVII"), (0, "II")]]
+    view = play_view("XIX XII V hQ h10", declarer=1, partner=2, history=history)
+    d = decide_card(view)
+    assert d.reason_key == "hint.lead.drive_for_skiz" and played(d, view) == "XIX"
+
+
+def test_catch_the_pagat_when_my_side_announced_trull():
+    trull = Announcement(player_position=0, announcement_type=AnnouncementType.TRULL)
+    view = play_view("skiz XXI XIX XII X V hQ", declarer=0, partner=2, announcements=[trull])
+    d = decide_card(view)
+    assert d.reason_key == "hint.lead.catch_pagat" and played(d, view) in ("skiz", "XXI")
+
+
+def test_long_hand_leaves_a_cheap_early_trick_to_the_teammate_behind():
+    view = play_view("XIX XVII XII X VIII V III hQ", trick=[(3, "IX")], declarer=0, partner=1)
+    d = decide_card(view)
+    assert d.reason_key == "hint.follow.leave_to_short_hand" and played(d, view) == "III"
+
+
+def test_long_hand_still_takes_a_king():
+    view = play_view("XIX XVII XII X VIII V III dQ", trick=[(3, "hK")], declarer=0, partner=1)
+    assert decide_card(view).reason_key != "hint.follow.leave_to_short_hand"
+
+
+def test_ulti_teammate_keeps_the_smallest_tarokk():
+    ulti = Announcement(player_position=2, announcement_type=AnnouncementType.PAGAT_ULTIMO)
+    view = play_view("XII V III hQ", trick=[(1, "XVIII")], declarer=0, partner=2, announcements=[ulti])
+    assert played(decide_card(view), view) == "V"
+    lead = play_view("XII V III hQ", declarer=0, partner=2, announcements=[ulti])
+    assert played(decide_card(lead), lead) == "V"

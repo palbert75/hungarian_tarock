@@ -111,7 +111,7 @@ export default function AnnouncementsPhase({ table }: { table: Table }) {
             <button
               key={`c-${a.announcement_type}`}
               type="button"
-              className="chip"
+              className={`chip ${hint?.action === 'contra' && hint.payload.announcement_type === a.announcement_type ? 'tap-hint' : ''}`}
               onClick={() => socketManager.contraAnnouncement(a.announcement_type)}
             >
               {t('announce.contra', { what: t(`announcement.${a.announcement_type}`) })}

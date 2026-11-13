@@ -158,12 +158,13 @@ export type ConnectionStatus =
 
 /** A recommended action with a translatable reason (tutorial hint). */
 export interface Hint {
-  action: 'bid' | 'discard' | 'call_partner' | 'announce' | 'pass_announcement' | 'play_card'
+  action: 'bid' | 'discard' | 'call_partner' | 'announce' | 'pass_announcement' | 'contra' | 'play_card'
   payload: {
     bid_type?: BidType
     card_ids?: string[]
     tarokk_rank?: string
     announcement_types?: AnnouncementType[]
+    announcement_type?: AnnouncementType
     card_id?: string
   }
   reason_key: string

@@ -37,6 +37,13 @@ ADOPTED = frozenset({
     "skiz_hunt",       # the skíz waits for the other side's XXI: leads suits, ducks tricks
     "hit_hard",        # trump high when an opponent still plays after me and a king is at stake
     "hit_hard_lead",   # the same on a teammate's suit lead, to keep the lead on our side
+    "bid_over_three",  # with the pagát, say "two" over a "three" from the seat before me
+    "skiz_weak_skart", # the skíz without the XXI discards high tarokks to stay out of the lead
+    "skiz_drive",      # win tricks and lead high tarokks when the skíz behind me waits for the XXI
+    "kurta",           # the long hand leaves cheap early tricks to the shorter teammate
+    "pagat_catch",     # with trull announced on my side, draw tarokks until the pagát falls
+    "ulti_keep_small", # the ulti announcer's teammate keeps a small tarokk for last
+    "kontra",          # kontra four kings and pagát ulti with a long, high tarokk hand
 })
 TACTICS: set = set(ADOPTED)
 
@@ -44,6 +51,11 @@ TACTICS: set = set(ADOPTED)
 ULTI_SURE_TAROKKS = 9
 ULTI_MIN_TAROKKS = 8
 ULTI_MIN_HIGH = 3
+# Tarokks a skíz keeps when it discards to wait for the XXI
+SKIZ_HUNT_TAROKKS = 6
+# Kontra: tarokks needed against four kings (with two at XVII or above) and against pagát ulti
+KONTRA_KINGS_TAROKKS = 6
+KONTRA_ULTI_TAROKKS = 7
 # Tarokks needed (with all three honours) before a bot announces trull
 TRULL_MIN_TAROKKS = 7
 
@@ -93,6 +105,13 @@ def decide_bid(view: SeatView) -> Decision:
         return Decision("bid", {"bid_type": bid}, "hint.bid.skiz_weak_bid", {"bid": bid, "count": others})
 
     # Only the pagát
+    if "bid_over_three" in TACTICS and bid == "two" and view.highest_bid == "three":
+        real = [b for b in view.bid_history if b.bid_type.value in BID_LEVEL]
+        mine = any(b.player_position == view.position for b in real)
+        if real and not mine and real[-1].player_position == (view.position + 3) % 4:
+            # Left alone at "two" this is a yielded game with a strong partner; if the
+            # other goes on, I have at least taken more cards from the talon
+            return Decision("bid", {"bid_type": bid}, "hint.bid.two_over_three", {"bid": bid})
     if tarokk_count < 8:
         return pass_("hint.bid.pagat_few_tarokks", count=tarokk_count)
     if level > BID_LEVEL["two"]:
@@ -118,8 +137,19 @@ def decide_discard(view: SeatView) -> Decision:
         return (has_king, len(in_suit), card.suit.value, card.points if cheap_first else -card.points)
 
     ordered = sorted(suit_cards, key=suit_order) + tarokks
+    key = None
+    # The skíz hoping to catch the XXI wants to stay out of the lead: five or six
+    # small tarokks beside it are ideal, so the high ones go first
+    if ("skiz_weak_skart" in TACTICS and view.holds("skiz") and not view.holds("XXI")
+            and len(view.tarokks) > SKIZ_HUNT_TAROKKS):
+        spare = len(view.tarokks) - SKIZ_HUNT_TAROKKS
+        shed = list(reversed(tarokks))[:min(spare, count)]
+        if shed:
+            ordered = shed + [c for c in ordered if c not in shed]
+            key = "hint.discard.skiz_weaken"
     chosen = ordered[:count]
-    key = "hint.discard.with_tarokks" if any(c.is_tarokk() for c in chosen) else "hint.discard.suits"
+    if key is None:
+        key = "hint.discard.with_tarokks" if any(c.is_tarokk() for c in chosen) else "hint.discard.suits"
     return Decision("discard", {"card_ids": [c.id for c in chosen]}, key, {"cards": [c.id for c in chosen]})
 
 
@@ -169,6 +199,18 @@ def decide_announcement(view: SeatView) -> Decision:
         wanted.append(("double_game", "hint.announce.double_after_signal", {"count": tarokk_count}))
 
     wanted = [w for w in wanted if w[0] in valid]
+    if not wanted and "kontra" in TACTICS:
+        foes = view.opponents()
+        for a in view.announcements:
+            if a.contra or a.player_position not in foes:
+                continue
+            kind = a.announcement_type.value
+            if kind == "four_kings" and tarokk_count >= KONTRA_KINGS_TAROKKS and top >= 2:
+                return Decision("contra", {"announcement_type": kind}, "hint.announce.kontra_four_kings",
+                                {"count": tarokk_count})
+            if kind == "pagat_ultimo" and tarokk_count >= KONTRA_ULTI_TAROKKS:
+                return Decision("contra", {"announcement_type": kind}, "hint.announce.kontra_ulti",
+                                {"count": tarokk_count})
     if not wanted:
         return Decision("pass_announcement", {}, "hint.announce.pass")
     types = [w[0] for w in wanted]
@@ -253,6 +295,49 @@ def _hunting(view: SeatView) -> bool:
     )
 
 
+def _side_announced(view: SeatView, kinds) -> bool:
+    return any(
+        a.announcement_type.value in kinds
+        and (a.player_position == view.position or view.is_teammate(a.player_position))
+        for a in view.announcements
+    )
+
+
+def _mate_announced(view: SeatView, kinds) -> bool:
+    return any(
+        a.announcement_type.value in kinds and view.is_teammate(a.player_position)
+        for a in view.announcements
+    )
+
+
+def _waiting_skiz_seat(view: SeatView) -> Optional[int]:
+    """
+    A teammate who seems to wait with the skíz for the XXI: the skíz is still out
+    and they threw a high tarokk (XIV or above) under a higher card instead of winning.
+    """
+    if view.holds("skiz") or not skiz_out(view) or xxi_played(view) or view.holds("XXI"):
+        return None
+    for trick in view.trick_history:
+        best = _winning_play(trick)
+        for seat, card in trick:
+            if (seat != best[0] and view.is_teammate(seat) and card.is_tarokk()
+                    and 14 <= card.tarokk_value() < XXI):
+                return seat
+    return None
+
+
+def _keep_smallest(view: SeatView, pick: Card, cards: List[Card]) -> Card:
+    """The ulti announcer's teammate holds on to the smallest tarokk: play the next one up."""
+    if "ulti_keep_small" not in TACTICS or not pick.is_tarokk() or not _mate_announced(view, {"pagat_ultimo"}):
+        return pick
+    mine = sorted((c for c in view.hand if c.is_tarokk() and not _is(c, PAGAT)), key=lambda c: c.tarokk_value())
+    if len(mine) < 2 or pick.id != mine[0].id:
+        return pick
+    others = sorted((c for c in cards if c.is_tarokk() and c.id != pick.id and not _is(c, PAGAT)
+                     and not _is(c, SKIZ) and not _is(c, XXI)), key=lambda c: c.tarokk_value())
+    return others[0] if others else pick
+
+
 def _kingless_suit_low(cards: List[Card], view: SeatView) -> Optional[Card]:
     """Lowest card of a suit whose king I do not hold; the XXI's holder is likelier to have to follow it."""
     suit_cards = [c for c in cards if not c.is_tarokk()]
@@ -317,6 +402,16 @@ def _lead(view: SeatView) -> Decision:
         if small:
             return _play(small[0], "hint.lead.skiz_low_tarokk")
 
+    # A teammate behind me waits with the skíz: drive the XXI out with high tarokks
+    waiting_seat = _waiting_skiz_seat(view) if "skiz_drive" in TACTICS else None
+    if waiting_seat == (view.position + 3) % 4 and strong_tarokks():
+        return _play(strong_tarokks()[-1], "hint.lead.drive_for_skiz")
+
+    # Trull is announced on my side and the pagát has not shown: draw tarokks until it falls
+    if ("pagat_catch" in TACTICS and _side_announced(view, {"trull"}) and PAGAT in out
+            and len(plain_tarokks) >= 5 and strong_tarokks()):
+        return _play(strong_tarokks()[-1], "hint.lead.catch_pagat")
+
     defender = not view.on_declarer_side and view.declarer_position is not None
     # Skíz or XXI already gone: nothing left to protect, a defender leads a suit
     if defender and (xxi_played(view) or _skiz_played(view)) and low_suit:
@@ -336,7 +431,8 @@ def _lead(view: SeatView) -> Decision:
     if ("ulti_support" in TACTICS and len(plain_tarokks) >= 2 and out and any(
             a.announcement_type.value == "pagat_ultimo" and a.player_position in mates
             for a in view.announcements)):
-        return _play(plain_tarokks[0], "hint.lead.ulti_support")
+        pick = plain_tarokks[1] if "ulti_keep_small" in TACTICS else plain_tarokks[0]
+        return _play(pick, "hint.lead.ulti_support")
 
     # Declarer's side with the upper hand in tarokks: draw them
     if view.on_declarer_side and out and len(tarokks) > len(out) / 2 and strong_tarokks():
@@ -416,7 +512,8 @@ def _follow(view: SeatView) -> Decision:
         suit_cards = [c for c in without_pagat if not c.is_tarokk()]
         if suit_cards and (certain or "safe_feed" not in TACTICS):
             return _play(max(suit_cards, key=lambda c: c.points), "hint.follow.feed_teammate")
-        return _play(min(without_pagat, key=_cheapness), "hint.follow.teammate_wins_low")
+        low = _keep_smallest(view, min(without_pagat, key=_cheapness), without_pagat)
+        return _play(low, "hint.follow.teammate_wins_low")
 
     # Win it cheaply when it is worth something, or when nobody can answer
     winners = [c for c in candidates if _beats(c, trick)]
@@ -429,13 +526,24 @@ def _follow(view: SeatView) -> Decision:
         if hard:
             return _play(hard, "hint.follow.hit_hard")
     worth_it = trick_points >= 5 or ("stop_foe" in TACTICS and winner_seat in view.opponents())
+    reason = "hint.follow.win_cheap"
+    # "Kurta üt": I am the long hand and a teammate still plays after me. Early on,
+    # leave a cheap trick to the shorter hand and keep my masters for the end.
+    if ("kurta" in TACTICS and last_winners and trick_points < 5 and len(view.trick_history) < 4
+            and len(view.tarokks) >= 7 and any(view.is_teammate(seat) for seat in seats_after)):
+        return _play(_keep_smallest(view, min(without_pagat, key=_cheapness), without_pagat),
+                     "hint.follow.leave_to_short_hand")
+    if last_winners and seats_after and not worth_it:
+        # A teammate waits with the skíz behind me: get the lead to drive the XXI out
+        if "skiz_drive" in TACTICS and _waiting_skiz_seat(view) == (view.position + 3) % 4:
+            worth_it, reason = True, "hint.follow.win_to_drive"
     if last_winners and (not seats_after or worth_it):
         if not seats_after and pagat and pagat in last_winners:
             return _play(pagat, "hint.follow.pagat_home")
         cheapest = min(last_winners, key=lambda c: (c.tarokk_value(), c.suit_rank_value()))
-        return _play(cheapest, "hint.follow.win_cheap")
+        return _play(cheapest, reason)
 
-    return _play(min(without_pagat, key=_cheapness), "hint.follow.low")
+    return _play(_keep_smallest(view, min(without_pagat, key=_cheapness), without_pagat), "hint.follow.low")
 
 
 def decide_card(view: SeatView) -> Decision:

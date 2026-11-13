@@ -233,6 +233,8 @@ class GameService:
             await self.act_announce(room, player, payload["announcement_types"])
         elif decision.action == "pass_announcement":
             await self.act_pass_announcement(room, player)
+        elif decision.action == "contra":
+            await self.act_contra(room, player, payload["announcement_type"])
         elif decision.action == "play_card":
             await self.act_play_card(room, player, payload["card_id"])
         else:
