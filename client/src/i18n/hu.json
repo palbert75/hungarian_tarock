@@ -138,7 +138,10 @@
     "waitingOthers": "Várunk a többiekre…",
     "leave": "Felállok az asztaltól",
     "game": "Játék",
-    "yourTotal": "Eredményed ebben a leosztásban"
+    "yourTotal": "Eredményed ebben a leosztásban",
+    "tricks": "Ütések",
+    "tricksKey": "▸ hívott · arany keret: vitte",
+    "report": "Hiba jelentése"
   },
   "card": {
     "skiz": "Skíz",
@@ -184,7 +187,10 @@
     "installed": "Telepítve",
     "donate": "Támogasd a játékot",
     "donateDetail": "A játék ingyenes; a szervert egy kávé árából tartjuk fenn",
-    "donateGo": "Támogatom"
+    "donateGo": "Támogatom",
+    "report": "Hiba jelentése",
+    "reportDetail": "Rosszul játszott egy gép? Küldd el az állást.",
+    "reportGo": "Jelentés"
   },
   "hint": {
     "fallback": "Javasolt lépés",
@@ -288,13 +294,13 @@
     "CREATE_ROOM_ERROR": "Nem sikerült asztalt nyitni",
     "LEAVE_ROOM_ERROR": "Nem sikerült felállni az asztaltól",
     "LIST_ROOMS_ERROR": "Nem sikerült betölteni az asztalokat",
-    "CHAT_ERROR": "Az üzenet nem ment el"
+    "CHAT_ERROR": "Az üzenet nem ment el",
+    "REPORT_ERROR": "A jelentést nem sikerült elküldeni"
   },
   "side": {
-    "declarer": "Felvevők",
-    "opponent": "Ellenfelek",
-    "unknown": "még nem tudni",
-    "you": "te"
+    "ally": "Veled",
+    "enemy": "Ellened",
+    "unknown": "még nem tudni"
   },
   "counter": {
     "gone": "Tarokk kiment:",
@@ -302,5 +308,20 @@
     "discarded": "{{count}} skartban",
     "mine": "nálad:",
     "others": "másoknál még:"
+  },
+  "report": {
+    "title": "Hiba jelentése",
+    "intro": "Írd le, mi volt a gond. A leírással együtt elmentjük az asztal teljes állását: a lapokat, az ütéseket és a gépek döntéseit.",
+    "placeholder": "Pl.: a 4. ütésben a társam (gép) a XX-szal ütött, pedig a II is elég lett volna",
+    "send": "Küldés",
+    "sending": "Küldés…",
+    "saved": "Köszönjük, elmentve!",
+    "id": "Azonosító",
+    "copy": "Másolás",
+    "copied": "Vágólapra másolva",
+    "download": "Letöltés (JSON)",
+    "downloadLater": "A fájl a játszma végén tölthető le, mert mindenki lapja benne van.",
+    "failed": "Nem sikerült elküldeni. Próbáld újra.",
+    "another": "Új jelentés"
   }
 }

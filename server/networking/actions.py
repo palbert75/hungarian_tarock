@@ -19,6 +19,7 @@ from models.bid import BidType
 from models.game_state import GamePhase
 from models.player import Player
 from networking.protocol import Message, MessageType
+from networking.reports import log_decision
 from networking.room_manager import Room, RoomManager
 from validation.rules import can_announce, get_legal_cards, get_valid_announcements, validate_discard
 
@@ -207,11 +208,14 @@ class GameService:
             return False
         try:
             decision = self.decide(room.game_state, position)
+            log_decision(room, position, decision)
             await self.apply_decision(room, player, decision)
         except Exception as e:
             # The strategy must never stall the table: fall back to any legal move
             logger.error("bot_decision_failed", room_id=room.room_id, position=position, error=str(e))
-            await self.apply_decision(room, player, fallback_decision(room.game_state, position))
+            decision = fallback_decision(room.game_state, position)
+            log_decision(room, position, decision, fallback=True)
+            await self.apply_decision(room, player, decision)
         return True
 
     async def drive_bots(self, room: Room, max_actions: int = 500) -> int:
@@ -258,6 +262,7 @@ class GameService:
         game_state = room.game_state
         if [p.position for p in game_state.players] != [0, 1, 2, 3] or any(p.vacant for p in game_state.players):
             raise ValueError("Need four players to deal")
+        room.decision_log.clear()
         game_state.start_dealing()
         game_state.start_bidding()
         await self.broadcast_room_state(room)

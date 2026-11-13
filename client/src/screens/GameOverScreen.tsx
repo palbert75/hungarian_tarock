@@ -1,8 +1,11 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameStore } from '@/store/gameStore'
 import { socketManager } from '@/services/socketManager'
 import type { Table } from '@/hooks/useTable'
 import { shareInvite } from '@/utils/invite'
+import { cardShortName } from '@/utils/cardNames'
+import ReportSheet from '@/components/ReportSheet'
 
 const signed = (n: number) => (n > 0 ? `+${n}` : `${n}`)
 
@@ -13,6 +16,7 @@ export default function GameOverScreen({ table }: { table: Table }) {
   const result = useGameStore((s) => s.gameOverData)
   const room = useGameStore((s) => s.roomState)
   const addToast = useGameStore((s) => s.addToast)
+  const [reportOpen, setReportOpen] = useState(false)
 
   const seats = [0, 1, 2, 3].map((position) => ({
     position,
@@ -38,6 +42,12 @@ export default function GameOverScreen({ table }: { table: Table }) {
     if (declarerTeam.has(position)) return t('seat.partner')
     return ''
   }
+
+  // Me first, then the others in playing order, as they sit around the table
+  const columns = [0, 1, 2, 3].map((step) => (me + step) % 4)
+  const tricks = game.trick_history || []
+  const relation = (position: number) =>
+    !result ? '' : declarerTeam.has(position) === declarerTeam.has(me) ? 'side-ally' : 'side-enemy'
 
   const share = async () => {
     if (!room) return
@@ -172,7 +182,47 @@ export default function GameOverScreen({ table }: { table: Table }) {
             </div>
           </div>
 
+          {tricks.length > 0 && (
+            <div className="rounded-2xl bg-black/25 p-3">
+              <div className="flex items-baseline justify-between gap-2 mb-2">
+                <div className="text-xs uppercase tracking-wide text-slate-300">{t('over.tricks')}</div>
+                <div className="text-[0.65rem] text-slate-400">{t('over.tricksKey')}</div>
+              </div>
+              <div className="trick-table">
+                <div />
+                {columns.map((position) => (
+                  <div key={position} className={`trick-head ${relation(position)}`}>
+                    {position === me ? t('seat.you') : table.nameAt(position)}
+                    {position === result?.declarer ? ' 👑' : ''}
+                  </div>
+                ))}
+                {tricks.map((trick, index) => (
+                  <div key={trick.trick_number} className="contents">
+                    <div className="text-right text-xs text-slate-400">{index + 1}.</div>
+                    {columns.map((position) => {
+                      const played = trick.cards.find((c) => c.player_position === position)
+                      if (!played) return <div key={position} className="trick-cell">–</div>
+                      const { card } = played
+                      const kind = card.suit === 'tarokk' ? 'is-tarokk' : card.suit === 'hearts' || card.suit === 'diamonds' ? 'is-red' : ''
+                      const lead = trick.cards[0]?.player_position === position ? 'is-lead' : ''
+                      const won = trick.winner === position ? 'is-winner' : ''
+                      return (
+                        <div key={position} className={`trick-cell ${kind} ${lead} ${won}`}>
+                          {cardShortName(card, t)}
+                        </div>
+                      )
+                    })}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {freeSeats > 0 && <p className="text-center text-xs text-slate-300">{t('over.needFour')}</p>}
+
+          <button type="button" className="self-center text-xs text-slate-300 underline underline-offset-2 py-1" onClick={() => setReportOpen(true)}>
+            🐞 {t('over.report')}
+          </button>
         </div>
       </div>
 
@@ -193,6 +243,7 @@ export default function GameOverScreen({ table }: { table: Table }) {
           </div>
         </div>
       </div>
+      <ReportSheet open={reportOpen} onClose={() => setReportOpen(false)} />
     </div>
   )
 }

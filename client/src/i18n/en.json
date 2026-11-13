@@ -138,7 +138,10 @@
     "waitingOthers": "Waiting for the others…",
     "leave": "Leave table",
     "game": "Game",
-    "yourTotal": "Your result this hand"
+    "yourTotal": "Your result this hand",
+    "tricks": "Tricks",
+    "tricksKey": "▸ led · gold frame: took it",
+    "report": "Report a problem"
   },
   "card": {
     "skiz": "Skíz",
@@ -184,7 +187,10 @@
     "installed": "Installed",
     "donate": "Support the game",
     "donateDetail": "The game is free; a coffee keeps the server running",
-    "donateGo": "Donate"
+    "donateGo": "Donate",
+    "report": "Report a problem",
+    "reportDetail": "A bot played badly? Send the position.",
+    "reportGo": "Report"
   },
   "hint": {
     "fallback": "Suggested move",
@@ -288,13 +294,13 @@
     "CREATE_ROOM_ERROR": "Could not open a table",
     "LEAVE_ROOM_ERROR": "Could not leave the table",
     "LIST_ROOMS_ERROR": "Could not load the tables",
-    "CHAT_ERROR": "Message not sent"
+    "CHAT_ERROR": "Message not sent",
+    "REPORT_ERROR": "The report could not be sent"
   },
   "side": {
-    "declarer": "Declarers",
-    "opponent": "Defenders",
-    "unknown": "not known yet",
-    "you": "you"
+    "ally": "With you",
+    "enemy": "Against you",
+    "unknown": "not known yet"
   },
   "counter": {
     "gone": "Tarokks gone:",
@@ -302,5 +308,20 @@
     "discarded": "{{count}} in the skart",
     "mine": "yours:",
     "others": "others still hold:"
+  },
+  "report": {
+    "title": "Report a problem",
+    "intro": "Describe what went wrong. The whole table is saved with your text: the cards, the tricks and what the bots decided.",
+    "placeholder": "E.g. in trick 4 my partner (bot) took with the XX although the II was enough",
+    "send": "Send",
+    "sending": "Sending…",
+    "saved": "Thanks, saved!",
+    "id": "Report id",
+    "copy": "Copy",
+    "copied": "Copied",
+    "download": "Download (JSON)",
+    "downloadLater": "The file can be downloaded once the hand is over, because it holds everybody's cards.",
+    "failed": "Could not send it. Please try again.",
+    "another": "Another report"
   }
 }

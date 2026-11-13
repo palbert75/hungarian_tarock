@@ -1,6 +1,7 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import Sheet from './Sheet'
+import ReportSheet from './ReportSheet'
 import { deviceLanguage, useSettings } from '@/store/settingsStore'
 import { selectIsOwner, useGameStore } from '@/store/gameStore'
 import { socketManager } from '@/services/socketManager'
@@ -66,6 +67,7 @@ export default function SettingsSheet({ open, onClose }: { open: boolean; onClos
   const addToast = useGameStore((s) => s.addToast)
   const language = settings.language ?? deviceLanguage()
   const { state: installState, install } = useInstall()
+  const [reportOpen, setReportOpen] = useState(false)
 
   const leave = () => {
     if (roomState?.game_started && !window.confirm(t('settings.leaveConfirm'))) return
@@ -80,6 +82,7 @@ export default function SettingsSheet({ open, onClose }: { open: boolean; onClos
   }
 
   return (
+    <>
     <Sheet open={open} title={t('settings.title')} onClose={onClose}>
       <div className="px-4 pb-4">
         <Row label={t('settings.tutorial')} detail={t('settings.tutorialDetail')}>
@@ -115,6 +118,20 @@ export default function SettingsSheet({ open, onClose }: { open: boolean; onClos
             )}
           </Row>
         )}
+        {roomState?.game_started && (
+          <Row label={t('settings.report')} detail={t('settings.reportDetail')}>
+            <button
+              type="button"
+              className="chip chip-on"
+              onClick={() => {
+                onClose()
+                setReportOpen(true)
+              }}
+            >
+              🐞 {t('settings.reportGo')}
+            </button>
+          </Row>
+        )}
         {installState === 'prompt' && (
           <Row label={t('settings.install')} detail={t('settings.installDetail')}>
             <button type="button" className="chip chip-on" onClick={() => install()}>
@@ -147,5 +164,7 @@ export default function SettingsSheet({ open, onClose }: { open: boolean; onClos
         )}
       </div>
     </Sheet>
+    <ReportSheet open={reportOpen} onClose={() => setReportOpen(false)} />
+    </>
   )
 }

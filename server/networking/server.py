@@ -16,6 +16,7 @@ from models.game_state import GamePhase
 from models.player import Player
 from networking.actions import GameService
 from networking.protocol import create_error_message
+from networking.reports import ReportThrottle, build_report, may_return_to_reporter, save_report
 from networking.room_manager import BOT_DELAYS, WAITING_GRACE_SECONDS, Room, RoomManager
 
 logger = structlog.get_logger()
@@ -426,6 +427,29 @@ async def send_chat_message(sid: str, data: dict):
         await sio.emit("chat_message", chat_message, room=room.room_id)
     except Exception as e:
         await send_error(sid, "CHAT_ERROR", e)
+
+
+# ----------------------------------------------------------------- reports
+
+report_throttle = ReportThrottle()
+
+
+@sio.event
+async def report_problem(sid: str, data: dict):
+    """A player describes a problem; the whole table is stored with it for later analysis."""
+    try:
+        room, player = seat_of(sid)
+        report_throttle.check(player.id)
+        report = build_report(room, player, data.get("text"), data.get("client"))
+        path = save_report(report)
+        logger.info("problem_reported", report_id=report["id"], room_id=room.room_id, path=str(path))
+        reply = {"id": report["id"]}
+        # The report shows every hand: only hand it back when that cannot help anyone cheat
+        if may_return_to_reporter(room, player):
+            reply["report"] = report
+        await sio.emit("report_saved", reply, room=sid)
+    except Exception as e:
+        await send_error(sid, "REPORT_ERROR", e)
 
 
 # ------------------------------------------------------------- persistence

@@ -212,6 +212,7 @@ class SocketManager {
       const code = data.code || ''
       const message = data.message || ''
 
+      if (code === 'REPORT_ERROR') return // the report sheet shows it
       if (code === 'JOIN_ROOM_ERROR') {
         // The table is gone or full: back to the lobby
         const key = /not found/i.test(message) ? 'error.roomGone' : /full/i.test(message) ? 'error.roomFull' : null
@@ -293,6 +294,42 @@ class SocketManager {
 
   fillBots() {
     this.emit('fill_bots')
+  }
+
+  /**
+   * Send a problem report: the server stores the whole table with the text.
+   * Resolves with the report's id (and the report itself when showing it cannot spoil a running hand).
+   */
+  reportProblem(text: string, client: Record<string, unknown>): Promise<{ id: string; report?: unknown }> {
+    return new Promise((resolve, reject) => {
+      const socket = this.socket
+      if (!socket?.connected) {
+        reject(new Error('offline'))
+        return
+      }
+      const done = () => {
+        clearTimeout(timer)
+        socket.off('report_saved', saved)
+        socket.off('error', failed)
+      }
+      const saved = (payload: unknown) => {
+        done()
+        resolve(unwrap<{ id: string; report?: unknown }>(payload))
+      }
+      const failed = (payload: unknown) => {
+        const data = unwrap<{ code?: string; message?: string }>(payload) || {}
+        if (data.code !== 'REPORT_ERROR') return
+        done()
+        reject(new Error(data.message || 'REPORT_ERROR'))
+      }
+      const timer = setTimeout(() => {
+        done()
+        reject(new Error('timeout'))
+      }, 10000)
+      socket.on('report_saved', saved)
+      socket.on('error', failed)
+      socket.emit('report_problem', { text, client })
+    })
   }
 
   replaceWithBot(position: number) {

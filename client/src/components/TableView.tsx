@@ -32,7 +32,7 @@ interface SeatLabelProps {
   isDeclarer?: boolean
   isPartner?: boolean
   /** Which side the seat is on, as far as the viewer knows; omitted before the bidding ends */
-  side?: 'declarer' | 'opponent' | 'unknown'
+  side?: 'ally' | 'enemy' | 'unknown'
   /** Extra line under the name (tricks won, "ready"…) */
   detail?: ReactNode
   small?: boolean

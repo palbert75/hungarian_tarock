@@ -405,8 +405,8 @@ html, body {
   line-height: 1.25;
   color: #f8fafc;
 }
-.side-declarer { background: rgba(180, 83, 9, 0.85); border-color: #fbbf24; }
-.side-opponent { background: rgba(30, 64, 175, 0.85); border-color: #60a5fa; }
+.side-ally { background: rgba(29, 78, 216, 0.9); border-color: #60a5fa; }
+.side-enemy { background: rgba(185, 28, 28, 0.9); border-color: #f87171; }
 .side-unknown { background: rgba(51, 65, 85, 0.6); border-color: #94a3b8; border-style: dashed; color: #cbd5e1; }
 .side-turn { box-shadow: 0 0 0 2px #fde047, 0 0 12px rgba(253, 224, 71, 0.55); color: #fff; }
 
@@ -612,3 +612,58 @@ html, body {
     padding: 0.6rem 0.7rem;
   }
 }
+
+/* The whole seat is tinted: blue plays with me, red against me */
+.seat-box { position: relative; border-radius: 0.9rem; border: 1px solid transparent; transition: background-color 500ms ease, border-color 500ms ease; }
+.seat-ally { background: rgba(37, 99, 235, 0.24); border-color: rgba(96, 165, 250, 0.45); }
+.seat-enemy { background: rgba(220, 38, 38, 0.22); border-color: rgba(248, 113, 113, 0.42); }
+.seat-unknown { background: rgba(100, 116, 139, 0.12); border-color: rgba(148, 163, 184, 0.25); border-style: dashed; }
+
+/* Sparks when a seat's side comes to light */
+.seat-burst { position: absolute; left: 50%; top: 50%; width: 0; height: 0; pointer-events: none; z-index: 30; }
+.seat-burst i {
+  position: absolute;
+  left: -3px;
+  top: -3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--spark);
+  box-shadow: 0 0 8px var(--spark);
+  opacity: 0;
+  animation: seat-spark 950ms cubic-bezier(0.15, 0.7, 0.3, 1) var(--delay, 0ms) forwards;
+}
+.seat-burst b {
+  position: absolute;
+  left: -22px;
+  top: -22px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid var(--spark);
+  opacity: 0;
+  animation: seat-ring 700ms ease-out forwards;
+}
+.burst-ally { --spark: #7cc0ff; }
+.burst-enemy { --spark: #ff8a8a; }
+@keyframes seat-spark {
+  0% { transform: translate(0, 0) scale(1.4); opacity: 1; }
+  70% { opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(0.2); opacity: 0; }
+}
+@keyframes seat-ring {
+  0% { transform: scale(0.3); opacity: 0.9; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .seat-burst { display: none; }
+}
+
+/* Trick by trick on the result screen */
+.trick-table { display: grid; grid-template-columns: 1.4rem repeat(4, minmax(0, 1fr)); gap: 0.25rem 0.3rem; align-items: center; font-size: 0.8rem; }
+.trick-head { text-align: center; font-size: 0.68rem; font-weight: 700; border-radius: 0.4rem; padding: 0.1rem 0.2rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.trick-cell { text-align: center; border-radius: 0.4rem; padding: 0.15rem 0; background: rgba(15, 23, 42, 0.55); border: 1.5px solid transparent; font-weight: 600; white-space: nowrap; }
+.trick-cell.is-red { color: #fca5a5; }
+.trick-cell.is-tarokk { color: #fde68a; }
+.trick-cell.is-winner { border-color: #facc15; background: rgba(161, 98, 7, 0.55); color: #fff; }
+.trick-cell.is-lead::before { content: '▸'; opacity: 0.7; margin-right: 1px; }

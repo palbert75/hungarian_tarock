@@ -40,6 +40,7 @@ class Room:
         self.bot_speed: str = "normal"
         self.turn_seq: int = 0  # Incremented by every game action (guards bot tasks)
         self.last_game_over: Optional[dict] = None  # Result of the hand just played
+        self.decision_log: List[dict] = []  # What the bots did this hand and why (for problem reports)
         self.dropped_at: Dict[str, float] = {}  # player_id -> time the connection dropped
 
     # ------------------------------------------------------------------ seats
