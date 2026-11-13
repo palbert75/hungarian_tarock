@@ -73,33 +73,55 @@ export default function GameOverScreen({ table }: { table: Table }) {
             </div>
           )}
 
-          {result && result.announcement_details.length > 0 && (
+          {result && (
             <div className="rounded-2xl bg-black/25 p-3 text-sm">
               <div className="text-xs uppercase tracking-wide text-slate-300 mb-1.5">{t('over.bonuses')}</div>
-              {result.announcement_details.map((a, i) => (
-                <div key={i} className="flex justify-between gap-2 py-0.5">
-                  <span className="truncate">
-                    {a.achieved ? '✓' : '✗'} {t(`announcement.${a.type}`)}
-                    {!a.announced ? ` (${t('over.silent')})` : ''}
-                    {a.recontra ? ` · ${t('announce.recontraShort')}` : a.contra ? ` · ${t('announce.contraShort')}` : ''}
-                    <span className="text-slate-300">
-                      {' – '}
-                      {a.announced
-                        ? table.nameAt(a.player_position)
-                        : declarerTeam.has(a.player_position)
-                          ? t('over.declarerSide')
-                          : t('over.defenderSide')}
+              <div className="flex justify-between gap-2 py-0.5">
+                <span className="truncate">
+                  {t('over.game')}
+                  {result.game_multiplier > 1 ? ` ×${result.game_multiplier}` : ''}
+                  {result.game_contra ? ` · ${t('announce.contraShort')}` : ''}
+                  <span className="text-slate-300">
+                    {' – '}
+                    {result.winner === 'declarer_team' ? t('over.declarerSide') : t('over.defenderSide')}
+                  </span>
+                </span>
+                <span className="flex-none font-semibold">{signed(iWon ? result.final_game_value : -result.final_game_value)}</span>
+              </div>
+              {result.announcement_details.map((a, i) => {
+                const figureSideIsDeclarer = a.team ? a.team === 'declarer_team' : declarerTeam.has(a.player_position)
+                const mine = figureSideIsDeclarer === declarerTeam.has(me)
+                return (
+                  <div key={i} className="flex justify-between gap-2 py-0.5">
+                    <span className="truncate">
+                      {a.achieved ? '✓' : '✗'} {t(`announcement.${a.type}`)}
+                      {!a.announced ? ` (${t('over.silent')})` : ''}
+                      {a.recontra ? ` · ${t('announce.recontraShort')}` : a.contra ? ` · ${t('announce.contraShort')}` : ''}
+                      <span className="text-slate-300">
+                        {' – '}
+                        {a.announced
+                          ? table.nameAt(a.player_position)
+                          : figureSideIsDeclarer
+                            ? t('over.declarerSide')
+                            : t('over.defenderSide')}
+                      </span>
                     </span>
-                  </span>
-                  <span className="flex-none font-semibold">
-                    {a.type === 'double_game' || a.type === 'volat'
-                      ? a.achieved && a.multiplier
-                        ? `×${a.multiplier}`
-                        : '–'
-                      : signed(a.points)}
-                  </span>
-                </div>
-              ))}
+                    <span className="flex-none font-semibold">
+                      {a.type === 'double_game' || a.type === 'volat'
+                        ? a.achieved && a.multiplier
+                          ? `×${a.multiplier}`
+                          : '–'
+                        : signed(mine ? a.points : -a.points)}
+                    </span>
+                  </div>
+                )
+              })}
+              <div className="flex justify-between gap-2 pt-1.5 mt-1 border-t border-white/15 font-bold">
+                <span>{t('over.yourTotal')}</span>
+                <span className={handDelta(me) > 0 ? 'text-green-400' : handDelta(me) < 0 ? 'text-red-400' : ''}>
+                  {signed(handDelta(me))}
+                </span>
+              </div>
             </div>
           )}
 

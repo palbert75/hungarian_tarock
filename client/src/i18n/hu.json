@@ -135,7 +135,9 @@
     "needFour": "A következő játszmához négy játékos kell.",
     "nextHand": "Következő játszma",
     "waitingOthers": "Várunk a többiekre…",
-    "leave": "Felállok az asztaltól"
+    "leave": "Felállok az asztaltól",
+    "game": "Játék",
+    "yourTotal": "Eredményed ebben a leosztásban"
   },
   "card": {
     "skiz": "Skíz",
@@ -216,7 +218,10 @@
       "draw_tarokks": "A ti oldalatok erősebb tarokkban (még {{count}} van kint): hívd ezt: {{card}}, húzd ki őket.",
       "long_suit": "Hívd ezt: {{card}} – a leghosszabb színed legkisebb lapja.",
       "low_tarokk": "Már csak tarokkod van: hívd a legkisebbet, ezt: {{card}}.",
-      "only_card": "Már csak ezt érdemes hívni: {{card}}."
+      "only_card": "Már csak ezt érdemes hívni: {{card}}.",
+      "skiz_suit": "Nálad a skíz, és a XXI még nem ment ki. Ne hívj tarokkot, mert alatta hazamenekülhet a XXI: hívd ezt: {{card}}, és várj.",
+      "skiz_low_tarokk": "Nálad a skíz, és nincs már színed: hívd a legkisebb tarokkodat ({{card}}), a skízt tartsd meg a XXI-re.",
+      "defender_suit": "A skíz vagy a XXI már kiment, nincs mit védeni: ellenjátékosként színt hívj: {{card}}."
     },
     "follow": {
       "only_card": "Csak ezt a lapot teheted: {{card}}.",
@@ -225,7 +230,11 @@
       "feed_teammate": "A társad viszi ezt az ütést: add neki a legértékesebb lapodat, ezt: {{card}}.",
       "teammate_wins_low": "A társad viszi ezt az ütést: ne pazarolj erős lapot, tedd ezt: {{card}}.",
       "win_cheap": "Ezt az ütést érdemes elvinni: üsd meg a legkisebb lappal, ami még üt: {{card}}.",
-      "low": "Nem éri meg, vagy nem tudod elvinni: tedd a legolcsóbb lapodat, ezt: {{card}}."
+      "low": "Nem éri meg, vagy nem tudod elvinni: tedd a legolcsóbb lapodat, ezt: {{card}}.",
+      "skiz_duck_high": "A skízzel a XXI-re vársz, ezért ne kerülj hívásba: szabadulj meg egy nagy tarokktól, amely nem üt: {{card}}.",
+      "skiz_duck": "A skízzel a XXI-re vársz: ezt az ütést ne vidd el, tedd ezt: {{card}}.",
+      "skiz_forced": "Ezt az ütést nem tudod elkerülni. A skízt tartsd meg a XXI-re: tedd ezt: {{card}}.",
+      "hit_hard": "Utánad még ellenfél jön, és király forog kockán: ne spórolj a tarokkal, üss nagyot ezzel: {{card}}."
     }
   },
   "toast": {

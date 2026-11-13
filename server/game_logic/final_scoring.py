@@ -139,10 +139,12 @@ def calculate_final_score(
     winners = declarer_team if declarer_won else opponent_team
     losers = opponent_team if declarer_won else declarer_team
 
+    # Two against two, every player settles with one opponent: the game moves
+    # its value once. A player alone settles with each of the three others.
     for pos in winners:
-        player_scores[pos] += final_game_value * len(losers)
+        player_scores[pos] += final_game_value * max(1, len(losers) // len(winners))
     for pos in losers:
-        player_scores[pos] -= final_game_value * len(winners)
+        player_scores[pos] -= final_game_value * max(1, len(winners) // len(losers))
 
     # Calculate announcement bonus payments
     announcement_details = []

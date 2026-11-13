@@ -135,7 +135,9 @@
     "needFour": "Four players are needed for the next hand.",
     "nextHand": "Next hand",
     "waitingOthers": "Waiting for the others…",
-    "leave": "Leave table"
+    "leave": "Leave table",
+    "game": "Game",
+    "yourTotal": "Your result this hand"
   },
   "card": {
     "skiz": "Skíz",
@@ -216,7 +218,10 @@
       "draw_tarokks": "Your side has the upper hand in tarokks ({{count}} still out): lead {{card}} to draw them.",
       "long_suit": "Lead {{card}}, the lowest card of your longest suit.",
       "low_tarokk": "You have only tarokks left: lead your lowest, {{card}}.",
-      "only_card": "{{card}} is the only sensible card left to lead."
+      "only_card": "{{card}} is the only sensible card left to lead.",
+      "skiz_suit": "You hold the skíz and the XXI is still out. Do not lead a tarokk, the XXI could slip home under it: lead {{card}} and wait.",
+      "skiz_low_tarokk": "You hold the skíz and have no suit left: lead your lowest tarokk, {{card}}, and keep the skíz for the XXI.",
+      "defender_suit": "The skíz or the XXI is already played, so there is nothing left to protect: as a defender lead a suit, {{card}}."
     },
     "follow": {
       "only_card": "{{card}} is the only card you may play.",
@@ -225,7 +230,11 @@
       "feed_teammate": "Your teammate is winning this trick: give them your most valuable card, {{card}}.",
       "teammate_wins_low": "Your teammate is winning this trick: do not waste a strong card, play {{card}}.",
       "win_cheap": "This trick is worth taking: win it with {{card}}, the lowest card that wins.",
-      "low": "Not worth winning, or you cannot win it: play your cheapest card, {{card}}."
+      "low": "Not worth winning, or you cannot win it: play your cheapest card, {{card}}.",
+      "skiz_duck_high": "You are waiting with the skíz for the XXI, so stay out of the lead: get rid of a high tarokk that does not win, {{card}}.",
+      "skiz_duck": "You are waiting with the skíz for the XXI: do not take this trick, play {{card}}.",
+      "skiz_forced": "You cannot avoid this trick. Keep the skíz for the XXI: play {{card}}.",
+      "hit_hard": "An opponent still plays after you and a king is at stake: do not save tarokks, hit hard with {{card}}."
     }
   },
   "toast": {

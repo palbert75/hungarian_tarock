@@ -229,7 +229,7 @@ def test_lead_rule_off_when_trull_announced():
 def test_lead_rule_off_when_xxi_was_played():
     view = play_view("X V hQ h10 dJ", declarer=1, partner=2,
                      history=[[(0, "II"), (1, "XXI"), (2, "III"), (3, "IV")]])
-    assert decide_card(view).reason_key == "hint.lead.long_suit"
+    assert decide_card(view).reason_key == "hint.lead.defender_suit"
 
 
 def test_lead_rule_off_when_i_hold_the_xxi():
@@ -440,3 +440,64 @@ def test_called_partner_with_great_honour_announces_trull():
 def test_partner_without_great_honour_or_non_partner_does_not_announce_trull():
     assert decide_announcement(announce_view("I X hK hQ hJ h10 dQ dJ d10", partner=True)).action == "pass_announcement"
     assert decide_announcement(announce_view("skiz X hK hQ hJ h10 dQ dJ d10")).action == "pass_announcement"
+
+
+# ---- the skíz waits for the XXI; trump hard when a king is at stake
+
+def test_skiz_holder_leads_a_kingless_suit_not_a_tarokk():
+    view = play_view("skiz XVIII X hQ h10 dK dJ", declarer=0, partner=2)
+    d = decide_card(view)
+    assert d.reason_key == "hint.lead.skiz_suit" and played(d, view) == "h10"
+
+
+def test_skiz_holder_with_the_xxi_does_not_wait():
+    view = play_view("skiz XXI XVIII X hQ h10", declarer=0, partner=2)
+    assert not decide_card(view).reason_key.startswith("hint.lead.skiz")
+
+
+def test_skiz_holder_does_not_wait_once_the_xxi_is_played():
+    view = play_view("skiz XVIII X hQ h10", declarer=0, partner=2,
+                     history=[[(0, "II"), (1, "XXI"), (2, "III"), (3, "IV")]])
+    assert not decide_card(view).reason_key.startswith("hint.lead.skiz")
+
+
+def test_defender_leads_suit_once_the_skiz_is_played():
+    view = play_view("X V hQ h10 dJ", declarer=1, partner=2,
+                     history=[[(0, "II"), (1, "skiz"), (2, "III"), (3, "IV")]])
+    d = decide_card(view)
+    assert d.reason_key == "hint.lead.defender_suit" and not d.payload["card_id"].startswith("tarokk")
+
+
+def test_waiting_skiz_sheds_a_high_tarokk_without_winning():
+    view = play_view("skiz XIV X hQ", trick=[(3, "XV")], declarer=0, partner=2)
+    d = decide_card(view)
+    assert d.reason_key == "hint.follow.skiz_duck_high" and played(d, view) == "XIV"
+
+
+def test_waiting_skiz_still_catches_the_xxi():
+    view = play_view("skiz XIV X hQ", trick=[(3, "XXI")], declarer=0, partner=2)
+    assert played(decide_card(view), view) == "skiz"
+
+
+def test_trump_hard_on_teammates_suit_lead_when_an_opponent_follows():
+    view = play_view("XIX X V dQ", trick=[(3, "hK")], declarer=0, partner=3)
+    d = decide_card(view)
+    assert d.reason_key == "hint.follow.hit_hard" and played(d, view) == "XIX"
+
+
+def test_trump_hard_on_an_opponents_king_when_not_last():
+    view = play_view("XIX X V dQ", trick=[(2, "hK")], declarer=0, partner=3)
+    d = decide_card(view)
+    assert d.reason_key == "hint.follow.hit_hard" and played(d, view) == "XIX"
+
+
+def test_last_to_play_still_wins_cheaply():
+    view = play_view("XIX X V dQ", trick=[(1, "hK"), (2, "h10"), (3, "hQ")], declarer=0, partner=3)
+    d = decide_card(view)
+    assert d.reason_key == "hint.follow.win_cheap" and played(d, view) == "V"
+
+
+def test_waiting_skiz_does_not_trump_hard():
+    view = play_view("skiz XIX X dQ", trick=[(3, "hK")], declarer=0, partner=3)
+    d = decide_card(view)
+    assert d.reason_key == "hint.follow.skiz_forced" and played(d, view) == "X"

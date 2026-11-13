@@ -34,6 +34,8 @@ ADOPTED = frozenset({
     "signal_partner",  # four kings from a non-declarer shows the table who the partner is
     "signal_double",   # the declarer answers that signal with double game when strong
     "xx_cheap_skart",  # a non-declarer holding the XX discards cheap cards
+    "skiz_hunt",       # the skíz waits for the other side's XXI: leads suits, ducks tricks
+    "hit_hard",        # trump high when an opponent still plays after me and a king is at stake
 })
 TACTICS: set = set(ADOPTED)
 
@@ -234,6 +236,46 @@ def _play(card: Card, key: str, **params) -> Decision:
     return Decision("play_card", {"card_id": card.id}, key, {"card": card.id, **params})
 
 
+def _skiz_played(view: SeatView) -> bool:
+    return not view.holds("skiz") and not skiz_out(view)
+
+
+def _hunting(view: SeatView) -> bool:
+    """I hold the skíz and the XXI may still be caught: it is out, and nothing says my side holds it."""
+    if "skiz_hunt" not in TACTICS or not view.holds("skiz") or view.holds("XXI") or xxi_played(view):
+        return False
+    # Trull announced on my side means we hold both great honours
+    return not any(
+        a.announcement_type.value == "trull"
+        and (a.player_position == view.position or view.is_teammate(a.player_position))
+        for a in view.announcements
+    )
+
+
+def _kingless_suit_low(cards: List[Card], view: SeatView) -> Optional[Card]:
+    """Lowest card of a suit whose king I do not hold; the XXI's holder is likelier to have to follow it."""
+    suit_cards = [c for c in cards if not c.is_tarokk()]
+    kingless = [c for c in suit_cards if not any(h.is_king() and h.suit == c.suit for h in view.hand)]
+    pool = kingless or suit_cards
+    return min(pool, key=lambda c: (c.points, c.suit.value)) if pool else None
+
+
+def _hard_tarokk(cards: List[Card], out: List[int], trick_points: int) -> Optional[Card]:
+    """
+    A tarokk that should hold the trick: the lowest one nobody can beat, else my highest.
+    The skíz is spent this way only on a trick worth a king.
+    """
+    tarokks = [c for c in cards if c.is_tarokk() and not _is(c, PAGAT)]
+    if trick_points < 5:
+        tarokks = [c for c in tarokks if not _is(c, SKIZ)] or tarokks
+    if not tarokks:
+        return None
+    certain = [c for c in tarokks if all(value < c.tarokk_value() for value in out)]
+    if certain:
+        return min(certain, key=lambda c: c.tarokk_value())
+    return max(tarokks, key=lambda c: c.tarokk_value())
+
+
 def _lead(view: SeatView) -> Decision:
     legal = view.legal_cards
     tarokks = sorted((c for c in legal if c.is_tarokk()), key=lambda c: c.tarokk_value())
@@ -264,9 +306,24 @@ def _lead(view: SeatView) -> Decision:
     if ulti_against and len(plain_tarokks) == 1 and low_suit:
         return _play(low_suit, "hint.lead.keep_tarokk_for_ulti", kept_card=plain_tarokks[0].id)
 
+    # I hold the skíz and the XXI is still out: a tarokk lead lets the XXI slip home
+    # under it, so lead a suit and wait
+    if _hunting(view):
+        suit = _kingless_suit_low(legal, view)
+        if suit:
+            return _play(suit, "hint.lead.skiz_suit")
+        small = [c for c in plain_tarokks if not _is(c, SKIZ)]
+        if small:
+            return _play(small[0], "hint.lead.skiz_low_tarokk")
+
+    defender = not view.on_declarer_side and view.declarer_position is not None
+    # Skíz or XXI already gone: nothing left to protect, a defender leads a suit
+    if defender and (xxi_played(view) or _skiz_played(view)) and low_suit:
+        return _play(low_suit, "hint.lead.defender_suit")
+
     # The owner's rule for defenders: protect the fellow defender's XXI
-    if (not view.on_declarer_side and view.declarer_position is not None
-            and not _announced(view, "trull") and not xxi_played(view) and not view.holds("XXI")):
+    if (defender and not _announced(view, "trull") and not xxi_played(view) and not view.holds("XXI")
+            and not _skiz_played(view)):
         last_seat = (view.position + 3) % 4
         if view.is_teammate(last_seat) and plain_tarokks:
             return _play(plain_tarokks[0], "hint.lead.partner_last_tarokk")
@@ -319,6 +376,29 @@ def _follow(view: SeatView) -> Decision:
 
     pagat = next((c for c in candidates if _is(c, PAGAT)), None)
     without_pagat = [c for c in candidates if not _is(c, PAGAT)] or candidates
+    trick_points = sum(card.points for _, card in trick)
+    lead_seat, lead_card = trick[0]
+    king_at_stake = any(card.is_king() for _, card in trick)
+
+    # Waiting with the skíz for the XXI: stay out of the lead, and shed high tarokks doing so
+    if _hunting(view):
+        waiting = [c for c in without_pagat if not _is(c, SKIZ)]
+        losers = [c for c in waiting if not _beats(c, trick)]
+        if losers:
+            if all(c.is_tarokk() for c in losers):
+                return _play(max(losers, key=lambda c: c.tarokk_value()), "hint.follow.skiz_duck_high")
+            if view.is_teammate(winner_seat):
+                return _play(max(losers, key=lambda c: c.points), "hint.follow.feed_teammate")
+            return _play(min(losers, key=_cheapness), "hint.follow.skiz_duck")
+        if waiting:
+            return _play(min(waiting, key=_cheapness), "hint.follow.skiz_forced")
+
+    # An opponent still plays after me: do not save tarokks when a king is at stake
+    # or when my teammate led a suit I cannot follow
+    hit_hard = (
+        "hit_hard" in TACTICS and foe_after and all(c.is_tarokk() for c in without_pagat)
+        and (king_at_stake or (view.is_teammate(lead_seat) and not lead_card.is_tarokk()))
+    )
 
     if view.is_teammate(winner_seat):
         # Is the teammate's card certain to hold?
@@ -327,6 +407,10 @@ def _follow(view: SeatView) -> Decision:
         )
         if pagat and certain and not _announced(view, "pagat_ultimo", by_me=True):
             return _play(pagat, "hint.follow.pagat_home")
+        if hit_hard and not certain and not winner_card.is_tarokk():
+            hard = _hard_tarokk(without_pagat, out, trick_points)
+            if hard:
+                return _play(hard, "hint.follow.hit_hard")
         suit_cards = [c for c in without_pagat if not c.is_tarokk()]
         if suit_cards and (certain or "safe_feed" not in TACTICS):
             return _play(max(suit_cards, key=lambda c: c.points), "hint.follow.feed_teammate")
@@ -338,7 +422,10 @@ def _follow(view: SeatView) -> Decision:
         last_winners = winners
     else:
         last_winners = [c for c in winners if not _is(c, PAGAT)]
-    trick_points = sum(card.points for _, card in trick)
+    if hit_hard and last_winners:
+        hard = _hard_tarokk(last_winners, out, trick_points)
+        if hard:
+            return _play(hard, "hint.follow.hit_hard")
     worth_it = trick_points >= 5 or ("stop_foe" in TACTICS and winner_seat in view.opponents())
     if last_winners and (not seats_after or worth_it):
         if not seats_after and pagat and pagat in last_winners:

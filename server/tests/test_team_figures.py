@@ -30,7 +30,7 @@ def test_partner_announced_four_kings_made_by_both():
     result = score("hK dK sK", "cK", announcements=[kings])
     assert kinds(result) == [("four_kings", True)]
     assert kinds(result, achieved=False) == []
-    assert result["player_scores"] == {0: 50 - 2 + 2, 2: 50 - 2 + 2, 1: 50 + 2 - 2, 3: 50 + 2 - 2}
+    assert result["player_scores"] == {0: 50 - 1 + 2, 2: 50 - 1 + 2, 1: 50 + 1 - 2, 3: 50 + 1 - 2}
 
 
 def test_silent_four_kings_split_between_partners():
@@ -83,8 +83,8 @@ def test_no_double_game_below_71():
 def test_bonus_is_shared_by_the_side():
     result = score("hK dK", "sK cK")  # silent four kings, 1 point; defenders win the game
     game = result["final_game_value"]
-    assert result["player_scores"][0] == result["player_scores"][2] == 50 - 2 * game + 1
-    assert result["player_scores"][1] == result["player_scores"][3] == 50 + 2 * game - 1
+    assert result["player_scores"][0] == result["player_scores"][2] == 50 - game + 1
+    assert result["player_scores"][1] == result["player_scores"][3] == 50 + game - 1
 
 
 def last_trick(winner, plays):
@@ -121,4 +121,4 @@ def test_xxi_catch_from_recorded_trick_format():
     catch = [a for a in result["announcement_details"] if a["type"] == "xxi_catch"]
     assert len(catch) == 1 and catch[0]["team"] == "opponent_team" and catch[0]["points"] == 21
     assert result["player_scores"][0] == result["player_scores"][2]
-    assert result["player_scores"][1] == result["player_scores"][3] == 50 + 2 * result["final_game_value"] + 21
+    assert result["player_scores"][1] == result["player_scores"][3] == 50 + result["final_game_value"] + 21
