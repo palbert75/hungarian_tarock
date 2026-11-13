@@ -14,7 +14,8 @@ interface Sides {
 
 /**
  * Which side each seat is on, as far as I can know it: the declarer always,
- * the partner once the called card showed (or when I hold it myself).
+ * the partner once the called card showed (or when I hold it myself), or
+ * earlier when the bidding or a four-kings announcement gives the partner away.
  */
 export function useSides(table: Table): Sides {
   const { game, me, myHand } = table
@@ -25,7 +26,15 @@ export function useSides(table: Table): Sides {
   const called = (game.called_card_rank || '').toLowerCase()
   const iHoldCalled = !!called && myHand.some((c) => c.suit === 'tarokk' && c.rank.toLowerCase() === called)
   // An accepted invit or a yielded game tells the whole table who the partner is
-  const shownPartner = game.partner_revealed ? game.partner_position : game.convention_partner ?? null
+  // Four kings from a seat other than the declarer is the partner's signal at this table.
+  // I ignore it when I know better: I hold the called card, or the announcement is my own.
+  const signal = (game.announcements || []).find(
+    (a) => a.announcement_type === 'four_kings' && a.player_position !== declarer,
+  )
+  const signalPartner = signal && !iHoldCalled && signal.player_position !== me ? signal.player_position : null
+  const shownPartner = game.partner_revealed
+    ? game.partner_position
+    : game.convention_partner ?? signalPartner ?? null
   const partnerKnown = shownPartner !== null && shownPartner !== undefined
   const iAmPartner = (partnerKnown && shownPartner === me) || iHoldCalled
   const mySide: Side = me === declarer || iAmPartner ? 'declarer' : 'opponent'
