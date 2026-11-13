@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Card as CardType } from '@/types'
 import { SUIT_SYMBOL, rankLabel } from '@/utils/cardNames'
@@ -13,8 +14,14 @@ interface CardProps {
   hinted?: boolean
   tag?: string
   onClick?: () => void
+  /** Called when the card is flicked upwards, like throwing it onto the table */
+  onSwipeUp?: () => void
   className?: string
 }
+
+/** How far up (as a share of the card's height) a card must travel to count as thrown */
+const THROW_SHARE = 0.4
+const THROW_MIN_PX = 36
 
 const colorOf = (suit: string): string =>
   suit === 'hearts' || suit === 'diamonds' ? '#b91c1c' : suit === 'tarokk' ? '#3730a3' : '#111827'
@@ -24,9 +31,54 @@ const artOf = (card: CardType): string =>
   `/cards/${card.suit}-${card.suit === 'tarokk' && card.rank.toLowerCase() === 'skiz' ? 'skiz' : card.rank}.webp`
 
 /** A playing card. The painted face is used when it loads; the drawn one is the fallback. */
-export default function Card({ card, width, selected, dimmed, winner, hinted, tag, onClick, className = '' }: CardProps) {
+export default function Card({ card, width, selected, dimmed, winner, hinted, tag, onClick, onSwipeUp, className = '' }: CardProps) {
   const { t } = useTranslation()
   const [artFailed, setArtFailed] = useState(false)
+  // Swipe up to throw: the card follows the finger, flies off when released far enough
+  const drag = useRef<{ id: number; x: number; y: number; height: number; moved: boolean } | null>(null)
+  const swallowClick = useRef(false)
+  const [offset, setOffset] = useState<{ x: number; y: number } | null>(null)
+  const [thrown, setThrown] = useState(false)
+
+  const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (!onSwipeUp || thrown || (e.pointerType === 'mouse' && e.button !== 0)) return
+    drag.current = { id: e.pointerId, x: e.clientX, y: e.clientY, height: e.currentTarget.offsetHeight, moved: false }
+    swallowClick.current = false
+    e.currentTarget.setPointerCapture?.(e.pointerId)
+  }
+  const onPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const d = drag.current
+    if (!d || d.id !== e.pointerId) return
+    const dx = e.clientX - d.x
+    const dy = Math.min(0, e.clientY - d.y)
+    if (!d.moved && Math.hypot(dx, dy) < 8) return
+    d.moved = true
+    setOffset({ x: dx * 0.5, y: dy })
+  }
+  const endDrag = (e: ReactPointerEvent<HTMLDivElement>, cancelled: boolean) => {
+    const d = drag.current
+    if (!d || d.id !== e.pointerId) return
+    drag.current = null
+    if (!d.moved) return
+    swallowClick.current = true
+    const up = d.y - e.clientY
+    if (!cancelled && up >= Math.max(THROW_MIN_PX, d.height * THROW_SHARE)) {
+      setThrown(true)
+      onSwipeUp?.()
+      // If the play is refused the card comes back
+      window.setTimeout(() => {
+        setThrown(false)
+        setOffset(null)
+      }, 900)
+    } else {
+      setOffset(null)
+    }
+  }
+  const swipeStyle = thrown
+    ? { transform: `translate(${offset?.x ?? 0}px, -160%) scale(0.8)`, opacity: 0, transition: 'transform 220ms ease-in, opacity 220ms ease-in' }
+    : offset
+      ? { transform: `translate(${offset.x}px, ${offset.y}px)`, transition: 'none', zIndex: 20 }
+      : undefined
   const isTarokk = card.suit === 'tarokk'
   const label = rankLabel(card, t)
   const symbol = SUIT_SYMBOL[card.suit]
@@ -40,8 +92,22 @@ export default function Card({ card, width, selected, dimmed, winner, hinted, ta
       aria-label={`${symbol}${label}`}
       aria-pressed={onClick ? !!selected : undefined}
       aria-disabled={dimmed || undefined}
-      onClick={onClick}
-      style={width ? { width } : undefined}
+      onClick={
+        onClick
+          ? () => {
+              if (swallowClick.current) {
+                swallowClick.current = false
+                return
+              }
+              onClick()
+            }
+          : undefined
+      }
+      onPointerDown={onSwipeUp ? onPointerDown : undefined}
+      onPointerMove={onSwipeUp ? onPointerMove : undefined}
+      onPointerUp={onSwipeUp ? (e) => endDrag(e, false) : undefined}
+      onPointerCancel={onSwipeUp ? (e) => endDrag(e, true) : undefined}
+      style={{ ...(width ? { width } : {}), ...(onSwipeUp ? { touchAction: 'none' } : {}), ...swipeStyle }}
       className={[
         'tcard',
         isTarokk ? 'tcard-tarokk' : '',

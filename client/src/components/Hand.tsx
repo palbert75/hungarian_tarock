@@ -15,6 +15,8 @@ interface HandGridProps {
   /** Card ids the tutorial recommends */
   hinted?: string[]
   onTap?: (cardId: string) => void
+  /** A card flicked upwards (thrown onto the table) */
+  onSwipeUp?: (cardId: string) => void
 }
 
 /** Split sorted cards into two rows that are as even as possible (one row for few cards). */
@@ -25,7 +27,7 @@ export function splitRows(cards: CardType[]): CardType[][] {
 }
 
 /** The hand, large: it fills whatever space its parent gives it. */
-export function HandGrid({ cards, selected = [], disabled = [], tagged = [], tagLabel, hinted = [], onTap }: HandGridProps) {
+export function HandGrid({ cards, selected = [], disabled = [], tagged = [], tagLabel, hinted = [], onTap, onSwipeUp }: HandGridProps) {
   const rows = useMemo(() => splitRows(sortCards(cards)), [cards])
   const cols = Math.max(...rows.map((r) => r.length), 1)
   const style = { '--cols': cols, '--rows': rows.length } as CSSProperties
@@ -45,6 +47,7 @@ export function HandGrid({ cards, selected = [], disabled = [], tagged = [], tag
                 hinted={hinted.includes(card.id)}
                 tag={tagged.includes(card.id) ? tagLabel : undefined}
                 onClick={onTap && !isDisabled ? () => onTap(card.id) : undefined}
+                onSwipeUp={onSwipeUp && !isDisabled ? () => onSwipeUp(card.id) : undefined}
               />
             )
           })}

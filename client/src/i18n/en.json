@@ -115,7 +115,7 @@
     "yourHand": "Your hand",
     "greyedCards": "Greyed cards cannot be played now",
     "playCard": "Play {{card}}",
-    "selectCard": "Choose a card"
+    "selectCard": "Choose a card, or swipe it up"
   },
   "over": {
     "title": "End of hand",

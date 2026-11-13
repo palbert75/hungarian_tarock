@@ -89,6 +89,7 @@ export default function PlayingPhase({ table }: { table: Table }) {
       disabled={illegal}
       hinted={hint?.payload.card_id ? [hint.payload.card_id] : []}
       onTap={choosing ? (id) => toggleCardSelection(id, 1) : undefined}
+      onSwipeUp={choosing ? (id) => legal.includes(id) && socketManager.playCard(id) : undefined}
     />
   )
 
