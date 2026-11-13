@@ -5,6 +5,8 @@
 
 [build.environment]
   NODE_VERSION = "20"
+  # Where the "Support the game" button leads
+  VITE_DONATE_URL = "https://www.donably.com/black-salt"
 
 [[redirects]]
   from = "/*"
