@@ -5,6 +5,7 @@ import { useTable, type Table } from '@/hooks/useTable'
 import TopBar from '@/components/TopBar'
 import SettingsSheet from '@/components/SettingsSheet'
 import ChatSheet from '@/components/Chat'
+import ReportSheet from '@/components/ReportSheet'
 import { SideLegend, TurnStatus } from '@/components/Seats'
 import { tarokkName } from '@/utils/cardNames'
 import BiddingPhase from './phases/BiddingPhase'
@@ -90,6 +91,7 @@ export default function GameScreen() {
   const table = useTable()
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [chatOpen, setChatOpen] = useState(false)
+  const [reportOpen, setReportOpen] = useState(false)
 
   const over = table?.game.phase === 'game_end' || table?.game.phase === 'scoring'
 
@@ -100,6 +102,7 @@ export default function GameScreen() {
         status={table ? over ? t('over.title') : <TurnStatus table={table} /> : null}
         onSettings={() => setSettingsOpen(true)}
         onChat={() => setChatOpen(true)}
+        onReport={table ? () => setReportOpen(true) : undefined}
       />
       {table ? (
         <>
@@ -111,6 +114,7 @@ export default function GameScreen() {
         <div className="flex-1 flex items-center justify-center text-slate-200">{t('game.dealing')}</div>
       )}
       <SettingsSheet open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <ReportSheet open={reportOpen} onClose={() => setReportOpen(false)} />
       <ChatSheet open={chatOpen} onClose={() => setChatOpen(false)} />
     </div>
   )
