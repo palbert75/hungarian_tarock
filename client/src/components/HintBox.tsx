@@ -1,7 +1,21 @@
+import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Card, Hint } from '@/types'
 import { useSettings } from '@/store/settingsStore'
 import { cardShortName, tarokkName } from '@/utils/cardNames'
+
+/** Hearts and diamonds in a text ("♥D", "♦10") in red, as on the cards. */
+function colourSuits(text: string): ReactNode[] {
+  return text.split(/([♥♦][^\s,.;:!?)]*)/).map((part, i) =>
+    i % 2 ? (
+      <span key={i} className="suit-red">
+        {part}
+      </span>
+    ) : (
+      part
+    ),
+  )
+}
 
 /** The hint to show, or undefined when the tutorial is off or there is none. */
 export function useHint(hint: Hint | undefined, isMyTurn: boolean): Hint | undefined {
@@ -42,7 +56,7 @@ export default function HintBox({ hint, hand = [] }: { hint?: Hint; hand?: Card[
   return (
     <div className="hint-box" role="note">
       <span aria-hidden>💡 </span>
-      {t(hint.reason_key, { ...params, defaultValue: t('hint.fallback') })}
+      {colourSuits(t(hint.reason_key, { ...params, defaultValue: t('hint.fallback') }))}
     </div>
   )
 }

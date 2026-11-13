@@ -708,3 +708,6 @@ html, body {
     100% { opacity: 0; }
   }
 }
+
+/* Hearts and diamonds named in a hint */
+.hint-box .suit-red { color: #b91c1c; font-weight: 700; }
