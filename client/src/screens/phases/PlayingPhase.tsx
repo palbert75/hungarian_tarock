@@ -90,6 +90,7 @@ export default function PlayingPhase({ table }: { table: Table }) {
       hinted={hint?.payload.card_id ? [hint.payload.card_id] : []}
       onTap={choosing ? (id) => toggleCardSelection(id, 1) : undefined}
       onSwipeUp={choosing ? (id) => legal.includes(id) && socketManager.playCard(id) : undefined}
+      swipeDirection={wide ? 'left' : 'up'}
     />
   )
 
@@ -103,7 +104,7 @@ export default function PlayingPhase({ table }: { table: Table }) {
     <div className="flex flex-col gap-1">
       {illegal.length > 0 && <p className="text-center text-[0.72rem] text-slate-300/80">{t('play.greyedCards')}</p>}
       <button type="button" className="tap tap-go w-full" disabled={!selectedCard} onClick={play}>
-        {selectedCard ? t('play.playCard', { card: cardShortName(selectedCard, t) }) : t('play.selectCard')}
+        {selectedCard ? t('play.playCard', { card: cardShortName(selectedCard, t) }) : t(wide ? 'play.selectCardWide' : 'play.selectCard')}
       </button>
     </div>
   ) : wide ? (

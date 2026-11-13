@@ -115,7 +115,8 @@
     "yourHand": "A lapjaid",
     "greyedCards": "A szürke lapok most nem játszhatók ki",
     "playCard": "Kijátszom: {{card}}",
-    "selectCard": "Válassz lapot, vagy húzd felfelé"
+    "selectCard": "Válassz lapot, vagy húzd felfelé",
+    "selectCardWide": "Válassz lapot, vagy húzd balra az asztalra"
   },
   "over": {
     "title": "Játszma vége",

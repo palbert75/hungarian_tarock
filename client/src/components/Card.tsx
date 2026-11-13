@@ -14,12 +14,14 @@ interface CardProps {
   hinted?: boolean
   tag?: string
   onClick?: () => void
-  /** Called when the card is flicked upwards, like throwing it onto the table */
+  /** Called when the card is flicked towards the table, like throwing it there */
   onSwipeUp?: () => void
+  /** Where the table lies from the hand: above it (phones) or to its left (wide screens) */
+  swipeDirection?: 'up' | 'left'
   className?: string
 }
 
-/** How far up (as a share of the card's height) a card must travel to count as thrown */
+/** How far towards the table (as a share of the card's height) a card must travel to count as thrown */
 const THROW_SHARE = 0.4
 const THROW_MIN_PX = 36
 
@@ -31,7 +33,7 @@ const artOf = (card: CardType): string =>
   `/cards/${card.suit}-${card.suit === 'tarokk' && card.rank.toLowerCase() === 'skiz' ? 'skiz' : card.rank}.webp`
 
 /** A playing card. The painted face is used when it loads; the drawn one is the fallback. */
-export default function Card({ card, width, selected, dimmed, winner, hinted, tag, onClick, onSwipeUp, className = '' }: CardProps) {
+export default function Card({ card, width, selected, dimmed, winner, hinted, tag, onClick, onSwipeUp, swipeDirection = 'up', className = '' }: CardProps) {
   const { t } = useTranslation()
   const [artFailed, setArtFailed] = useState(false)
   // Swipe up to throw: the card follows the finger, flies off when released far enough
@@ -49,11 +51,13 @@ export default function Card({ card, width, selected, dimmed, winner, hinted, ta
   const onPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
     const d = drag.current
     if (!d || d.id !== e.pointerId) return
-    const dx = e.clientX - d.x
-    const dy = Math.min(0, e.clientY - d.y)
+    const left = swipeDirection === 'left'
+    // Free along the throw direction (towards the table only), damped across it
+    const dx = left ? Math.min(0, e.clientX - d.x) : (e.clientX - d.x) * 0.5
+    const dy = left ? (e.clientY - d.y) * 0.5 : Math.min(0, e.clientY - d.y)
     if (!d.moved && Math.hypot(dx, dy) < 8) return
     d.moved = true
-    setOffset({ x: dx * 0.5, y: dy })
+    setOffset({ x: dx, y: dy })
   }
   const endDrag = (e: ReactPointerEvent<HTMLDivElement>, cancelled: boolean) => {
     const d = drag.current
@@ -61,8 +65,8 @@ export default function Card({ card, width, selected, dimmed, winner, hinted, ta
     drag.current = null
     if (!d.moved) return
     swallowClick.current = true
-    const up = d.y - e.clientY
-    if (!cancelled && up >= Math.max(THROW_MIN_PX, d.height * THROW_SHARE)) {
+    const travel = swipeDirection === 'left' ? d.x - e.clientX : d.y - e.clientY
+    if (!cancelled && travel >= Math.max(THROW_MIN_PX, d.height * THROW_SHARE)) {
       setThrown(true)
       onSwipeUp?.()
       // If the play is refused the card comes back
@@ -75,7 +79,14 @@ export default function Card({ card, width, selected, dimmed, winner, hinted, ta
     }
   }
   const swipeStyle = thrown
-    ? { transform: `translate(${offset?.x ?? 0}px, -160%) scale(0.8)`, opacity: 0, transition: 'transform 220ms ease-in, opacity 220ms ease-in' }
+    ? {
+        transform:
+          swipeDirection === 'left'
+            ? `translate(-260%, ${offset?.y ?? 0}px) scale(0.8)`
+            : `translate(${offset?.x ?? 0}px, -160%) scale(0.8)`,
+        opacity: 0,
+        transition: 'transform 220ms ease-in, opacity 220ms ease-in',
+      }
     : offset
       ? { transform: `translate(${offset.x}px, ${offset.y}px)`, transition: 'none', zIndex: 20 }
       : undefined
