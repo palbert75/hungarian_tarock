@@ -325,6 +325,10 @@ class PersistenceManager:
             announcement.recontra_by = ann_dict.get('recontra_by')
             game_state.announcements.append(announcement)
 
+        game_state.tarokk_declarations = {
+            int(p): n for p, n in game_state_dict.get('tarokk_declarations', {}).items()
+        }
+
         # Reconstruct announcement history
         game_state.announcement_history = []
         for ann_hist in game_state_dict.get('announcement_history', []):

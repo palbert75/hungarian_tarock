@@ -42,6 +42,8 @@ export type AnnouncementType =
   | 'volat'
   | 'pagat_ultimo'
   | 'xxi_catch'
+  | 'eight_tarokks'
+  | 'nine_tarokks'
 
 export interface Announcement {
   player_position: number
@@ -114,6 +116,8 @@ export interface GameState {
   current_trick: TrickCard[]
   talon: Card[]
   announcements: Announcement[]
+  /** Seat -> 8 or 9: tarokks declared in this hand */
+  tarokk_declarations?: Record<string, number>
   trick_history: CompletedTrick[]
   players_who_discarded?: number[]
   announcement_history?: (Announcement | null)[]
@@ -208,6 +212,8 @@ export interface GameOverData {
   player_scores: Record<string, number>
   total_scores?: number[]
   hand_number?: number
+  /** Eight or nine tarokks declared: every other player paid `points` to that seat */
+  tarokk_declarations?: { player_position: number; count: number; points: number }[]
   announcement_details: {
     type: AnnouncementType
     player_position: number
@@ -238,3 +244,11 @@ export interface ChatMessage {
 }
 
 export type Seat = 'S' | 'E' | 'N' | 'W'
+
+/** What a player has just said aloud, shown for a few seconds over their seat */
+export interface Speech {
+  id: number
+  text: string
+  tone: 'say' | 'pass' | 'kontra'
+  at: number
+}

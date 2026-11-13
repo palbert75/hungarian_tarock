@@ -98,7 +98,9 @@
     "double_game": "Duplajáték",
     "volat": "Volát",
     "pagat_ultimo": "Pagátultimó",
-    "xxi_catch": "XXI-fogás"
+    "xxi_catch": "XXI-fogás",
+    "eight_tarokks": "Nyolc tarokk",
+    "nine_tarokks": "Kilenc tarokk"
   },
   "announce": {
     "choose": "Bemondás…",
@@ -237,7 +239,8 @@
       "kontra_four_kings": "Az ellenfél négy királyt mondott, neked pedig {{count}} tarokkod van, köztük nagyok: valamelyik királyuk nálad vagy a partnerednél fog elesni. Mondj kontrát.",
       "kontra_ulti": "Az ellenfél pagátultimót mondott, de neked {{count}} tarokkod van: nem tudják mind kihajtani. Mondj kontrát.",
       "ulti_obligatory": "Pagáttal adtál invitet, nagy honőr nélkül: most kötelező pagátultimót mondanod.",
-      "trull_invit": "Invitet fogadtál ({{card}}), és nálad nagy honőr van: mondd be a tuletroát."
+      "trull_invit": "Invitet fogadtál ({{card}}), és nálad nagy honőr van: mondd be a tuletroát.",
+      "tarokks": "{{count}} tarokkod van: mondd be. Minden játékos fizet érte neked, akárhogy végződik a játék."
     },
     "lead": {
       "ulti_draw": "Pagátultimót mondtál: hívd ezt: {{card}}, hogy kihúzd a többieknél még lehetséges {{count}} tarokkot.",
@@ -340,5 +343,8 @@
     "invit": "invit {{card}}",
     "yielded": "engedett játék",
     "invitHelp": "Az ugrás invit: csak akkor mondhatod, ha nálad van a jelzett tarokk."
+  },
+  "speech": {
+    "call": "Hívom: {{card}}"
   }
 }

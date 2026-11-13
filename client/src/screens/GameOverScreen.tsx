@@ -128,6 +128,18 @@ export default function GameOverScreen({ table }: { table: Table }) {
                   </div>
                 )
               })}
+              {(result.tarokk_declarations || []).map((d) => (
+                <div key={`tarokks-${d.player_position}`} className="flex justify-between gap-2 py-0.5">
+                  <span className="truncate">
+                    ✓ {t(`announcement.${d.count === 9 ? 'nine_tarokks' : 'eight_tarokks'}`)}
+                    <span className="text-slate-300">
+                      {' – '}
+                      {table.nameAt(d.player_position)}
+                    </span>
+                  </span>
+                  <span className="flex-none font-semibold">{signed(d.player_position === me ? 3 * d.points : -d.points)}</span>
+                </div>
+              ))}
               <div className="flex justify-between gap-2 pt-1.5 mt-1 border-t border-white/15 font-bold">
                 <span>{t('over.yourTotal')}</span>
                 <span className={handDelta(me) > 0 ? 'text-green-400' : handDelta(me) < 0 ? 'text-red-400' : ''}>

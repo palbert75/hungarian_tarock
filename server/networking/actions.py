@@ -16,7 +16,7 @@ from game_logic.bidding import BiddingManager
 from game_logic.final_scoring import calculate_final_score
 from models.announcement import Announcement, AnnouncementType
 from models.bid import BidType
-from models.game_state import GamePhase
+from models.game_state import GamePhase, TAROKK_DECLARATIONS, settle_tarokk_declarations
 from models.player import Player
 from networking.protocol import Message, MessageType
 from networking.reports import log_decision
@@ -110,6 +110,9 @@ class GameService:
         elif game_state.phase == GamePhase.ANNOUNCEMENTS:
             data["valid_actions"] = ["make_announcement", "pass_announcement"]
             data["valid_announcements"] = [a.value for a in self.valid_announcements(room, player)]
+            declaration = room.game_state.tarokk_declaration_open(player.position)
+            if declaration:
+                data["valid_announcements"].append(declaration)
             if game_state.owes_pagat_ulti(player.position):
                 data["must_announce"] = ["pagat_ultimo"]
         elif game_state.phase == GamePhase.PLAYING:
@@ -410,6 +413,12 @@ class GameService:
         if game_state.owes_pagat_ulti(player.position) and "pagat_ultimo" not in announcement_types:
             raise ValueError("You invited with the pagát: you must announce pagát ulti now")
 
+        declarations = [t for t in announcement_types if t in TAROKK_DECLARATIONS]
+        announcement_types = [t for t in announcement_types if t not in TAROKK_DECLARATIONS]
+        if len(declarations) > 1 or (declarations
+                                     and game_state.tarokk_declaration_open(player.position) != declarations[0]):
+            raise ValueError("You can only declare eight or nine tarokks if you hold exactly that many")
+
         already = {a.announcement_type for a in game_state.announcements}
         made = []
         for type_str in announcement_types:
@@ -425,7 +434,15 @@ class GameService:
                 announced=announced,
             ))
 
+        for kind in declarations:
+            game_state.declare_tarokks(player.position, kind)
         game_state.make_announcements(player.position, made)
+        for kind in declarations:
+            await self.broadcast(room, MessageType.ANNOUNCEMENT_MADE, {
+                "player_position": player.position,
+                "announcement_type": kind,
+                "announced": True,
+            })
         for announcement in made:
             await self.broadcast(room, MessageType.ANNOUNCEMENT_MADE, {
                 "player_position": player.position,
@@ -554,6 +571,8 @@ class GameService:
             game_contra=game_state.game_contra,
         )
 
+        tarokk_lines = settle_tarokk_declarations(game_state.tarokk_declarations, result["player_scores"])
+
         # Every hand starts each player at 50; the change goes onto the running total
         for position, score in result["player_scores"].items():
             game_state.players[position].total_score += score - 50
@@ -577,6 +596,7 @@ class GameService:
             "achieved_announcements": result["achieved_announcements"],
             "failed_announcements": result["failed_announcements"],
             "announcement_details": result["announcement_details"],
+            "tarokk_declarations": tarokk_lines,
         }
         game_state.phase = GamePhase.GAME_END
         room.last_game_over = payload

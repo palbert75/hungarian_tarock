@@ -134,6 +134,23 @@ class SocketManager {
       playSound('turn')
     })
 
+    // What a player says aloud appears for a few seconds over their seat
+    socket.on('bid_placed', (payload) => {
+      const data = unwrap<{ player_position: number; bid_type: string }>(payload)
+      store().say(data.player_position, t(`bid.${data.bid_type}`), data.bid_type === 'pass' ? 'pass' : 'say')
+    })
+
+    socket.on('announcement_made', (payload) => {
+      const data = unwrap<{ player_position: number; announcement_type: string }>(payload)
+      if (data.announcement_type === 'game') return
+      store().say(data.player_position, t(`announcement.${data.announcement_type}`))
+    })
+
+    socket.on('pass_announcement', (payload) => {
+      const data = unwrap<{ player_position: number }>(payload)
+      store().say(data.player_position, t('bid.pass'), 'pass')
+    })
+
     socket.on('talon_distributed', (payload) => {
       const data = unwrap<{ you_received: number }>(payload)
       if (data.you_received > 0) toast('info', t('toast.talonReceived', { count: data.you_received }), 2500)
@@ -152,6 +169,10 @@ class SocketManager {
     socket.on('partner_called', (payload) => {
       const data = unwrap<{ called_card: string }>(payload)
       toast('info', t('toast.partnerCalled', { card: tarokkName(data.called_card, t) }), 3500)
+      const declarer = store().gameState?.declarer_position
+      if (declarer !== null && declarer !== undefined) {
+        store().say(declarer, t('speech.call', { card: tarokkName(data.called_card, t) }))
+      }
     })
 
     socket.on('partner_revealed', (payload) => {
@@ -162,6 +183,13 @@ class SocketManager {
     socket.on('contra_made', (payload) => {
       const data = unwrap<{ player_position: number; announcement_type: string }>(payload)
       const name = this.nameAt(data.player_position)
+      store().say(
+        data.player_position,
+        data.announcement_type === 'game'
+          ? t('announce.contraGame')
+          : t('announce.contra', { what: t(`announcement.${data.announcement_type}`) }),
+        'kontra',
+      )
       if (data.announcement_type === 'game') {
         toast('warning', t('toast.contraGame', { name }), 5000)
       } else {
@@ -171,6 +199,11 @@ class SocketManager {
 
     socket.on('recontra_made', (payload) => {
       const data = unwrap<{ player_position: number; announcement_type: string }>(payload)
+      store().say(
+        data.player_position,
+        t('announce.recontra', { what: t(`announcement.${data.announcement_type}`) }),
+        'kontra',
+      )
       toast('warning', t('toast.recontra', {
         name: this.nameAt(data.player_position),
         what: t(`announcement.${data.announcement_type}`),

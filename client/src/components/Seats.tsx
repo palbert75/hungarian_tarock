@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next'
 import TableView, { SeatLabel } from './TableView'
 import type { Table } from '@/hooks/useTable'
 import { useSides, type Relation } from '@/hooks/useSides'
-import type { Seat } from '@/types'
+import type { Seat, Speech } from '@/types'
+import { useGameStore, SPEECH_MS } from '@/store/gameStore'
 
 interface SeatsProps {
   table: Table
@@ -42,6 +43,21 @@ function Burst({ relation }: { relation: Relation }) {
   )
 }
 
+/** What the player has just said, big over the seat, fading out after a few seconds. */
+function SpeechBubble({ speech }: { speech: Speech }) {
+  // Every phase draws its own table: a bubble redrawn mid-life carries on where it was
+  const elapsed = Math.min(Math.max(Date.now() - speech.at, 0), SPEECH_MS)
+  return (
+    <span
+      className={`seat-speech speech-${speech.tone}`}
+      style={{ animationDuration: `${SPEECH_MS}ms`, animationDelay: `-${elapsed}ms` }}
+      role="status"
+    >
+      {speech.text}
+    </span>
+  )
+}
+
 /**
  * The four players around the table with something in front of each.
  * For N the name is above the content; for the others it is below, so the
@@ -52,6 +68,7 @@ export default function Seats({ table, content, detail, turn, big, center }: Sea
   const turnPos = turn === undefined ? game.current_turn : turn
   const { relationOf, known } = useSides(table)
   const seats: Partial<Record<Seat, ReactNode>> = {}
+  const speech = useGameStore((s) => s.speech)
 
   // Sparks on a seat whose side has just come to light
   const [bursts, setBursts] = useState<Record<number, { id: number; relation: Relation }>>({})
@@ -99,6 +116,7 @@ export default function Seats({ table, content, detail, turn, big, center }: Sea
         className={`seat-box ${known ? `seat-${relationOf(position)}` : ''} flex flex-col items-center gap-1 max-w-full ${big ? 'p-1.5' : 'px-1 py-0.5'}`}
       >
         {bursts[position] && <Burst key={bursts[position].id} relation={bursts[position].relation} />}
+        {speech[position] && <SpeechBubble key={speech[position].id} speech={speech[position]} />}
         {seat === 'N' ? (
           <>
             {label}

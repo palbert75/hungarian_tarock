@@ -28,6 +28,9 @@ function ContractLine({ table }: { table: Table }) {
   }
   if (game.declarer_alone) parts.push(t('game.alone'))
   if (game.game_contra) parts.push(t('announce.contraGame'))
+  for (const [seat, count] of Object.entries(game.tarokk_declarations || {})) {
+    parts.push(`${t(`announcement.${count === 9 ? 'nine_tarokks' : 'eight_tarokks'}`)} (${table.nameAt(Number(seat))})`)
+  }
   for (const a of game.announcements) {
     const mark = a.recontra ? ` (${t('announce.recontraShort')})` : a.contra ? ` (${t('announce.contraShort')})` : ''
     parts.push(`${t(`announcement.${a.announcement_type}`)}${mark}`)

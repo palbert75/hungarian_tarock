@@ -151,6 +151,9 @@ def build_view(game_state: GameState, position: int) -> SeatView:
     elif phase == GamePhase.ANNOUNCEMENTS:
         already = {a.announcement_type for a in game_state.announcements}
         view.valid_announcements = [a.value for a in get_valid_announcements(hand) if a not in already]
+        declaration = game_state.tarokk_declaration_open(position)
+        if declaration:
+            view.valid_announcements.append(declaration)
         view.must_ulti = game_state.owes_pagat_ulti(position)
     elif phase == GamePhase.PLAYING:
         is_first = len(game_state.current_trick) == 0

@@ -115,6 +115,25 @@ def yielded_by(bid_history: List[Bid]) -> Optional[int]:
     return shape[0] if passed == {0, 1, 2, 3} - {shape[1]} else None
 
 
+# Declaring eight or nine tarokks: every other player pays the declarer 1 or 2 points
+TAROKK_DECLARATIONS = {"eight_tarokks": 8, "nine_tarokks": 9}
+TAROKK_DECLARATIONS_BY_COUNT = {n: kind for kind, n in TAROKK_DECLARATIONS.items()}
+TAROKK_DECLARATION_PAY = {8: 1, 9: 2}
+
+
+def settle_tarokk_declarations(declarations: Dict[int, int], player_scores: Dict[int, int]) -> List[dict]:
+    """Every other player pays each declarer; returns one line per declaration for the result."""
+    lines = []
+    for position, count in sorted(declarations.items()):
+        pay = TAROKK_DECLARATION_PAY[count]
+        for other in player_scores:
+            if other != position:
+                player_scores[other] -= pay
+                player_scores[position] += pay
+        lines.append({"player_position": position, "count": count, "points": pay})
+    return lines
+
+
 class GamePhase(str, Enum):
     """Game phases in Hungarian Tarokk."""
     WAITING = "waiting"              # Waiting for players
@@ -167,6 +186,8 @@ class GameState(BaseModel):
 
     # Announcements
     announcements: List[Announcement] = Field(default_factory=list)
+    # Seat -> 8 or 9: tarokks declared in the hand ("eight tarokks", "nine tarokks")
+    tarokk_declarations: Dict[int, int] = Field(default_factory=dict)
     announcement_history: List[Optional[Announcement]] = Field(default_factory=list)  # Track all actions (announcement or None for pass)
     announcement_turn_log: List[dict] = Field(default_factory=list)  # One entry per turn: {"position", "passed"}
 
@@ -257,6 +278,7 @@ class GameState(BaseModel):
         self.trick_history = []
         self.players_who_discarded = []
         self.announcements = []
+        self.tarokk_declarations = {}
         self.announcement_history = []
         self.announcement_turn_log = []
         self.declarer_alone = False
@@ -540,6 +562,7 @@ class GameState(BaseModel):
         self.phase = GamePhase.ANNOUNCEMENTS
         self.announcement_history.clear()
         self.announcements.clear()
+        self.tarokk_declarations = {}
         self.announcement_turn_log.clear()
         # Start with declarer (bid winner)
         self.current_turn = self.declarer_position
@@ -548,6 +571,22 @@ class GameState(BaseModel):
         """Log one announcement turn and move to the next seat."""
         self.announcement_turn_log.append({"position": player_position, "passed": passed})
         self.current_turn = self.next_position(self.current_turn)
+
+    def tarokk_declaration_open(self, player_position: int) -> Optional[str]:
+        """
+        "eight_tarokks" or "nine_tarokks" if this seat holds exactly that many
+        tarokks and has not declared them yet, else None.
+        """
+        if player_position in self.tarokk_declarations:
+            return None
+        count = sum(1 for c in self.players[player_position].hand if c.is_tarokk())
+        return TAROKK_DECLARATIONS_BY_COUNT.get(count)
+
+    def declare_tarokks(self, player_position: int, kind: str) -> None:
+        """Record the declaration; it is only allowed with exactly that many tarokks in hand."""
+        if self.tarokk_declaration_open(player_position) != kind:
+            raise ValueError(f"{kind}: you do not hold exactly that many tarokks, or declared already")
+        self.tarokk_declarations[player_position] = TAROKK_DECLARATIONS[kind]
 
     def make_announcements(self, player_position: int, announcements: List[Announcement]) -> None:
         """
@@ -782,6 +821,7 @@ class GameState(BaseModel):
             "current_trick": [{"player_position": pos, "card": card.to_dict()} for pos, card in self.current_trick],
             "talon": [card.to_dict() for card in self.talon],
             "announcements": [a.to_dict() for a in self.announcements],
+            "tarokk_declarations": {str(p): n for p, n in self.tarokk_declarations.items()},
             "trick_history": self.trick_history,  # Full history of completed tricks
             "players_who_discarded": self.players_who_discarded,
             "announcement_history": [a.to_dict() if a else None for a in self.announcement_history],

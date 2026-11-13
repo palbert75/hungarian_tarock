@@ -98,7 +98,9 @@
     "double_game": "Double game",
     "volat": "Volát",
     "pagat_ultimo": "Pagát ultimo",
-    "xxi_catch": "XXI catch"
+    "xxi_catch": "XXI catch",
+    "eight_tarokks": "Eight tarokks",
+    "nine_tarokks": "Nine tarokks"
   },
   "announce": {
     "choose": "Announce…",
@@ -237,7 +239,8 @@
       "kontra_four_kings": "The other side announced four kings, and you hold {{count}} tarokks with high ones among them: one of their kings will fall to you or your partner. Say kontra.",
       "kontra_ulti": "The other side announced pagát ultimo, but you hold {{count}} tarokks: they cannot draw them all. Say kontra.",
       "ulti_obligatory": "You invited with the pagát and no great honour: you must announce pagát ulti now.",
-      "trull_invit": "You took an invit ({{card}}) and hold a great honour: announce trull."
+      "trull_invit": "You took an invit ({{card}}) and hold a great honour: announce trull.",
+      "tarokks": "You hold {{count}} tarokks: declare them. Every other player pays you for it, however the game ends."
     },
     "lead": {
       "ulti_draw": "You announced pagát ultimo: lead {{card}} to draw out the {{count}} tarokks the others may still hold.",
@@ -340,5 +343,8 @@
     "invit": "invit {{card}}",
     "yielded": "yielded game",
     "invitHelp": "A jump is an invit: you may only bid it if you hold the tarokk it shows."
+  },
+  "speech": {
+    "call": "I call: {{card}}"
   }
 }

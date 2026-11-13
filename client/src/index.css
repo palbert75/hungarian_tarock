@@ -668,3 +668,43 @@ html, body {
 .trick-cell.is-tarokk { color: #fde68a; }
 .trick-cell.is-winner { border-color: #facc15; background: rgba(161, 98, 7, 0.55); color: #fff; }
 .trick-cell.is-lead::before { content: '▸'; opacity: 0.7; margin-right: 1px; }
+
+/* What a player has just said: big over the seat, then fading away */
+.seat-speech {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 40;
+  transform: translate(-50%, -50%);
+  max-width: min(72vw, 20rem);
+  width: max-content;
+  padding: 0.45rem 0.95rem;
+  border-radius: 1.1rem;
+  border: 2px solid #fde047;
+  background: #a16207;
+  color: #fff;
+  font-size: clamp(1.15rem, 5vw, 1.7rem);
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+  animation-name: seat-speech;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+}
+.seat-speech.speech-pass { background: #334155; border-color: #94a3b8; color: #e2e8f0; }
+.seat-speech.speech-kontra { background: #b91c1c; border-color: #fca5a5; }
+@keyframes seat-speech {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+  7% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+  12% { transform: translate(-50%, -50%) scale(1); }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  @keyframes seat-speech {
+    0%, 70% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+}

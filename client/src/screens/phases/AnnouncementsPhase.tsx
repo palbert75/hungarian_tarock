@@ -11,7 +11,9 @@ import { HandGrid } from '@/components/Hand'
 import HintBox, { useHint } from '@/components/HintBox'
 import type { Announcement, AnnouncementType } from '@/types'
 
-const ORDER: AnnouncementType[] = ['trull', 'four_kings', 'double_game', 'volat', 'pagat_ultimo', 'xxi_catch']
+const ORDER: AnnouncementType[] = [
+  'eight_tarokks', 'nine_tarokks', 'trull', 'four_kings', 'double_game', 'volat', 'pagat_ultimo', 'xxi_catch',
+]
 
 export default function AnnouncementsPhase({ table }: { table: Table }) {
   const { t } = useTranslation()
@@ -54,10 +56,14 @@ export default function AnnouncementsPhase({ table }: { table: Table }) {
       content={(position) => {
         const made = game.announcements.filter((a) => a.player_position === position)
         const kontraGame = game.game_contra && game.game_contra_by === position
-        if (made.length || kontraGame) {
+        const declared = game.tarokk_declarations?.[String(position)]
+        if (made.length || kontraGame || declared) {
           return (
             <div className="flex flex-col items-center gap-0.5">
               {kontraGame && <span className="bubble bubble-hi">{t('announce.contraGame')}</span>}
+              {declared && (
+                <span className="bubble bubble-hi">{t(`announcement.${declared === 9 ? 'nine_tarokks' : 'eight_tarokks'}`)}</span>
+              )}
               {made.map((a) => (
                 <span key={a.announcement_type} className="bubble bubble-hi">
                   {t(`announcement.${a.announcement_type}`)}

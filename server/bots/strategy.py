@@ -263,6 +263,11 @@ def decide_announcement(view: SeatView) -> Decision:
             and (view.holds("skiz") or view.holds("XXI")) and _signal_seat(view) is not None):
         wanted.append(("double_game", "hint.announce.double_after_signal", {"count": tarokk_count}))
 
+    # Eight or nine tarokks: every other player pays for it, so it is always declared
+    declaration = next((k for k in ("nine_tarokks", "eight_tarokks") if k in valid), None)
+    if declaration:
+        wanted.append((declaration, "hint.announce.tarokks", {"count": tarokk_count}))
+
     wanted = [w for w in wanted if w[0] in valid]
     if not wanted and "kontra" in TACTICS:
         foes = view.opponents()

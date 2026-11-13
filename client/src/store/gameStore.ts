@@ -10,7 +10,11 @@ import type {
   ToastMessage,
   ChatMessage,
   FinishedTrick,
+  Speech,
 } from '@/types'
+
+/** How long a spoken bid or announcement stays over the seat (ms) */
+export const SPEECH_MS = 3800
 
 interface GameStore {
   // Connection
@@ -33,6 +37,8 @@ interface GameStore {
   yourTurnData: YourTurnData | null
   gameOverData: GameOverData | null
   finishedTrick: FinishedTrick | null
+  /** Seat -> what that player has just said (bid, call, announcement) */
+  speech: Record<number, Speech>
 
   // UI
   selectedCards: string[]
@@ -54,6 +60,7 @@ interface GameStore {
   setYourTurnData: (data: YourTurnData | null) => void
   setGameOverData: (data: GameOverData | null) => void
   setFinishedTrick: (trick: FinishedTrick | null) => void
+  say: (position: number, text: string, tone?: Speech['tone']) => void
 
   toggleCardSelection: (cardId: string, max?: number) => void
   clearSelectedCards: () => void
@@ -84,6 +91,7 @@ export const useGameStore = create<GameStore>()(
       yourTurnData: null,
       gameOverData: null,
       finishedTrick: null,
+      speech: {},
       selectedCards: [],
       toasts: [],
       chatMessages: [],
@@ -117,6 +125,22 @@ export const useGameStore = create<GameStore>()(
       setYourTurnData: (data) => set({ yourTurnData: data }),
       setGameOverData: (data) => set({ gameOverData: data }),
       setFinishedTrick: (trick) => set({ finishedTrick: trick }),
+      say: (position, text, tone = 'say') => {
+        const now = Date.now()
+        const before = get().speech[position]
+        // Several things said in one turn (two announcements) share one bubble
+        const joined = before && now - before.at < 400 && before.tone === tone ? `${before.text} · ${text}` : text
+        const id = now + Math.random()
+        set((state) => ({ speech: { ...state.speech, [position]: { id, text: joined, tone, at: before && joined !== text ? before.at : now } } }))
+        setTimeout(() => {
+          if (get().speech[position]?.id !== id) return
+          set((state) => {
+            const rest = { ...state.speech }
+            delete rest[position]
+            return { speech: rest }
+          })
+        }, SPEECH_MS)
+      },
 
       toggleCardSelection: (cardId, max) => {
         const { selectedCards } = get()
