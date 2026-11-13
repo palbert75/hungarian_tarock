@@ -108,9 +108,11 @@ export default function GameOverScreen({ table }: { table: Table }) {
                     </span>
                     <span className="flex-none font-semibold">
                       {a.type === 'double_game' || a.type === 'volat'
-                        ? a.achieved && a.multiplier
-                          ? `×${a.multiplier}`
-                          : '–'
+                        ? a.achieved
+                          ? a.multiplier
+                            ? `×${a.multiplier}`
+                            : '–'
+                          : signed(mine ? a.points : -a.points)
                         : signed(mine ? a.points : -a.points)}
                     </span>
                   </div>

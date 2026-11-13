@@ -25,6 +25,9 @@ BID_LEVEL = {"three": 1, "two": 2, "one": 3, "solo": 4}
 # and without it: see tools/ab_tactics.py. Tried and dropped: playing tarokk back
 # to a partner in general, small-tarokk leads from any long hand, winning every
 # late trick, drawing tarokks after the four-kings signal, holding the skíz back.
+# "signal_double" (the declarer answers the four-kings signal with double game) won
+# while a lost double game cost nothing; now that it costs four times the game it
+# loses about a quarter point per hand, so it is off.
 ADOPTED = frozenset({
     "voids",           # lead suits a teammate cannot follow, avoid those an opponent cannot
     "stop_foe",        # take a trick a known opponent is winning
@@ -32,7 +35,7 @@ ADOPTED = frozenset({
     "ulti_small",      # pagát ulti announcer draws tarokks with small ones
     "ulti_support",    # the announcer's teammate leads tarokks too
     "signal_partner",  # four kings from a non-declarer shows the table who the partner is
-    "signal_double",   # the declarer answers that signal with double game when strong
+    "partner_double",  # the owner's rule: the partner announces double game with five tarokks above the XIII
     "xx_cheap_skart",  # a non-declarer holding the XX discards cheap cards
     "skiz_hunt",       # the skíz waits for the other side's XXI: leads suits, ducks tricks
     "hit_hard",        # trump high when an opponent still plays after me and a king is at stake
@@ -181,7 +184,7 @@ def decide_announcement(view: SeatView) -> Decision:
     if view.i_am_partner:
         if tarokk_count >= 6:
             wanted.append(("four_kings", "hint.announce.four_kings", {"count": tarokk_count}))
-        if high >= 5:
+        if "partner_double" in TACTICS and high >= 5:
             wanted.append(("double_game", "hint.announce.double_game", {"count": high}))
         # The called partner holding a great honour announces trull
         if view.holds("skiz") or view.holds("XXI"):

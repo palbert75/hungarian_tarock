@@ -391,6 +391,17 @@ def test_declarer_answers_the_four_kings_signal_with_double_game():
     view = announce_view("skiz XX XV X IX VIII hK hQ dK", made=("four_kings",))
     view.position = 0
     view.announcements = [signal]
+    # Off by default since a lost double game costs four times the game
+    assert decide_announcement(view).action == "pass_announcement"
+    import bots.strategy as S
+    S.TACTICS.add("signal_double")
+    try:
+        _check_signal_double(view, signal)
+    finally:
+        S.TACTICS.discard("signal_double")
+
+
+def _check_signal_double(view, signal):
     d = decide_announcement(view)
     assert d.payload["announcement_types"] == ["double_game"]
     assert d.reason_key == "hint.announce.double_after_signal"

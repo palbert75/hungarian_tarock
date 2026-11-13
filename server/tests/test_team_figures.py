@@ -122,3 +122,32 @@ def test_xxi_catch_from_recorded_trick_format():
     assert len(catch) == 1 and catch[0]["team"] == "opponent_team" and catch[0]["points"] == 21
     assert result["player_scores"][0] == result["player_scores"][2]
     assert result["player_scores"][1] == result["player_scores"][3] == 50 + result["final_game_value"] + 21
+
+
+def test_failed_announced_double_game_and_volat_cost_their_multiple():
+    # The reported hand: declarer announced double game, partner volát; the defenders won
+    double = Announcement(player_position=0, announcement_type=AnnouncementType.DOUBLE_GAME, announced=True)
+    volat = Announcement(player_position=2, announcement_type=AnnouncementType.VOLAT, announced=True)
+    result = score("hK", defender="dK", announcements=[double, volat])
+    base = result["base_game_value"]
+    assert result["winner"] == "opponent_team" and result["final_game_value"] == base
+    lost = {a["type"]: a["points"] for a in result["announcement_details"] if not a["achieved"]}
+    assert lost == {"double_game": -4 * base, "volat": -6 * base}
+    assert result["player_scores"][0] == result["player_scores"][2] == 50 - base - 4 * base - 6 * base
+    assert result["player_scores"][1] == result["player_scores"][3] == 50 + base + 4 * base + 6 * base
+
+
+def test_failed_double_game_is_paid_even_when_the_game_is_won():
+    double = Announcement(player_position=0, announcement_type=AnnouncementType.DOUBLE_GAME, announced=True)
+    result = score("hK dK sK cK skiz XXI I hQ dQ sQ cQ hC dC sC cC hJ dJ", announcements=[double])
+    base = result["base_game_value"]
+    assert result["winner"] == "declarer_team" and result["declarer_team_points"] < 71
+    bonus = sum(a["points"] for a in result["announcement_details"] if a["type"] not in ("double_game", "volat"))
+    assert result["player_scores"][0] == 50 + base - 4 * base + bonus
+
+
+def test_kontra_doubles_a_failed_double_game():
+    double = Announcement(player_position=0, announcement_type=AnnouncementType.DOUBLE_GAME, announced=True, contra=True)
+    result = score("hK", defender="dK", announcements=[double])
+    lost = [a for a in result["announcement_details"] if a["type"] == "double_game"][0]
+    assert lost["points"] == -8 * result["base_game_value"]

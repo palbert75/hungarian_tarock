@@ -163,6 +163,15 @@ def calculate_final_score(
         other = opponent_team_players if player_pos in declarer_team else declarer_team_players
         points = announcement.get_points()
         sign = 1 if achieved else -1
+        if (not achieved and announcement.announced
+                and announcement.announcement_type in (AnnouncementType.DOUBLE_GAME, AnnouncementType.VOLAT)):
+            # A lost announced double game or volát costs what it would have won:
+            # its multiple of the game, on top of the game itself. Its own kontra counts.
+            points = announcement.get_multiplier() * base_game_value
+            if announcement.recontra:
+                points *= 4
+            elif announcement.contra:
+                points *= 2
         for i in own:
             player_scores[i] += sign * points * max(1, len(other) // len(own))
         for i in other:
