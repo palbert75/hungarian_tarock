@@ -36,6 +36,7 @@ ADOPTED = frozenset({
     "xx_cheap_skart",  # a non-declarer holding the XX discards cheap cards
     "skiz_hunt",       # the skíz waits for the other side's XXI: leads suits, ducks tricks
     "hit_hard",        # trump high when an opponent still plays after me and a king is at stake
+    "hit_hard_lead",   # the same on a teammate's suit lead, to keep the lead on our side
 })
 TACTICS: set = set(ADOPTED)
 
@@ -397,7 +398,8 @@ def _follow(view: SeatView) -> Decision:
     # or when my teammate led a suit I cannot follow
     hit_hard = (
         "hit_hard" in TACTICS and foe_after and all(c.is_tarokk() for c in without_pagat)
-        and (king_at_stake or (view.is_teammate(lead_seat) and not lead_card.is_tarokk()))
+        and (king_at_stake or ("hit_hard_lead" in TACTICS and view.is_teammate(lead_seat)
+                               and not lead_card.is_tarokk()))
     )
 
     if view.is_teammate(winner_seat):
