@@ -182,9 +182,19 @@ def test_bot_never_repeats_an_announcement():
     assert again.action == "pass_announcement"
 
 
-def test_trull_needs_all_three_honours():
-    assert decide_announcement(announce_view("skiz XXI I XX X IX VIII hQ hJ")).payload["announcement_types"] == ["trull"]
-    assert decide_announcement(announce_view("skiz XXI II XX X IX VIII hQ hJ")).action == "pass_announcement"
+def as_declarer(view):
+    return dataclasses.replace(view, position=0)
+
+
+def test_declarer_with_all_three_honours_announces_trull():
+    d = decide_announcement(as_declarer(announce_view("skiz XXI I XX X IX VIII hQ hJ")))
+    assert d.payload["announcement_types"] == ["trull"]
+
+
+def test_defenders_do_not_announce():
+    """Only the declarer's side announces, so an announcement shows who is with whom."""
+    assert decide_announcement(announce_view("skiz XXI I XX X IX VIII hQ hJ")).action == "pass_announcement"
+    assert decide_announcement(announce_view("I II III IV V VI VII VIII IX")).action == "pass_announcement"
 
 
 def test_never_volat_xxi_catch():
@@ -194,8 +204,8 @@ def test_never_volat_xxi_catch():
 
 def test_pagat_ulti_needs_a_long_tarokk_hand():
     nine = "I II III IV V VI VII VIII IX"
-    assert decide_announcement(announce_view(nine)).payload["announcement_types"] == ["pagat_ultimo"]
-    assert decide_announcement(announce_view("I II III IV V VI VII hQ hJ")).action == "pass_announcement"
+    assert decide_announcement(as_declarer(announce_view(nine))).payload["announcement_types"] == ["pagat_ultimo"]
+    assert decide_announcement(as_declarer(announce_view("I II III IV V VI VII hQ hJ"))).action == "pass_announcement"
 
 
 # ----------------------------------------------------------- defender leads

@@ -37,7 +37,7 @@ ADOPTED = frozenset({
     "safe_feed",       # give points only to a trick that is certain
     "ulti_small",      # pagát ulti announcer draws tarokks with small ones
     "ulti_support",    # the announcer's teammate leads tarokks too
-    "signal_partner",  # four kings from a non-declarer shows the table who the partner is
+    "signal_partner",  # an announcement from a non-declarer shows the table who the partner is
     "partner_double",  # the owner's rule: the partner announces double game with five tarokks above the XIII
     "xx_cheap_skart",  # a non-declarer holding the XX discards cheap cards
     "skiz_hunt",       # the skíz waits for the other side's XXI: leads suits, ducks tricks
@@ -213,9 +213,12 @@ def decide_call(view: SeatView) -> Decision:
 # ------------------------------------------------------------ announcements
 
 def _signal_seat(view: SeatView) -> Optional[int]:
-    """The seat that announced four kings: by the table's convention the caller's partner, long in tarokks."""
+    """
+    The seat other than the declarer that announced something: by the table's
+    convention the caller's partner (defenders only answer with kontra).
+    """
     for a in view.announcements:
-        if a.announcement_type.value == "four_kings" and a.player_position != view.declarer_position:
+        if a.announced and a.player_position != view.declarer_position:
             return a.player_position
     return None
 
@@ -242,7 +245,9 @@ def decide_announcement(view: SeatView) -> Decision:
         # The called partner holding a great honour announces trull
         if view.holds("skiz") or view.holds("XXI"):
             wanted.append(("trull", "hint.announce.trull_partner", {}))
-    if (not any(w[0] == "trull" for w in wanted) and view.holds("skiz") and view.holds("XXI")
+    # At this table only the declarer's side announces: an announcement shows who is with whom
+    my_side_declares = view.position == view.declarer_position or view.i_am_partner
+    if (my_side_declares and not any(w[0] == "trull" for w in wanted) and view.holds("skiz") and view.holds("XXI")
             and view.holds("I") and tarokk_count >= TRULL_MIN_TAROKKS):
         wanted.append(("trull", "hint.announce.trull", {}))
     if (not any(w[0] == "trull" for w in wanted) and view.holds("skiz") and view.holds("XXI")
@@ -251,7 +256,7 @@ def decide_announcement(view: SeatView) -> Decision:
         wanted.append(("trull", "hint.announce.trull_two", {}))
     top = len([c for c in view.tarokks if c.tarokk_value() >= 17])
     ulti_hand = tarokk_count >= ULTI_SURE_TAROKKS or (tarokk_count >= ULTI_MIN_TAROKKS and top >= ULTI_MIN_HIGH)
-    if view.holds("I") and ulti_hand and not view.must_ulti:
+    if my_side_declares and view.holds("I") and ulti_hand and not view.must_ulti:
         wanted.append(("pagat_ultimo", "hint.announce.pagat_ultimo", {"count": tarokk_count}))
 
     if ("signal_double" in TACTICS and view.position == view.declarer_position and tarokk_count >= 6

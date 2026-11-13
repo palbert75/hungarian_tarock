@@ -15,7 +15,7 @@ interface Sides {
 /**
  * Which side each seat is on, as far as I can know it: the declarer always,
  * the partner once the called card showed (or when I hold it myself), or
- * earlier when the bidding or a four-kings announcement gives the partner away.
+ * earlier when the bidding, an announcement or a kontra gives the partner away.
  */
 export function useSides(table: Table): Sides {
   const { game, me, myHand } = table
@@ -26,12 +26,23 @@ export function useSides(table: Table): Sides {
   const called = (game.called_card_rank || '').toLowerCase()
   const iHoldCalled = !!called && myHand.some((c) => c.suit === 'tarokk' && c.rank.toLowerCase() === called)
   // An accepted invit or a yielded game tells the whole table who the partner is
-  // Four kings from a seat other than the declarer is the partner's signal at this table.
-  // I ignore it when I know better: I hold the called card, or the announcement is my own.
-  const signal = (game.announcements || []).find(
-    (a) => a.announcement_type === 'four_kings' && a.player_position !== declarer,
-  )
-  const signalPartner = signal && !iHoldCalled && signal.player_position !== me ? signal.player_position : null
+  // At this table only the declarer's side announces; the defenders answer with kontra.
+  // So a seat other than the declarer that announces (or says rekontra) is the partner,
+  // and a seat that says kontra is a defender. I ignore it when I hold the called card.
+  const others = [0, 1, 2, 3].filter((p) => p !== declarer && p !== me)
+  let signalPartner: number | null = null
+  if (!iHoldCalled) {
+    const list = game.announcements || []
+    const speaker = list.find((a) => a.announced !== false && others.includes(a.player_position))
+    const rekontra = list.find((a) => a.recontra_by != null && others.includes(a.recontra_by))
+    const kontra = list.find((a) => a.contra_by != null && others.includes(a.contra_by))
+    if (speaker) signalPartner = speaker.player_position
+    else if (rekontra) signalPartner = rekontra.recontra_by ?? null
+    else if (kontra && me !== declarer && others.length === 2) {
+      // I am a defender and so is the one who said kontra: the third seat is the partner
+      signalPartner = others.find((p) => p !== kontra.contra_by) ?? null
+    }
+  }
   const shownPartner = game.partner_revealed
     ? game.partner_position
     : game.convention_partner ?? signalPartner ?? null
