@@ -11,6 +11,7 @@ from typing import List, Optional
 import structlog
 
 from bots.counting import PAGAT, SKIZ, XXI, observed_voids, skiz_out, tarokks_out, xxi_played
+from bots import route
 from bots.decision import CALL_ORDER, Decision, fallback_decision
 from bots.view import Play, SeatView, build_view
 from models.card import Card, Suit
@@ -67,8 +68,10 @@ SKIZ_HUNT_TAROKKS = 6
 # Kontra: tarokks needed against four kings (with two at XVII or above) and against pagát ulti
 KONTRA_KINGS_TAROKKS = 6
 KONTRA_ULTI_TAROKKS = 7
-# Tarokks needed (with all three honours) before a bot announces trull
-TRULL_MIN_TAROKKS = 7
+# Tarokks beside the XXI its holder needs before leading a small one to find the partner
+XXI_FIND_PARTNER_TAROKKS = 3
+# Tarokks above the XIII with which the enemy team says kontra to four kings
+KONTRA_KINGS_HIGH = 5
 # Tarokks needed (with the invited card and a great honour) to give an invit
 INVIT_MIN_TAROKKS = 6
 # Tarokks needed to accept an invit at solo level
@@ -173,8 +176,11 @@ def decide_discard(view: SeatView) -> Decision:
     suit_cards = [c for c in allowed if not c.is_tarokk()]
     tarokks = sorted((c for c in allowed if c.is_tarokk()), key=lambda c: c.tarokk_value())
 
-    # Whoever holds the XX will most likely be called: their skart counts for the other side
-    cheap_first = ("xx_cheap_skart" in TACTICS and view.position != view.declarer_position and view.holds("XX"))
+    # The declarer's skart counts for the declarer's team, everybody else's against it. Whoever
+    # expects to be called (holds the XX, or gave the invit the declarer took) discards cheap cards.
+    my_invit_taken = bool(view.invit and view.invit["by"] == view.position)
+    cheap_first = ("xx_cheap_skart" in TACTICS and view.position != view.declarer_position
+                   and (view.holds("XX") or my_invit_taken))
 
     def suit_order(card: Card):
         in_suit = [c for c in view.hand if c.suit == card.suit]
@@ -225,6 +231,45 @@ def _signal_seat(view: SeatView) -> Optional[int]:
     return None
 
 
+def _partner_showed_tarokks(view: SeatView) -> bool:
+    """
+    My partner on the declarer's side announced four kings or declared eight or nine
+    tarokks: either says "I hold a long tarokk hand". The declarer takes four kings
+    from any other seat (the announcement itself shows the partner).
+    """
+    i_declare = view.position == view.declarer_position
+    for a in view.announcements:
+        if (a.announcement_type.value == "four_kings" and a.player_position != view.position
+                and (i_declare or a.player_position == view.declarer_position)):
+            return True
+    partner = view.partner_position if i_declare else view.declarer_position
+    return partner is not None and partner in view.tarokk_declarations
+
+
+# What the declarer's side says first when it has more to say than fits into one turn
+ANNOUNCE_PRIORITY = ["trull", "double_game", "nine_tarokks", "eight_tarokks", "four_kings", "pagat_ultimo"]
+ANNOUNCE_PER_TURN = 2
+
+
+def _one_turn_of(view: SeatView, wanted: list) -> list:
+    """
+    The owner's rule: announcements tell the partner about the hand, so the declarer's
+    side says at most two things per turn and lets the partner answer. Trull always
+    goes first. Four kings waits: for the next turn when double game is said now, and
+    for the partner when I hold a pagát ulti hand (then I want to hear it from them)
+    or when my tarokk count already says the same.
+    """
+    kinds = {w[0] for w in wanted}
+    counted = view.position in view.tarokk_declarations or bool(kinds & {"eight_tarokks", "nine_tarokks"})
+    ulti_chance = view.holds("I") and len(view.tarokks) >= ULTI_MIN_TAROKKS
+    if "double_game" in kinds or counted or ulti_chance:
+        wanted = [w for w in wanted if w[0] != "four_kings"]
+    # A pagát ulti owed for an invit cannot wait: it is due at the first chance
+    wanted = sorted(wanted, key=lambda w: -1 if w[1] == "hint.announce.ulti_obligatory"
+                    else ANNOUNCE_PRIORITY.index(w[0]))
+    return wanted[:ANNOUNCE_PER_TURN]
+
+
 def decide_announcement(view: SeatView) -> Decision:
     valid = set(view.valid_announcements)
     tarokk_count = len(view.tarokks)
@@ -244,20 +289,21 @@ def decide_announcement(view: SeatView) -> Decision:
             wanted.append(("four_kings", "hint.announce.four_kings", {"count": tarokk_count}))
         if "partner_double" in TACTICS and high >= 5:
             wanted.append(("double_game", "hint.announce.double_game", {"count": high}))
-        # The called partner holding a great honour announces trull
-        if view.holds("skiz") or view.holds("XXI"):
+        # The owner's rule: trull says "our team holds both great honours". The partner
+        # cannot see the declarer's hand, so it announces trull only when it holds both itself.
+        if view.holds("skiz") and view.holds("XXI"):
             wanted.append(("trull", "hint.announce.trull_partner", {}))
     # At this table only the declarer's side announces: an announcement shows who is with whom
     my_side_declares = view.position == view.declarer_position or view.i_am_partner
-    if (my_side_declares and not any(w[0] == "trull" for w in wanted) and view.holds("skiz") and view.holds("XXI")
-            and view.holds("I") and tarokk_count >= TRULL_MIN_TAROKKS):
-        wanted.append(("trull", "hint.announce.trull", {}))
     if (not any(w[0] == "trull" for w in wanted) and view.holds("skiz") and view.holds("XXI")
             and view.position == view.declarer_position):
         # The owner's rule: the declarer holding both great honours announces trull
         wanted.append(("trull", "hint.announce.trull_two", {}))
     top = len([c for c in view.tarokks if c.tarokk_value() >= 17])
-    ulti_hand = tarokk_count >= ULTI_SURE_TAROKKS or (tarokk_count >= ULTI_MIN_TAROKKS and top >= ULTI_MIN_HIGH)
+    # The owner's rule: with only eight tarokks, wait until the partner has shown a long tarokk hand
+    eight_allowed = _partner_showed_tarokks(view)
+    ulti_hand = tarokk_count >= ULTI_SURE_TAROKKS or (
+        tarokk_count >= ULTI_MIN_TAROKKS and top >= ULTI_MIN_HIGH and eight_allowed)
     if my_side_declares and view.holds("I") and ulti_hand and not view.must_ulti:
         wanted.append(("pagat_ultimo", "hint.announce.pagat_ultimo", {"count": tarokk_count}))
 
@@ -267,16 +313,24 @@ def decide_announcement(view: SeatView) -> Decision:
 
     # Eight or nine tarokks: every other player pays for it, so it is always declared
     declaration = next((k for k in ("nine_tarokks", "eight_tarokks") if k in valid), None)
-    if declaration:
+    # The owner's rule: the declarer's side shows its tarokk count only once trull is called
+    trull_called = _announced(view, "trull") or any(w[0] == "trull" for w in wanted)
+    if declaration and (not my_side_declares or trull_called):
         wanted.append((declaration, "hint.announce.tarokks", {"count": tarokk_count}))
 
     wanted = [w for w in wanted if w[0] in valid]
+    if my_side_declares:
+        wanted = _one_turn_of(view, wanted)
     if not wanted and "kontra" in TACTICS:
         foes = view.opponents()
         for a in view.announcements:
             if a.contra or a.player_position not in foes:
                 continue
             kind = a.announcement_type.value
+            if kind == "four_kings" and not my_side_declares and high >= KONTRA_KINGS_HIGH:
+                # The owner's rule: the enemy team says kontra with five tarokks above the XIII
+                return Decision("contra", {"announcement_type": kind}, "hint.announce.kontra_four_kings_high",
+                                {"count": high})
             if kind == "four_kings" and tarokk_count >= KONTRA_KINGS_TAROKKS and top >= 2:
                 return Decision("contra", {"announcement_type": kind}, "hint.announce.kontra_four_kings",
                                 {"count": tarokk_count})
@@ -367,6 +421,37 @@ def _hunting(view: SeatView) -> bool:
     )
 
 
+def _xxi_at_risk(view: SeatView) -> bool:
+    """I hold the XXI and the skíz may still catch it: it is in another hand, and not a teammate's."""
+    if not view.holds("XXI") or not skiz_out(view):
+        return False
+    # Trull on my side means we hold both great honours: the skíz is my teammate's
+    return not _side_announced(view, {"trull"})
+
+
+def _pagat_must_go(view: SeatView, still_to_play: int) -> Optional[Card]:
+    """
+    The owner's rule: count the tarokks. In the second-last trick, with the pagát and one more
+    card in hand: if more tarokks are out than players still to play to this trick, one of them
+    is left for the last trick and beats the pagát there, which is a lost silent pagát ulti
+    whoever takes it. Then the pagát goes now. An announced ulti is lost either way.
+    """
+    if len(view.hand) != 2 or _announced(view, "pagat_ultimo", by_me=True):
+        return None
+    if len(view.legal_cards) != 2 or len(tarokks_out(view)) <= still_to_play:
+        return None
+    return next((c for c in view.legal_cards if _is(c, PAGAT)), None)
+
+
+def _shortest_suit_low(cards: List[Card], view: SeatView) -> Optional[Card]:
+    """The lowest card of the suit I hold fewest cards of: soon I can trump it."""
+    suit_cards = [c for c in cards if not c.is_tarokk()]
+    if not suit_cards:
+        return None
+    length = {s: len([c for c in view.hand if c.suit == s]) for s in Suit}
+    return min(suit_cards, key=lambda c: (length[c.suit], c.points, c.suit.value))
+
+
 def _side_announced(view: SeatView, kinds) -> bool:
     return any(
         a.announcement_type.value in kinds
@@ -447,32 +532,48 @@ def _lead(view: SeatView) -> Decision:
         """Tarokks worth leading: not the pagát, and not the XXI while the skíz can catch it."""
         return [c for c in plain_tarokks if not (_is(c, XXI) and skiz_is_out)]
 
-    # I announced pagát ulti: draw the tarokks, keep the pagát for the end
-    if _announced(view, "pagat_ultimo", by_me=True) and view.holds("I"):
-        if out and strong_tarokks():
-            pick = strong_tarokks()[0] if "ulti_small" in TACTICS else strong_tarokks()[-1]
-            return _play(pick, "hint.lead.ulti_draw", count=len(out))
-        if low_suit:
-            return _play(low_suit, "hint.lead.ulti_keep_pagat")
+    doomed_pagat = _pagat_must_go(view, 3)
+    if doomed_pagat:
+        return _play(doomed_pagat, "hint.lead.pagat_drop", count=len(out))
 
-    # Somebody on the other side announced pagát ulti: keep a tarokk for the last trick
-    ulti_against = any(
-        a.announcement_type.value == "pagat_ultimo" and not view.is_teammate(a.player_position)
-        and a.player_position != view.position
-        for a in view.announcements
-    )
-    if ulti_against and len(plain_tarokks) == 1 and low_suit:
-        return _play(low_suit, "hint.lead.keep_tarokk_for_ulti", kept_card=plain_tarokks[0].id)
+    # The owner's rules for the XXI while the skíz can still catch it. Leading it is never safe.
+    if _xxi_at_risk(view):
+        others = [c for c in plain_tarokks if not _is(c, XXI)]
+        if view.on_declarer_side:
+            if not view.teammates():
+                # Partner not shown yet: a small tarokk lets them answer with the called card
+                if others and len(view.tarokks) - 1 >= XXI_FIND_PARTNER_TAROKKS:
+                    return _play(others[0], "hint.lead.xxi_find_partner")
+            elif others and len(others) > (len(out) - 1) / 2:
+                # Enough tarokks to run the skíz's hand dry: lead high ones until the skíz must fall
+                return _play(others[-1], "hint.lead.xxi_drive_skiz")
+            short = _shortest_suit_low(legal, view)
+            if short:
+                return _play(short, "hint.lead.xxi_short_suit")
+        elif low_suit:
+            return _play(low_suit, "hint.lead.xxi_suit")
 
     # I hold the skíz and the XXI is still out: a tarokk lead lets the XXI slip home
     # under it, so lead a suit and wait
     if _hunting(view):
+        # The owner's rule: so few tarokks are left that the three others cannot keep the XXI back
+        skiz_card = next((c for c in legal if _is(c, SKIZ)), None)
+        if skiz_card and len(out) <= 3:
+            return _play(skiz_card, "hint.lead.skiz_force", count=len(out))
         suit = _kingless_suit_low(legal, view)
         if suit:
             return _play(suit, "hint.lead.skiz_suit")
         small = [c for c in plain_tarokks if not _is(c, SKIZ)]
         if small:
             return _play(small[0], "hint.lead.skiz_low_tarokk")
+
+    # The owner's rule: once trull is called, the enemy team leads suits. (The caller's team
+    # leads tarokks; the rules further down pick which one.)
+    # Four kings or double game announced: the enemy team's suit leads avoid the suits of its own kings
+    kings_bid = _announced(view, "four_kings") or _announced(view, "double_game")
+    enemy_suit = (_kingless_suit_low(legal, view) if kings_bid else None) or low_suit
+    if _announced(view, "trull") and view.declarer_position is not None and not view.on_declarer_side and low_suit:
+        return _play(enemy_suit, "hint.lead.trull_suit")
 
     # A teammate behind me waits with the skíz: drive the XXI out with high tarokks
     waiting_seat = _waiting_skiz_seat(view) if "skiz_drive" in TACTICS else None
@@ -485,19 +586,45 @@ def _lead(view: SeatView) -> Decision:
         return _play(strong_tarokks()[-1], "hint.lead.catch_pagat")
 
     defender = not view.on_declarer_side and view.declarer_position is not None
+    # The owner's rule for defenders: protect the fellow defender's XXI
+    # Only for a hand with neither great honour: the skíz wants to catch the XXI, not protect it
+    protecting = (defender and not _announced(view, "trull") and not xxi_played(view) and not view.holds("XXI")
+                  and not view.holds("skiz") and not _skiz_played(view))
+    if protecting and view.is_teammate((view.position + 3) % 4) and plain_tarokks:
+        return _play(plain_tarokks[0], "hint.lead.partner_last_tarokk")
+
+    # The owner's rule: four kings or double game is announced. The enemy team leads a suit whose
+    # king it does not hold. (The caller's team leads tarokks; the rules further down pick which one.)
+    if kings_bid and defender and enemy_suit:
+        return _play(enemy_suit, "hint.lead.kings_suit")
+
     # Skíz or XXI already gone: nothing left to protect, a defender leads a suit
     if defender and (xxi_played(view) or _skiz_played(view)) and low_suit:
         return _play(low_suit, "hint.lead.defender_suit")
 
-    # The owner's rule for defenders: protect the fellow defender's XXI
-    # Only for a hand with neither great honour: the skíz wants to catch the XXI, not protect it
-    if (defender and not _announced(view, "trull") and not xxi_played(view) and not view.holds("XXI")
-            and not view.holds("skiz") and not _skiz_played(view)):
-        last_seat = (view.position + 3) % 4
-        if view.is_teammate(last_seat) and plain_tarokks:
-            return _play(plain_tarokks[0], "hint.lead.partner_last_tarokk")
+    if protecting and low_suit:
+        return _play(low_suit, "hint.lead.suit_protect_xxi")
+
+    # The owner's rule: catching or saving the XXI comes before any pagát ulti business
+    # I announced pagát ulti: draw the tarokks, keep the pagát for the end
+    if _announced(view, "pagat_ultimo", by_me=True) and view.holds("I"):
+        if out and strong_tarokks():
+            pick = strong_tarokks()[0] if "ulti_small" in TACTICS else strong_tarokks()[-1]
+            return _play(pick, "hint.lead.ulti_draw", count=len(out))
         if low_suit:
-            return _play(low_suit, "hint.lead.suit_protect_xxi")
+            # The owner's rule: any suit, but a king if I hold one. It should keep the lead,
+            # and a tarokk led by somebody else would pull the pagát out too early.
+            kings = [c for c in legal if c.is_king()]
+            return _play(min(kings, key=lambda c: c.suit.value) if kings else low_suit, "hint.lead.ulti_keep_pagat")
+
+    # Somebody on the other side announced pagát ulti: keep a tarokk for the last trick
+    ulti_against = any(
+        a.announcement_type.value == "pagat_ultimo" and not view.is_teammate(a.player_position)
+        and a.player_position != view.position
+        for a in view.announcements
+    )
+    if ulti_against and len(plain_tarokks) == 1 and low_suit:
+        return _play(low_suit, "hint.lead.keep_tarokk_for_ulti", kept_card=plain_tarokks[0].id)
 
     mates = view.teammates()
     # A teammate announced pagát ulti: help to draw the tarokks
@@ -534,17 +661,29 @@ def _follow(view: SeatView) -> Decision:
     winner_seat, winner_card = _winning_play(trick)
     out = tarokks_out(view)
 
+    # The owner's rule: nobody who could hold the skíz plays after me, so the XXI escapes now
+    at_risk = _xxi_at_risk(view)
+    xxi = next((c for c in legal if _is(c, XXI)), None)
+    if at_risk and xxi and not foe_after:
+        return _play(xxi, "hint.follow.xxi_escape")
+
     # Catch an opponent's XXI with the skíz
     skiz = next((c for c in legal if _is(c, SKIZ)), None)
     if skiz and any(_is(card, XXI) and not view.is_teammate(seat) for seat, card in trick):
         return _play(skiz, "hint.follow.catch_xxi")
+
+    doomed_pagat = _pagat_must_go(view, len(seats_after))
+    if doomed_pagat:
+        return _play(doomed_pagat, "hint.follow.pagat_drop", count=len(out))
 
     # The declarer leads a tarokk: the called partner answers with the called card, so the
     # table sees who is with whom and the opponents do not get the lead for a small tarokk
     lead_seat, lead_card = trick[0]
     called = next((c for c in legal if c.is_tarokk() and view.called_rank
                    and c.rank.upper() == view.called_rank.upper()), None)
+    # The owner's rule: not with a great honour, whose holder has the XXI catch to think of first
     if ("show_called" in TACTICS and called and view.i_am_partner and foe_after
+            and not view.holds("skiz") and not view.holds("XXI")
             and lead_seat == view.declarer_position and lead_card.is_tarokk() and _beats(called, trick)):
         return _play(called, "hint.follow.show_called")
 
@@ -564,8 +703,19 @@ def _follow(view: SeatView) -> Decision:
     lead_seat, lead_card = trick[0]
     king_at_stake = any(card.is_king() for _, card in trick)
 
+    # The owner's rule: the XXI cannot go yet. Stay out of the lead (leading never frees it);
+    # if the player after me takes the trick, I play last to the next one.
+    if at_risk and foe_after:
+        losers = [c for c in without_pagat if not _is(c, XXI) and not _beats(c, trick)]
+        if losers:
+            return _play(min(losers, key=_cheapness), "hint.follow.xxi_duck")
+
     # Waiting with the skíz for the XXI: stay out of the lead, and shed high tarokks doing so
     if _hunting(view):
+        # The owner's rule: a tarokk was led and no more tarokks are out than players still to
+        # play, so the XXI has to come: play the skíz before it shows
+        if skiz and lead_card.is_tarokk() and seats_after and len(out) <= len(seats_after):
+            return _play(skiz, "hint.follow.skiz_force", count=len(out))
         waiting = [c for c in without_pagat if not _is(c, SKIZ)]
         losers = [c for c in waiting if not _beats(c, trick)]
         if losers:
@@ -584,6 +734,21 @@ def _follow(view: SeatView) -> Decision:
         and (king_at_stake or ("hit_hard_lead" in TACTICS and view.is_teammate(lead_seat)
                                and not lead_card.is_tarokk()))
     )
+
+    # The owner's rule: once trull is called, every trick counts. Win it whenever I can, unless my
+    # team already holds it for certain; with an opponent still to play, win it with my best card.
+    if _announced(view, "trull"):
+        team_safe = view.is_teammate(winner_seat) and (not foe_after or (
+            winner_card.is_tarokk() and all(value < winner_card.tarokk_value() for value in out)))
+        can_win = [c for c in candidates if _beats(c, trick) and (not seats_after or not _is(c, PAGAT))]
+        if can_win and not team_safe:
+            if foe_after:
+                best = _hard_tarokk(can_win, out, trick_points) or max(can_win, key=lambda c: c.suit_rank_value())
+            elif pagat in can_win:
+                best = pagat
+            else:
+                best = min(can_win, key=lambda c: (c.tarokk_value(), c.suit_rank_value()))
+            return _play(best, "hint.follow.trull_win")
 
     if view.is_teammate(winner_seat):
         # Is the teammate's card certain to hold?
@@ -660,10 +825,37 @@ def decide(view: SeatView) -> Decision:
     raise ValueError(f"No action in phase {view.phase.value}")
 
 
+def tree_of(view: SeatView) -> str:
+    """Which tree of the decision tree page this decision is taken in."""
+    if view.phase == GamePhase.BIDDING:
+        return "A"
+    if view.phase == GamePhase.DISCARDING:
+        return "D"
+    if view.phase == GamePhase.PARTNER_CALL:
+        return "B1"
+    if view.phase == GamePhase.ANNOUNCEMENTS:
+        if view.position == view.declarer_position:
+            return "B.declarer"
+        return "B.partner" if view.i_am_partner else "B.enemy"
+    # Card play: branch I while the XXI can still be caught, branch II once that is settled
+    settled = (_announced(view, "trull") or xxi_played(view) or _skiz_played(view)
+               or (view.holds("skiz") and view.holds("XXI")))
+    return "C.II" if settled else "C.I"
+
+
 def decide_for_seat(game_state: GameState, position: int) -> Decision:
     """What the seat should do now. Falls back to a plain legal move if a rule fails."""
     try:
-        return decide(build_view(game_state, position))
+        view = build_view(game_state, position)
+        tree = tree_of(view)
+        decision, decision.route = route.record(decide, view)
+        decision.boxes = route.name_boxes(decision.route, tree)
+        return decision
     except Exception as e:
         logger.error("strategy_error", error=str(e), phase=game_state.phase.value, position=position)
         return fallback_decision(game_state, position)
+
+
+# The functions whose checks make up the decision trees
+route.watch(decide_bid, _decide_bid, decide_discard, decide_call, decide_announcement, _one_turn_of,
+            decide_card, _lead, _follow)

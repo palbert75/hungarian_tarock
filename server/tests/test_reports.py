@@ -35,6 +35,7 @@ async def test_report_holds_every_hand_the_text_and_bot_reasons(tmp_path):
     if any(p.bot_controlled for p in room.players) and room.decision_log:
         entry = report["bot_decisions"][0]
         assert entry["reason_key"].startswith("hint.") and "action" in entry and "position" in entry
+        assert "route" in entry
     path = save_report(report, tmp_path)
     assert json.loads(path.read_text(encoding="utf-8"))["id"] == report["id"]
 
@@ -52,6 +53,36 @@ async def test_bot_decisions_are_logged_and_cleared_for_the_next_hand():
     assert {d["position"] for d in room.decision_log} <= {1, 2, 3}
     await service.start_next_hand(room)
     assert all(d["hand_number"] == room.game_state.hand_number for d in room.decision_log)
+
+
+@pytest.mark.asyncio
+async def test_report_holds_the_route_of_every_bot_decision():
+    """Which checks of the decision tree a bot went through, and which of them matched."""
+    from bots.strategy import decide_for_seat
+    seed(3)
+    service, manager, recorder = make_service(decide=decide_for_seat)
+    room = manager.create_room("s0", "Anna")
+    room.fill_bots()
+    for p in room.players:
+        p.is_ready = True
+    await service.start_game(room)
+    await service.drive_bots(room)
+    while room.game_state.phase != GamePhase.GAME_END:
+        position = service.turn_position(room)
+        await service.apply_decision(room, room.game_state.get_player(position), decide_for_seat(room.game_state, position))
+        await service.drive_bots(room)
+    report = build_report(room, room.players[0], "why this card?")
+    phases = {d["phase"] for d in report["bot_decisions"]}
+    assert {"bidding", "playing"} <= phases
+    for d in report["bot_decisions"]:
+        assert d["route"], d
+        assert all({"line", "check", "matched"} <= set(step) for step in d["route"])
+        # The same route as box numbers of the decision tree page
+        boxes = d["tree_route"].split(" → ")
+        assert boxes and all(box[0] in "ABCD" and box[1:].isdigit() for box in boxes), d
+        assert boxes[0][0] == {"bidding": "A", "discarding": "D", "partner_call": "B", "announcements": "B",
+                               "playing": "C"}[d["phase"]]
+    json.dumps(report, default=str)
 
 
 def test_empty_or_long_text_is_refused():

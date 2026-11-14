@@ -171,6 +171,9 @@
     "send": "Küldés"
   },
   "settings": {
+    "botTrees": "Hogyan játszanak a gépek",
+    "botTreesDetail": "A gépek döntési fái lépésről lépésre (angolul)",
+    "botTreesGo": "Megnyitás",
     "title": "Beállítások",
     "tutorial": "Oktató tippek",
     "tutorialDetail": "Megmutatja, mit érdemes lépned, és miért",
@@ -230,12 +233,12 @@
       "pass": "Ezzel a lappal nincs mit bemondani: passz.",
       "four_kings": "Te vagy a felvevő partnere, és {{count}} tarokkod van: mondd be a négy királyt. Ezzel jelzed a partnerednek, hogy hosszú vagy tarokkban.",
       "double_game": "Te vagy a felvevő partnere, és {{count}} tarokkod van a XIII fölött: mondd be a duplajátékot.",
-      "trull": "Nálad van mindhárom honőr (skíz, XXI, pagát) és elég tarokk: mondd be a tuletroát.",
       "trull_two": "Te vagy a felvevő, és nálad a skíz és a XXI is: mondj trullt.",
-      "trull_partner": "Te vagy a felvevő partnere, és nálad van egy nagy honőr (skíz vagy XXI): mondd be a tuletroát.",
+      "trull_partner": "Te vagy a felvevő partnere, és nálad a skíz és a XXI is: mondj trullt. A trull azt jelzi, hogy mindkét nagy honőr a csapatodnál van.",
       "pagat_ultimo": "Nálad a pagát és {{count}} tarokk: mondd be a pagátultimót, és tartsd meg a pagátot az utolsó ütésre.",
       "several": "Ez a lap {{count}} bemondást is megér, kezdve ezzel: {{announcement}}.",
       "double_after_signal": "A négy király elárulta, hogy a partnered hosszú tarokkban, nálad pedig {{count}} tarokk és nagy honőr van: válaszolj duplajátékkal.",
+      "kontra_four_kings_high": "A felvevő csapata négy királyt mondott, neked pedig {{count}} tarokkod van a XIII fölött: ez elég erős lap ahhoz, hogy elvegyél egy királyt. Mondj kontrát.",
       "kontra_four_kings": "Az ellenfél négy királyt mondott, neked pedig {{count}} tarokkod van, köztük nagyok: valamelyik királyuk nálad vagy a partnerednél fog elesni. Mondj kontrát.",
       "kontra_ulti": "Az ellenfél pagátultimót mondott, de neked {{count}} tarokkod van: nem tudják mind kihajtani. Mondj kontrát.",
       "ulti_obligatory": "Pagáttal adtál invitet, nagy honőr nélkül: most kötelező pagátultimót mondanod.",
@@ -243,6 +246,14 @@
       "tarokks": "{{count}} tarokkod van: mondd be. Minden játékos fizet érte neked, akárhogy végződik a játék."
     },
     "lead": {
+      "pagat_drop": "Még {{count}} tarokk van kint, több, mint amennyit a három játékos ebbe az ütésbe tehet: az utolsó ütésre is marad, és ott elüti a pagátodat, ami bukott csendes pagátulti. Hívd ki most a pagátot ({{card}}).",
+      "kings_suit": "A felvevők négy királyt vagy duplajátékot mondtak: olyan színt hívj, amelynek a királya nincs nálad ({{card}}), a saját királyaidat pedig ne tedd ki a tarokkjaiknak.",
+      "trull_suit": "Trull van bemondva, és a felvevők ellen játszol: színt hívj ({{card}}), ne tarokkot.",
+      "skiz_force": "Már csak {{count}} tarokk van kint, köztük a XXI, és hárman tesznek utánad: hívd a skízt, a XXI-nek alá kell esnie.",
+      "xxi_find_partner": "Nálad a XXI, és még nem tudod, ki a partnered: hívj kis tarokkot ({{card}}), hogy a partnered a hívott lappal üthesse, és megmutassa magát.",
+      "xxi_drive_skiz": "Nálad a XXI, és elég tarokkod van ahhoz, hogy kitarokkozd a skízt: hívj nagy tarokkot ({{card}}), és folytasd, amíg a skíznek le nem kell esnie.",
+      "xxi_short_suit": "Nálad a XXI, és a skíz még kint van: ne hívj tarokkot. Hívj a legrövidebb színedből ({{card}}), hogy hamar lophasd.",
+      "xxi_suit": "Nálad a XXI a felvevők ellen, és a skíz még kint van: színt hívj ({{card}}), ne tarokkot.",
       "ulti_draw": "Pagátultimót mondtál: hívd ezt: {{card}}, hogy kihúzd a többieknél még lehetséges {{count}} tarokkot.",
       "ulti_keep_pagat": "Pagátultimót mondtál: hívd ezt: {{card}}, a pagátot tartsd meg az utolsó ütésre.",
       "ulti_support": "A társad pagátultimót mondott: hívd ezt: {{card}}, segíts kihúzni a többiek tarokkjait.",
@@ -261,6 +272,11 @@
       "declarer_tarokk": "A felvevők oldalán állsz, és van tarokkod: hívj tarokkot ({{card}}). A felvevők tarokkot hívnak, hogy elfogyjon az ellenfél tarokkja."
     },
     "follow": {
+      "pagat_drop": "Még {{count}} tarokk van kint, több, mint amennyit az utánad jövők ebbe az ütésbe tehetnek: az utolsó ütésre is marad, és ott elüti a pagátodat, ami bukott csendes pagátulti. Tedd be most a pagátot ({{card}}).",
+      "trull_win": "Trull van bemondva, minden ütés számít: vidd el ezt ezzel: {{card}}. Ha még ellenfél tesz utánad, olyan lappal üss, amit nem tud felülütni.",
+      "skiz_force": "Tarokkot hívtak, és az utánad következőknél már csak {{count}} tarokk lehet: tedd most a skízt, a XXI-nek jönnie kell.",
+      "xxi_escape": "Utánad már senki sem tehet skízt: tedd most a XXI-et, és vidd haza.",
+      "xxi_duck": "A XXI még nem mehet. Ezt az ütést ne vidd el ({{card}}): ha az utánad következő viszi, a következő ütésben te teszel utolsónak, és a XXI biztonságban van.",
       "only_card": "Csak ezt a lapot teheted: {{card}}.",
       "catch_xxi": "Az ellenfél kijátszotta a XXI-et: fogd meg ezzel: {{card}}!",
       "pagat_home": "Ez az ütés biztosan a tiéd vagy a társadé: vidd haza most a pagátot.",

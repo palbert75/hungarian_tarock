@@ -43,6 +43,7 @@ class SeatView:
     # Announcements
     announcements: List[Announcement] = field(default_factory=list)
     valid_announcements: List[str] = field(default_factory=list)
+    tarokk_declarations: dict = field(default_factory=dict)  # {seat: 8 | 9}, declared so far
 
     # Tricks
     current_trick: List[Play] = field(default_factory=list)
@@ -130,6 +131,7 @@ def build_view(game_state: GameState, position: int) -> SeatView:
         i_am_partner=i_am_partner,
         declarer_alone=game_state.declarer_alone and game_state.game_contra,
         announcements=list(game_state.announcements),
+        tarokk_declarations=dict(game_state.tarokk_declarations),
         current_trick=list(game_state.current_trick),
         trick_history=[
             [(entry["player_position"], Card.from_dict(entry["card"])) for entry in trick["cards"]]

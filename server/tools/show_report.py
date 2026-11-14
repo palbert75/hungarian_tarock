@@ -67,6 +67,10 @@ def main(path: str) -> None:
             what = " ".join(ids.get(c, c) for c in what["card_ids"])
         print(f"[{d['phase']} t{d['trick_number']}] seat {d['position']} {d['action']} {what}  ({d['reason_key']})"
               + ("  FALLBACK" if d.get("fallback") else ""))
+        if d.get("tree_route"):
+            print(f"      route: {d['tree_route']}")
+        for step in d.get("route", []):
+            print(f"      {'yes' if step['matched'] else 'no ':3} {step.get('box', ''):5} strategy.py:{step['line']}  {step['check']}")
     if report.get("client"):
         print("\nClient: " + json.dumps(report["client"], ensure_ascii=False)[:600])
 

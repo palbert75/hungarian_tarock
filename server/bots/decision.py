@@ -1,7 +1,7 @@
 """The shape of a bot decision, and a rule-free fallback that is always legal."""
 
 from dataclasses import dataclass, field
-from typing import Dict, Any
+from typing import Any, Dict, List
 
 from models.card import TarokkRank
 from models.game_state import GameState, GamePhase
@@ -23,11 +23,15 @@ class Decision:
     action: bid | discard | call_partner | announce | pass_announcement | contra | play_card
     payload: the action's arguments
     reason_key / reason_params: a translatable explanation (used for hints)
+    route: the checks of the decision tree this went through (kept for problem reports only)
+    boxes: the same route as box numbers of the decision tree page, e.g. ["C55", "C57", "C58"]
     """
     action: str
     payload: Dict[str, Any] = field(default_factory=dict)
     reason_key: str = ""
     reason_params: Dict[str, Any] = field(default_factory=dict)
+    route: List[dict] = field(default_factory=list)
+    boxes: List[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         return {

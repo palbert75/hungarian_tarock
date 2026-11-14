@@ -4,6 +4,7 @@ import pytest
 from bots import strategy
 from bots.strategy import decide_announcement
 from bots.view import build_view
+from models.announcement import Announcement, AnnouncementType
 from models.game_state import GamePhase, settle_tarokk_declarations
 from tests.helpers import make_state
 from tests.service_helpers import make_service, seed
@@ -52,6 +53,26 @@ def test_bot_declares_its_tarokks_on_either_side():
     d = decide_announcement(view)
     assert d.action == "announce" and d.payload["announcement_types"] == ["nine_tarokks"]
     assert d.reason_key == "hint.announce.tarokks"
+
+
+def test_declarer_declares_its_tarokks_only_once_trull_is_called():
+    gs = announcing([EIGHT, "hJ", SEVEN, "hQ"])
+    assert decide_announcement(build_view(gs, 0)).action == "pass_announcement"
+    gs.announcements.append(Announcement(player_position=2, announcement_type=AnnouncementType.TRULL))
+    d = decide_announcement(build_view(gs, 0))
+    assert d.action == "announce" and d.payload["announcement_types"] == ["eight_tarokks"]
+
+
+def test_called_partner_declares_its_tarokks_only_with_a_trull_call():
+    # Seat 1 holds the called XX and eight tarokks, but no great honour: no trull of its own
+    gs = announcing([SEVEN.replace("XX", "XVIII"), EIGHT, "hJ", "hQ"])
+    assert "eight_tarokks" not in decide_announcement(build_view(gs, 1)).payload["announcement_types"]
+    gs.announcements.append(Announcement(player_position=0, announcement_type=AnnouncementType.TRULL))
+    assert "eight_tarokks" in decide_announcement(build_view(gs, 1)).payload["announcement_types"]
+    # With a great honour it announces trull itself, and the count goes with it in the same turn
+    gs = announcing([SEVEN.replace("XX", "XVIII"), "XX XXI skiz IX VIII VII VI V hK", "hJ", "hQ"])
+    said = decide_announcement(build_view(gs, 1)).payload["announcement_types"]
+    assert "trull" in said and "eight_tarokks" in said
 
 
 async def play_hand(n):

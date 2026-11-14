@@ -132,6 +132,12 @@ export default function SettingsSheet({ open, onClose }: { open: boolean; onClos
             </button>
           </Row>
         )}
+        <Row label={t('settings.botTrees')} detail={t('settings.botTreesDetail')}>
+          {/* A static page of its own: a new tab keeps the table connected */}
+          <a className="chip chip-on" href="/bot-decision-trees.html" target="_blank" rel="noopener">
+            🌳 {t('settings.botTreesGo')}
+          </a>
+        </Row>
         {installState === 'prompt' && (
           <Row label={t('settings.install')} detail={t('settings.installDetail')}>
             <button type="button" className="chip chip-on" onClick={() => install()}>

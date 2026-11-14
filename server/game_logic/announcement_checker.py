@@ -77,6 +77,20 @@ def pagat_ultimo_winner(trick_history: List[dict]) -> Optional[int]:
     return None
 
 
+def pagat_ultimo_loser(trick_history: List[dict]) -> Optional[int]:
+    """
+    Position of the player whose pagát fell in the last trick without winning it, or None.
+    It does not matter who took the trick: a teammate's higher tarokk loses the ulti too.
+    """
+    if len(trick_history) < 9:
+        return None
+    last_trick = trick_history[8]
+    for card_info in last_trick['cards']:
+        if _is_tarokk(card_info['card'], 'i') and card_info['player_position'] != last_trick['winner']:
+            return card_info['player_position']
+    return None
+
+
 def check_pagat_ultimo(trick_history: List[dict], team: Set[int]) -> bool:
     """True if a member of `team` won the last trick with the pagát."""
     return pagat_ultimo_winner(trick_history) in team
@@ -221,3 +235,24 @@ def check_silent_achievements(
             add(AnnouncementType.XXI_CATCH, caught_by)
 
     return silent_bonuses
+
+
+def check_silent_failures(
+    players: List[Player],
+    declarer_position: int,
+    partner_position: Optional[int],
+    announcements: List[Announcement],
+    trick_history: Optional[List[dict]] = None,
+) -> List[Announcement]:
+    """
+    Figures a side lost without having announced them. There is one: the silent pagát ulti,
+    lost when the pagát is kept for the last trick and does not win it.
+    """
+    lost_by = pagat_ultimo_loser(trick_history or [])
+    if lost_by is None:
+        return []
+    team = team_positions(lost_by, declarer_position, partner_position, len(players))
+    if any(a.announcement_type == AnnouncementType.PAGAT_ULTIMO and a.player_position in team
+           for a in announcements):
+        return []  # the announced one is lost already
+    return [Announcement(player_position=lost_by, announcement_type=AnnouncementType.PAGAT_ULTIMO, announced=False)]

@@ -1,0 +1,150 @@
+<title>Tarokk Bot Decision Trees</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one column of sections; each tree is a top-to-bottom spine of checks, the answer that ends in an action goes right. */
+:root{
+  --bg:#f2f5f1; --surface:#ffffff; --ink:#16211b; --muted:#5a695f; --line:#c3cec6; --accent:#1f6b4a;
+  --tarokk-bg:#dbefe3; --tarokk-bd:#1f6b4a;
+  --suit-bg:#fbe4e0; --suit-bd:#b23a2e;
+  --honour-bg:#fbf0cc; --honour-bd:#9a7400;
+  --pass-bg:#e5e9e5; --pass-bd:#77847b;
+  --act-bg:#dfe8f8; --act-bd:#2f5aa8;
+  --display:"Space Grotesk",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f1512; --surface:#18211c; --ink:#e6ece8; --muted:#98a69d; --line:#35453c; --accent:#5fc596;
+  --tarokk-bg:#173326; --tarokk-bd:#5fc596;
+  --suit-bg:#3a1d1a; --suit-bd:#e0786c;
+  --honour-bg:#3a3013; --honour-bd:#e0b84a;
+  --pass-bg:#242c28; --pass-bd:#84928a;
+  --act-bg:#1a2740; --act-bd:#7fa3e6;
+  color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f1512; --surface:#18211c; --ink:#e6ece8; --muted:#98a69d; --line:#35453c; --accent:#5fc596;
+  --tarokk-bg:#173326; --tarokk-bd:#5fc596;
+  --suit-bg:#3a1d1a; --suit-bd:#e0786c;
+  --honour-bg:#3a3013; --honour-bd:#e0b84a;
+  --pass-bg:#242c28; --pass-bd:#84928a;
+  --act-bg:#1a2740; --act-bd:#7fa3e6;
+  color-scheme:dark }
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+.wrap{max-width:1500px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1{font-family:var(--display);font-size:30px;line-height:1.15;margin:0;text-wrap:balance}
+h2{font-family:var(--display);font-size:22px;margin:0;text-wrap:balance}
+h3{font-family:var(--display);font-size:16px;margin:0}
+p{margin:0;max-width:72ch}
+.lede{color:var(--muted)}
+nav{display:flex;flex-wrap:wrap;gap:8px}
+nav a{font-family:var(--mono);font-size:13px;color:var(--ink);text-decoration:none;border:1px solid var(--line);background:var(--surface);padding:6px 10px;border-radius:4px}
+nav a:hover,nav a:focus-visible{border-color:var(--accent);color:var(--accent);outline:none}
+section{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sub{display:flex;flex-direction:column;gap:10px;min-width:0}
+.legend{display:flex;flex-wrap:wrap;gap:8px;font-size:12px}
+.legend span{padding:3px 8px;border:1px solid;border-radius:3px}
+.defs{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px 24px;font-size:13.5px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:12px 0}
+.defs div{min-width:0}
+.defs b{font-weight:600}
+.scroll{overflow-x:auto;padding:6px 2px 14px}
+.chain{display:flex;flex-direction:column;align-items:flex-start}
+.step{display:flex;align-items:flex-start}
+.node,.leaf{flex:none;box-sizing:border-box;border:1px solid var(--line);border-radius:4px;padding:7px 10px;font-size:13.5px;line-height:1.4}
+.node{width:300px;background:var(--surface);min-height:36px}
+.node.rule{border-style:dashed}
+.leaf{width:250px;font-weight:500;min-height:36px}
+.leaf small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+.id{font-family:var(--mono);font-weight:600;font-size:12px;color:var(--accent);margin-right:6px}
+.meta{display:flex;flex-wrap:wrap;gap:4px 8px;margin-top:4px;font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+.meta .tag{border:1px solid var(--line);border-radius:3px;padding:0 4px}
+.note{display:block;margin-top:4px;font-size:12px;color:var(--muted);font-weight:400}
+.k-tarokk{background:var(--tarokk-bg);border-color:var(--tarokk-bd)}
+.k-suit{background:var(--suit-bg);border-color:var(--suit-bd)}
+.k-honour{background:var(--honour-bg);border-color:var(--honour-bd)}
+.k-pass{background:var(--pass-bg);border-color:var(--pass-bd)}
+.k-act{background:var(--act-bg);border-color:var(--act-bd)}
+.k-any{background:var(--surface);border-color:var(--ink)}
+.k-goto{background:transparent;border-style:dashed;color:var(--muted);font-weight:400}
+.k-off{background:transparent;border-style:dashed;color:var(--muted);text-decoration:line-through}
+.branches{display:flex;flex-direction:column;gap:10px}
+.branch{display:flex;align-items:flex-start;position:relative}
+.branch:not(:only-child)::before{content:"";position:absolute;left:0;width:2px;background:var(--line);top:0;bottom:-10px}
+.branch:not(:only-child):first-child::before{top:18px}
+.branch:not(:only-child):last-child::before{bottom:auto;height:19px}
+.edge{flex:none;height:36px;display:flex;align-items:center;font-size:12px;color:var(--muted);white-space:nowrap}
+.edge::before,.edge::after{content:"";height:2px;width:14px;background:var(--line)}
+.edge span{padding:0 5px}
+.down{margin-left:26px;border-left:2px solid var(--line);padding:5px 0 5px 8px;font-size:12px;color:var(--muted);min-height:16px}
+ul.obs{margin:0;padding-left:20px;max-width:80ch;display:flex;flex-direction:column;gap:6px}
+code{font-family:var(--mono);font-size:.9em}
+</style>
+
+<div class="wrap">
+  <header class="sub">
+    <h1>Tarokk bot decision trees</h1>
+    <p class="lede">The bot player as it is implemented today in <code>server/bots/strategy.py</code>. Every check and every action has its own number, so you can say “change C17” or “swap A9 and A12”. Read each tree downwards: the first check that matches decides. Small grey text gives the tactic name and the source line. A problem report lists, for every bot action, the checks it went through with the same source lines (<code>route</code>), so a report can be followed through these trees.</p>
+    <nav>
+      <a href="#bid">A · Bidding</a>
+      <a href="#call">B · Calls and announcements</a>
+      <a href="#play">C · Card play</a>
+      <a href="#skart">D · Skart</a>
+      <a href="#notes">Things I noticed</a>
+    </nav>
+  </header>
+
+  <section id="bid">
+    <h2>A · How the bot bids</h2>
+    <p>“The candidate” is the cheapest way to stay in the auction: <i>hold</i> when that is allowed, otherwise the lowest legal bid. Bids rise three → two → one → solo.</p>
+    <div class="legend"><span class="k-act">bid</span><span class="k-pass">pass</span><span class="k-off">switched off</span></div>
+    <div class="scroll" id="treeA"></div>
+  </section>
+
+  <section id="call">
+    <h2>B · What the bot calls, and in which order</h2>
+    <p>First the declarer's partner call, then the announcements. After the call every bot knows its team for certain, so the announcement tree starts there. Announcements are not either-or: the bot walks down its list, collects everything that applies (the “+” boxes). The final step then decides how much of that list is said in this turn: the caller team says at most two things and lets the partner answer. Only when it has nothing to announce does it consider a kontra.</p>
+    <div class="legend"><span class="k-act">call / announce</span><span class="k-honour">kontra</span><span class="k-pass">pass</span><span class="k-off">switched off</span></div>
+    <div class="sub"><h3>Partner call (declarer)</h3><div class="scroll" id="treeB1"></div></div>
+    <div class="sub"><h3>Announcements (every seat, each turn)</h3><div class="scroll" id="treeB2"></div></div>
+    <div class="sub"><h3>Final step for every seat</h3><div class="scroll" id="treeB3"></div></div>
+  </section>
+
+  <section id="play">
+    <h2>C · Which card the bot plays</h2>
+    <p>Split the way you asked: one branch while an XXI catch is still possible, one branch once trull is announced, one hand holds both great honours, or one of them is gone. The code itself has no such single switch; it is one long list of checks. I sorted each check into the branch where it can fire, and kept the order the code uses.</p>
+    <div class="defs">
+      <div><b>My team (certain after the call).</b> Caller team: I am the declarer, or I hold the called card. Enemy team: everybody else. The bot always knows this in card play.</div>
+      <div><b>Known teammate / known opponent (can be open).</b> Who the others are. Certain for the holder of the called card. The declarer and the enemy team know it only once the partner shows: the called card is played, an invit or yielded game fixes it, or a non-declarer announces something. Until then the declarer has no known teammate, and an enemy-team bot has no known teammate and one known opponent, the declarer.</div>
+      <div><b>Tarokks still out.</b> Every tarokk the bot has not seen: not in its hand, not in its own skart, not yet played.</div>
+      <div><b>Low suit card.</b> The lowest card of a suit a teammate cannot follow; failing that, a suit the fewest opponents are void in; failing that, the longest suit. <code>voids</code></div>
+      <div><b>Cheapest card.</b> Suit cards first, fewest points first; then the lowest tarokk; the pagát last. If a teammate announced pagát ulti, the smallest tarokk is kept and the next one up goes. <code>ulti_keep_small</code></div>
+      <div><b>Hard tarokk.</b> The lowest tarokk that nothing still out can beat, else the highest. Never the pagát; the skíz only when the trick holds 5+ points.</div>
+      <div><b>Opponent after me.</b> Somebody who still plays to this trick and is not a known teammate.</div>
+    </div>
+    <div class="legend"><span class="k-tarokk">plays a tarokk</span><span class="k-suit">plays a suit card</span><span class="k-honour">plays skíz / XXI / pagát</span><span class="k-any">depends on the hand</span><span class="k-goto">falls through</span></div>
+    <div class="sub"><h3>The split</h3><div class="scroll" id="treeC0"></div></div>
+    <div class="sub" id="c-i-lead"><h3>Branch I · catch possible · leading</h3><div class="scroll" id="treeC1"></div></div>
+    <div class="sub" id="c-i-follow"><h3>Branch I · catch possible · following</h3><div class="scroll" id="treeC2"></div></div>
+    <div class="sub" id="c-ii-lead"><h3>Branch II · trull or catch settled · leading</h3><div class="scroll" id="treeC3"></div></div>
+    <div class="sub" id="c-ii-follow"><h3>Branch II · trull or catch settled · following</h3><div class="scroll" id="treeC4"></div></div>
+  </section>
+
+  <section id="skart">
+    <h2>D · What the bot discards</h2>
+    <p>The fourth tree. Kings and honours can never be discarded. The bid winner's skart counts for the caller team; everybody else's skart counts for the enemy team, also the called partner's. The skart happens before the call, so a bot that did not win the bidding can only guess its team from its own cards.</p>
+    <div class="scroll" id="treeS"></div>
+  </section>
+
+  <section id="notes">
+    <h2>Things I noticed while mapping</h2>
+    <ul class="obs">
+      <li>A bot declarer has no rule for four kings or double game at all; only the holder of the called card announces them. So the declarer never “answers” with four kings, and the holder of the called card with the pagát and eight tarokks now stays silent and never gets to announce pagát ulti, unless the declarer declares 8 or 9 tarokks.</li>
+      <li>Trull now means “our team holds both great honours”. Branch II still has two exception checks for a trull from the other team that cannot be true because I hold a great honour myself. Between bots this happens only after an invit: the declarer announces trull with one great honour, trusting the invit to show the other, but an invit can also be given with the pagát alone.</li>
+      <li>The bot always knows its own team after the call, but many card-play checks ask about a <i>known teammate</i> instead. For an enemy-team bot those checks stay silent until the partner shows.</li>
+      <li>Protecting the XXI by leading is an enemy-team rule only. On the caller team the bot just never leads the XXI while the skíz is out, and otherwise leads tarokks.</li>
+      <li>Helping a teammate's pagát ulti leads the second-lowest tarokk without checking whether that card is the XXI.</li>
+      <li>Bots never announce volát or XXI catch, never kontra the game, trull or double game, never rekontra, and never start an invit.</li>
+      <li>The enemy team announces nothing except the eight or nine tarokks declaration; an announcement from a non-declarer is read by the whole table as “I am the partner”.</li>
+    </ul>
+  </section>
+</div>
+

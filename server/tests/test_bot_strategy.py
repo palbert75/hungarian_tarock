@@ -176,10 +176,43 @@ def test_partner_rules_do_not_apply_to_others():
 
 def test_bot_never_repeats_an_announcement():
     hand = "XX XIX XVIII XVII XVI XV hQ hJ h10"
+    # Double game first; four kings waits a turn so the declarer can answer
     first = decide_announcement(announce_view(hand, partner=True))
-    assert set(first.payload["announcement_types"]) == {"four_kings", "double_game"}
+    assert first.payload["announcement_types"] == ["double_game"]
+    second = decide_announcement(announce_view(hand, partner=True, made=("double_game",)))
+    assert second.payload["announcement_types"] == ["four_kings"]
     again = decide_announcement(announce_view(hand, partner=True, made=("four_kings", "double_game")))
     assert again.action == "pass_announcement"
+
+
+def test_declarers_side_says_at_most_two_things_a_turn_and_trull_first():
+    # Skíz and XXI, seven tarokks, five above the XIII: trull, double game and four kings all apply
+    hand = "skiz XXI XX XIX XVIII X IX hQ hJ"
+    first = decide_announcement(announce_view(hand, partner=True))
+    assert first.payload["announcement_types"] == ["trull", "double_game"]
+    second = decide_announcement(announce_view(hand, partner=True, made=("trull", "double_game")))
+    assert second.payload["announcement_types"] == ["four_kings"]
+
+
+def test_pagat_ulti_is_said_last():
+    # Skíz, XXI, pagát, nine tarokks, five above the XIII: trull and double game go first, the ulti next turn
+    hand = "skiz XXI I XX XIX XVIII X IX VIII"
+    first = decide_announcement(announce_view(hand, partner=True))
+    assert first.payload["announcement_types"] == ["trull", "double_game"]
+    second = decide_announcement(announce_view(hand, partner=True, made=("trull", "double_game")))
+    assert second.payload["announcement_types"] == ["pagat_ultimo"]
+
+
+def test_no_four_kings_from_a_pagat_ulti_hand_or_beside_the_tarokk_count():
+    # Pagát and eight tarokks: the bot wants to hear four kings from its partner instead
+    ulti_hand = announce_view("I II III IV V VI VII XX hQ", partner=True)
+    assert decide_announcement(ulti_hand).action == "pass_announcement"
+    # Eight tarokks declared (trull was called): the count already says "long hand"
+    trull = Announcement(player_position=0, announcement_type=AnnouncementType.TRULL)
+    counted = announce_view("II III IV V VI VII VIII XX hQ", partner=True, made=("trull",))
+    counted.announcements = [trull]
+    counted.valid_announcements.append("eight_tarokks")
+    assert decide_announcement(counted).payload["announcement_types"] == ["eight_tarokks"]
 
 
 def as_declarer(view):
@@ -208,6 +241,31 @@ def test_pagat_ulti_needs_a_long_tarokk_hand():
     assert decide_announcement(as_declarer(announce_view("I II III IV V VI VII hQ hJ"))).action == "pass_announcement"
 
 
+def test_declarer_with_eight_tarokks_announces_ulti_only_after_the_partners_four_kings():
+    eight = "I II III IV V XVII XVIII XIX hQ"
+    alone = as_declarer(announce_view(eight))
+    assert decide_announcement(alone).action == "pass_announcement"
+    kings = Announcement(player_position=2, announcement_type=AnnouncementType.FOUR_KINGS)
+    after = dataclasses.replace(alone, announcements=[kings],
+                                valid_announcements=[a for a in alone.valid_announcements if a != "four_kings"])
+    assert decide_announcement(after).payload["announcement_types"] == ["pagat_ultimo"]
+
+
+def test_partner_with_eight_tarokks_announces_ulti_only_after_the_declarers_four_kings():
+    eight = "I II III IV V XVII XVIII XIX hQ"
+    partner = announce_view(eight, partner=True)
+    assert decide_announcement(partner).action == "pass_announcement"
+    # The declarer's tarokk count says the same as four kings
+    counted = dataclasses.replace(partner, tarokk_declarations={0: 8})
+    assert decide_announcement(counted).payload["announcement_types"] == ["pagat_ultimo"]
+    kings = Announcement(player_position=0, announcement_type=AnnouncementType.FOUR_KINGS)
+    after = dataclasses.replace(partner, announcements=[kings],
+                                valid_announcements=[a for a in partner.valid_announcements if a != "four_kings"])
+    assert "pagat_ultimo" in decide_announcement(after).payload["announcement_types"]
+    nine = announce_view("I II III IV V VI XVII XVIII XIX", partner=True)
+    assert "pagat_ultimo" in decide_announcement(nine).payload["announcement_types"]
+
+
 # ----------------------------------------------------------- defender leads
 
 def test_defender_leads_tarokk_when_fellow_defender_plays_last():
@@ -233,7 +291,7 @@ def test_defender_leads_suit_before_partner_is_revealed():
 def test_lead_rule_off_when_trull_announced():
     trull = Announcement(player_position=1, announcement_type=AnnouncementType.TRULL)
     view = play_view("X V hQ h10 dJ", declarer=1, partner=2, announcements=[trull])
-    assert decide_card(view).reason_key == "hint.lead.long_suit"
+    assert decide_card(view).reason_key == "hint.lead.trull_suit"
 
 
 def test_lead_rule_off_when_xxi_was_played():
@@ -242,9 +300,33 @@ def test_lead_rule_off_when_xxi_was_played():
     assert decide_card(view).reason_key == "hint.lead.defender_suit"
 
 
+def test_with_trull_called_every_trick_is_fought_for():
+    trull = Announcement(player_position=1, announcement_type=AnnouncementType.TRULL)
+    # My fellow defender (seat 3) wins with the XV, but the declarer still plays: overtake with my best card
+    view = play_view("XX X hQ", trick=[(3, "XV")], position=0, declarer=1, partner=2, announcements=[trull])
+    d = decide_card(view)
+    assert played(d, view) == "XX" and d.reason_key == "hint.follow.trull_win"
+    # Without trull the same hand saves its tarokks
+    calm = play_view("XX X hQ", trick=[(3, "XV")], position=0, declarer=1, partner=2)
+    assert played(decide_card(calm), calm) == "X"
+    # An opponent wins a trick worth nothing: take it all the same
+    view = play_view("XX X hQ", trick=[(2, "V")], position=0, declarer=1, partner=2, announcements=[trull])
+    d = decide_card(view)
+    assert played(d, view) == "XX" and d.reason_key == "hint.follow.trull_win"
+    # Last to play: the cheapest card that wins is enough
+    view = play_view("XX X hQ", trick=[(1, "VII"), (2, "VI"), (3, "V")], position=0, declarer=1, partner=2,
+                     announcements=[trull])
+    d = decide_card(view)
+    assert played(d, view) == "X" and d.reason_key == "hint.follow.trull_win"
+    # My team holds the trick for certain: nothing to add
+    view = play_view("XX X hQ", trick=[(1, "V"), (2, "VI"), (3, "XV")], position=0, declarer=1, partner=2,
+                     announcements=[trull])
+    assert decide_card(view).reason_key != "hint.follow.trull_win"
+
+
 def test_lead_rule_off_when_i_hold_the_xxi():
     view = play_view("XXI V hQ h10 dJ", declarer=1, partner=2)
-    assert decide_card(view).reason_key == "hint.lead.long_suit"
+    assert decide_card(view).reason_key == "hint.lead.xxi_suit"
 
 
 def test_declarer_draws_tarokks_but_not_with_xxi_while_skiz_is_out():
@@ -252,9 +334,47 @@ def test_declarer_draws_tarokks_but_not_with_xxi_while_skiz_is_out():
     history = [[(0, "II"), (1, "III"), (2, "IV"), (3, "V")],
                [(0, "VI"), (1, "VII"), (2, "VIII"), (3, "IX")],
                [(0, "X"), (1, "XI"), (2, "XII"), (3, "XIII")]]
+    # Partner not shown yet: a small tarokk, so the partner can answer with the called card
     view = play_view("XXI XIX XVIII XVII hK", position=0, declarer=0, history=history)
     d = decide_card(view)
-    assert played(d, view) == "XIX" and d.reason_key == "hint.lead.draw_tarokks"
+    assert played(d, view) == "XVII" and d.reason_key == "hint.lead.xxi_find_partner"
+    # Partner known and more tarokks than the skíz's hand can answer: high ones, never the XXI
+    view = play_view("XXI XIX XVIII XVII hK", position=0, declarer=0, partner=2, history=history)
+    d = decide_card(view)
+    assert played(d, view) == "XIX" and d.reason_key == "hint.lead.xxi_drive_skiz"
+
+
+def test_xxi_holder_on_the_callers_team_leads_its_shortest_suit_otherwise():
+    # Partner unknown and only two tarokks beside the XXI: no tarokk lead
+    view = play_view("XXI X V hQ hJ h10 dJ", position=0, declarer=0)
+    d = decide_card(view)
+    assert played(d, view) == "dJ" and d.reason_key == "hint.lead.xxi_short_suit"
+    # Partner known, but far too few tarokks to run the skíz dry
+    view = play_view("XXI X V IV hQ hJ h10 dJ", position=0, declarer=0, partner=2)
+    d = decide_card(view)
+    assert played(d, view) == "dJ" and d.reason_key == "hint.lead.xxi_short_suit"
+    # A teammate's trull beside my XXI shows the skíz is theirs: the usual tarokk lead again
+    trull = Announcement(player_position=2, announcement_type=AnnouncementType.TRULL)
+    view = play_view("XXI X V IV hQ hJ h10 dJ", position=0, declarer=0, partner=2, announcements=[trull])
+    assert decide_card(view).reason_key.startswith("hint.lead.d")
+
+
+def test_xxi_escapes_when_nobody_dangerous_plays_after_me():
+    # Last to play, the skíz is not in the trick
+    view = play_view("XXI X hQ", trick=[(1, "V"), (2, "VI"), (3, "VII")], position=0, declarer=1, partner=2)
+    d = decide_card(view)
+    assert played(d, view) == "XXI" and d.reason_key == "hint.follow.xxi_escape"
+    # Only my teammate still plays after me
+    view = play_view("XXI X hQ", trick=[(2, "V"), (3, "VI")], position=0, declarer=0, partner=1)
+    d = decide_card(view)
+    assert played(d, view) == "XXI" and d.reason_key == "hint.follow.xxi_escape"
+
+
+def test_xxi_holder_stays_out_of_the_lead_while_an_opponent_plays_after():
+    # An opponent still plays: the XXI stays, and so does the XX that would win the lead
+    view = play_view("XXI XX IV hQ", trick=[(3, "X")], position=0, declarer=1, partner=2)
+    d = decide_card(view)
+    assert played(d, view) == "IV" and d.reason_key == "hint.follow.xxi_duck"
 
 
 # ---------------------------------------------------------------- following
@@ -296,7 +416,7 @@ def test_feeds_points_to_a_winning_teammate():
 
 
 def test_pagat_goes_home_under_a_teammates_certain_trick():
-    view = play_view("I V", trick=[(1, "X"), (2, "VI"), (3, "XX")], position=0, declarer=1, partner=2)
+    view = play_view("I V IV", trick=[(1, "X"), (2, "VI"), (3, "XX")], position=0, declarer=1, partner=2)
     d = decide_card(view)
     assert played(d, view) == "I" and d.reason_key == "hint.follow.pagat_home"
 
@@ -314,11 +434,101 @@ def test_ulti_announcer_keeps_the_pagat_and_draws_tarokks():
     assert played(d, view) == "XV" and d.reason_key == "hint.lead.ulti_draw"
 
 
+def test_ulti_announcer_without_tarokks_to_draw_leads_a_king():
+    mine = Announcement(player_position=0, announcement_type=AnnouncementType.PAGAT_ULTIMO)
+    view = play_view("I hQ h10 dK dJ", position=0, declarer=0, partner=2, announcements=[mine])
+    d = decide_card(view)
+    assert played(d, view) == "dK" and d.reason_key == "hint.lead.ulti_keep_pagat"
+    # No king: any suit card
+    view = play_view("I hQ h10 dJ", position=0, declarer=0, partner=2, announcements=[mine])
+    d = decide_card(view)
+    assert played(d, view) == "h10" and d.reason_key == "hint.lead.ulti_keep_pagat"
+
+
+def test_skiz_goes_when_the_last_tarokks_out_must_fall_under_it():
+    # 16 tarokks gone in four tricks; with my skíz, XIX and XVIII only the XXI, the XX and the pagát are out
+    ranks = "II III IV V VI VII VIII IX X XI XII XIII XIV XV XVI XVII".split()
+    history = [[(seat, ranks[4 * t + seat]) for seat in range(4)] for t in range(4)]
+    # Leading: three tarokks out, three players follow
+    view = play_view("skiz XIX XVIII hQ", position=0, declarer=1, partner=2, history=history)
+    d = decide_card(view)
+    assert played(d, view) == "skiz" and d.reason_key == "hint.lead.skiz_force"
+    # Following a tarokk lead: the XX lies there, two tarokks out, two players still to play
+    view = play_view("skiz XIX XVIII hQ", trick=[(3, "XX")], position=0, declarer=1, partner=2, history=history)
+    d = decide_card(view)
+    assert played(d, view) == "skiz" and d.reason_key == "hint.follow.skiz_force"
+    # Early in the hand plenty of tarokks are out: keep waiting
+    view = play_view("skiz X hQ h10", trick=[(3, "XX")], position=0, declarer=1, partner=2)
+    assert decide_card(view).reason_key != "hint.follow.skiz_force"
+
+
+def test_enemy_team_leads_a_suit_without_its_king_against_four_kings_or_double_game():
+    for kind in (AnnouncementType.FOUR_KINGS, AnnouncementType.DOUBLE_GAME):
+        bid = Announcement(player_position=2, announcement_type=kind)
+        # Hearts are my longest suit but I hold their king: lead the diamond
+        view = play_view("X V hK hQ hJ h10 dJ", position=0, declarer=3, partner=2, announcements=[bid])
+        d = decide_card(view)
+        assert played(d, view) == "dJ" and d.reason_key == "hint.lead.kings_suit"
+    # Saving a teammate's XXI still comes first: seat 3, my teammate, plays last
+    view = play_view("X V hK hQ dJ", position=0, declarer=1, partner=2, announcements=[bid])
+    assert decide_card(view).reason_key == "hint.lead.partner_last_tarokk"
+    # The caller's team keeps leading tarokks
+    view = play_view("X V hK hQ dJ", position=1, declarer=1, partner=2, announcements=[bid])
+    assert played(decide_card(view), view) == "V"
+
+
+SEVEN_TRICKS = [
+    [(2, "d10"), (3, "dQ"), (0, "IV"), (1, "dK")], [(0, "cJ"), (1, "XVIII"), (2, "cK"), (3, "XIX")],
+    [(3, "II"), (0, "VI"), (1, "VII"), (2, "V")], [(1, "h10"), (2, "hK"), (3, "hC"), (0, "XI")],
+    [(0, "sQ"), (1, "sK"), (2, "XIV"), (3, "III")], [(2, "dJ"), (3, "XV"), (0, "XII"), (1, "XXI")],
+    [(1, "X"), (2, "XVII"), (3, "VIII"), (0, "XX")],
+]
+
+
+def test_pagat_goes_in_the_second_last_trick_when_a_tarokk_stays_out_for_the_last():
+    # The owner's report: skíz, XVI and IX are out, two players still play to this trick
+    view = play_view("XIII I", trick=[(0, "s10")], position=1, declarer=1, partner=0, history=SEVEN_TRICKS)
+    d = decide_card(view)
+    assert played(d, view) == "I" and d.reason_key == "hint.follow.pagat_drop"
+    # Two tarokks out (skíz, IX) and two players still to play: both can fall now, the pagát waits
+    late = SEVEN_TRICKS[:6] + [[(1, "X"), (2, "XVII"), (3, "VIII"), (0, "XVI")]]
+    view = play_view("XIII I", trick=[(0, "XX")], position=1, declarer=1, partner=0, history=late)
+    assert played(decide_card(view), view) == "XIII"
+    # An announced ulti is lost either way: the pagát stays
+    ulti = Announcement(player_position=1, announcement_type=AnnouncementType.PAGAT_ULTIMO)
+    view = play_view("XIII I", trick=[(0, "s10")], position=1, declarer=1, partner=0, history=SEVEN_TRICKS,
+                     announcements=[ulti])
+    assert played(decide_card(view), view) == "XIII"
+
+
+def test_pagat_is_led_in_the_second_last_trick_when_more_than_three_tarokks_are_out():
+    history = SEVEN_TRICKS[:6] + [[(1, "X"), (2, "sJ"), (3, "sC"), (0, "s9")]]  # XVII, VIII, XX stay out too
+    view = play_view("XIII I", position=1, declarer=1, partner=0, history=history)
+    d = decide_card(view)
+    assert played(d, view) == "I" and d.reason_key == "hint.lead.pagat_drop"
+    # Three out: they can all fall on my tarokk lead
+    view = play_view("XIII I", position=1, declarer=1, partner=0, history=SEVEN_TRICKS)
+    assert played(decide_card(view), view) == "XIII"
+
+
 def test_defender_keeps_a_tarokk_against_an_announced_ulti():
+    ulti = Announcement(player_position=1, announcement_type=AnnouncementType.PAGAT_ULTIMO)
+    view = play_view("XV hQ h10", position=0, declarer=0, partner=2, announcements=[ulti])
+    d = decide_card(view)
+    assert played(d, view) == "h10" and d.reason_key == "hint.lead.keep_tarokk_for_ulti"
+
+
+def test_saving_the_xxi_comes_before_the_pagat_ulti_rules():
+    # My fellow defender plays last: the tarokk lead that lets their XXI home beats keeping it
     ulti = Announcement(player_position=1, announcement_type=AnnouncementType.PAGAT_ULTIMO)
     view = play_view("XV hQ h10", position=0, declarer=1, partner=2, announcements=[ulti])
     d = decide_card(view)
-    assert played(d, view) == "h10" and d.reason_key == "hint.lead.keep_tarokk_for_ulti"
+    assert played(d, view) == "XV" and d.reason_key == "hint.lead.partner_last_tarokk"
+    # I announced pagát ulti but hold the skíz with the XXI still out: wait for it, do not draw tarokks
+    mine = Announcement(player_position=0, announcement_type=AnnouncementType.PAGAT_ULTIMO)
+    view = play_view("skiz I XX X IX VIII hQ h10", position=0, declarer=0, announcements=[mine])
+    d = decide_card(view)
+    assert played(d, view) == "h10" and d.reason_key == "hint.lead.skiz_suit"
 
 
 # ----------------------------------------------------------------- counting
@@ -444,6 +654,19 @@ def test_holder_of_the_xx_discards_cheap_cards():
     assert [(c.suit.value, c.rank) for c in chosen] == [("diamonds", "C")]
 
 
+def test_giver_of_a_taken_invit_discards_cheap_cards():
+    # I invited with the XIX and seat 1 took the auction: I will be called, my skart counts against us
+    view = discard_view("XXI XIX X IX hK hQ dC dJ sQ s10", 1)
+    view.declarer_position = 1
+    view.invit = {"by": 0, "card": "XIX"}
+    chosen = [c for c in view.hand if c.id in decide_discard(view).payload["card_ids"]]
+    assert [(c.suit.value, c.rank) for c in chosen] == [("diamonds", "J")]
+    # Somebody else's invit says nothing about me: I discard for the defenders
+    view.invit = {"by": 2, "card": "XIX"}
+    chosen = [c for c in view.hand if c.id in decide_discard(view).payload["card_ids"]]
+    assert [(c.suit.value, c.rank) for c in chosen] == [("diamonds", "C")]
+
+
 def test_leads_the_suit_a_teammate_is_void_in():
     # Seat 3 (fellow defender) could not follow diamonds earlier
     history = [[(1, "dK"), (2, "dQ"), (3, "II"), (0, "d10")]]
@@ -452,10 +675,12 @@ def test_leads_the_suit_a_teammate_is_void_in():
     assert played(decide_card(view), view) == "dJ"
 
 
-def test_called_partner_with_great_honour_announces_trull():
+def test_called_partner_announces_trull_only_with_both_great_honours():
+    """Trull means: our team holds the skíz and the XXI."""
+    d = decide_announcement(announce_view("skiz XXI X hK hQ hJ h10 dQ dJ", partner=True))
+    assert d.payload["announcement_types"] == ["trull"] and d.reason_key == "hint.announce.trull_partner"
     for hand in ("skiz X hK hQ hJ h10 dQ dJ d10", "XXI X hK hQ hJ h10 dQ dJ d10"):
-        d = decide_announcement(announce_view(hand, partner=True))
-        assert d.payload["announcement_types"] == ["trull"] and d.reason_key == "hint.announce.trull_partner"
+        assert decide_announcement(announce_view(hand, partner=True)).action == "pass_announcement"
 
 
 def test_partner_without_great_honour_or_non_partner_does_not_announce_trull():
@@ -571,6 +796,16 @@ def test_no_kontra_with_a_short_hand_or_against_an_unknown_side():
         kontra_view("XIX XVIII X IX VIII VII VI hJ h10", AnnouncementType.PAGAT_ULTIMO, by=2)).action == "pass_announcement"
 
 
+def test_enemy_team_kontras_four_kings_with_five_tarokks_above_the_xiii():
+    strong = "XIX XVIII XVII XVI XIV hK hQ hJ h10"
+    d = decide_announcement(kontra_view(strong, AnnouncementType.FOUR_KINGS, by=1))
+    assert d.action == "contra" and d.payload["announcement_type"] == "four_kings"
+    assert d.reason_key == "hint.announce.kontra_four_kings_high"
+    # Four tarokks above the XIII are not enough
+    weak = "XIX XVIII XVII XVI XIII hK hQ hJ h10"
+    assert decide_announcement(kontra_view(weak, AnnouncementType.FOUR_KINGS, by=1)).action == "pass_announcement"
+
+
 def test_kontra_pagat_ulti_with_seven_tarokks():
     d = decide_announcement(kontra_view("XIX XVIII X IX VIII VII VI hJ h10", AnnouncementType.PAGAT_ULTIMO, by=1))
     assert d.action == "contra" and d.reason_key == "hint.announce.kontra_ulti"
@@ -647,6 +882,10 @@ def test_partner_answers_the_declarers_tarokk_lead_with_the_called_card():
     assert decide_card(high).reason_key != "hint.follow.show_called"
     suit = play_view(hand, trick=[(0, "dK")], position=1, declarer=0, i_am_partner=True)
     assert decide_card(suit).reason_key != "hint.follow.show_called"
+    # Not with a great honour in hand: the XXI catch comes first
+    for honour in ("skiz", "XXI"):
+        held = play_view(hand.replace("VIII", honour), trick=[(0, "V")], position=1, declarer=0, i_am_partner=True)
+        assert decide_card(held).reason_key != "hint.follow.show_called"
 
 
 def test_declarers_side_leads_a_tarokk_when_it_has_one():
@@ -658,3 +897,21 @@ def test_declarers_side_leads_a_tarokk_when_it_has_one():
     # The XXI stays back while the skíz can catch it
     only_xxi = play_view("XXI hQ hJ dC sJ", position=1, declarer=1)
     assert played(decide_card(only_xxi), only_xxi) != "XXI"
+
+
+# ---- the route through the decision tree
+
+def test_decision_carries_the_route_through_the_tree():
+    from bots.strategy import decide_for_seat
+    gs = make_state(["XXI XX X IX hK hQ dC dJ sQ", "skiz hJ", "I cJ", "II cQ"])
+    gs.phase = GamePhase.BIDDING
+    d = decide_for_seat(gs, 0)
+    assert d.reason_key == "hint.bid.xxi_always"
+    checks = [(step["check"], step["matched"]) for step in d.route]
+    assert checks[0] == ("if not (has_skiz or has_xxi or has_pagat):", False)
+    assert ("if has_xxi:", True) in checks
+    # Nothing after the rule that decided, except the safety net every bid passes through
+    assert [text for text, matched in checks if matched] == ["if has_xxi:"]
+    # The route stays on the server: hints sent to a client do not carry it
+    assert "route" not in d.to_dict()
+

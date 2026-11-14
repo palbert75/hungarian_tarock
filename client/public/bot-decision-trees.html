@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Tarokk Bot Decision Trees</title>
+<style>
+html{color-scheme:light}body{margin:0}
+/* Layout: one column of sections; each tree is a top-to-bottom spine of checks, the answer that ends in an action goes right. */
+:root{
+  --bg:#f2f5f1; --surface:#ffffff; --ink:#16211b; --muted:#5a695f; --line:#c3cec6; --accent:#1f6b4a;
+  --tarokk-bg:#dbefe3; --tarokk-bd:#1f6b4a;
+  --suit-bg:#fbe4e0; --suit-bd:#b23a2e;
+  --honour-bg:#fbf0cc; --honour-bd:#9a7400;
+  --pass-bg:#e5e9e5; --pass-bd:#77847b;
+  --act-bg:#dfe8f8; --act-bd:#2f5aa8;
+  --display:"Space Grotesk",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f1512; --surface:#18211c; --ink:#e6ece8; --muted:#98a69d; --line:#35453c; --accent:#5fc596;
+  --tarokk-bg:#173326; --tarokk-bd:#5fc596;
+  --suit-bg:#3a1d1a; --suit-bd:#e0786c;
+  --honour-bg:#3a3013; --honour-bd:#e0b84a;
+  --pass-bg:#242c28; --pass-bd:#84928a;
+  --act-bg:#1a2740; --act-bd:#7fa3e6;
+  color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f1512; --surface:#18211c; --ink:#e6ece8; --muted:#98a69d; --line:#35453c; --accent:#5fc596;
+  --tarokk-bg:#173326; --tarokk-bd:#5fc596;
+  --suit-bg:#3a1d1a; --suit-bd:#e0786c;
+  --honour-bg:#3a3013; --honour-bd:#e0b84a;
+  --pass-bg:#242c28; --pass-bd:#84928a;
+  --act-bg:#1a2740; --act-bd:#7fa3e6;
+  color-scheme:dark }
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+.wrap{max-width:1500px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1{font-family:var(--display);font-size:30px;line-height:1.15;margin:0;text-wrap:balance}
+h2{font-family:var(--display);font-size:22px;margin:0;text-wrap:balance}
+h3{font-family:var(--display);font-size:16px;margin:0}
+p{margin:0;max-width:72ch}
+.lede{color:var(--muted)}
+nav{display:flex;flex-wrap:wrap;gap:8px}
+nav a{font-family:var(--mono);font-size:13px;color:var(--ink);text-decoration:none;border:1px solid var(--line);background:var(--surface);padding:6px 10px;border-radius:4px}
+nav a:hover,nav a:focus-visible{border-color:var(--accent);color:var(--accent);outline:none}
+section{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sub{display:flex;flex-direction:column;gap:10px;min-width:0}
+.legend{display:flex;flex-wrap:wrap;gap:8px;font-size:12px}
+.legend span{padding:3px 8px;border:1px solid;border-radius:3px}
+.defs{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px 24px;font-size:13.5px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:12px 0}
+.defs div{min-width:0}
+.defs b{font-weight:600}
+.scroll{overflow-x:auto;padding:6px 2px 14px}
+.chain{display:flex;flex-direction:column;align-items:flex-start}
+.step{display:flex;align-items:flex-start}
+.node,.leaf{flex:none;box-sizing:border-box;border:1px solid var(--line);border-radius:4px;padding:7px 10px;font-size:13.5px;line-height:1.4}
+.node{width:300px;background:var(--surface);min-height:36px}
+.node.rule{border-style:dashed}
+.leaf{width:250px;font-weight:500;min-height:36px}
+.leaf small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+.id{font-family:var(--mono);font-weight:600;font-size:12px;color:var(--accent);margin-right:6px}
+.meta{display:flex;flex-wrap:wrap;gap:4px 8px;margin-top:4px;font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+.meta .tag{border:1px solid var(--line);border-radius:3px;padding:0 4px}
+.note{display:block;margin-top:4px;font-size:12px;color:var(--muted);font-weight:400}
+.k-tarokk{background:var(--tarokk-bg);border-color:var(--tarokk-bd)}
+.k-suit{background:var(--suit-bg);border-color:var(--suit-bd)}
+.k-honour{background:var(--honour-bg);border-color:var(--honour-bd)}
+.k-pass{background:var(--pass-bg);border-color:var(--pass-bd)}
+.k-act{background:var(--act-bg);border-color:var(--act-bd)}
+.k-any{background:var(--surface);border-color:var(--ink)}
+.k-goto{background:transparent;border-style:dashed;color:var(--muted);font-weight:400}
+.k-off{background:transparent;border-style:dashed;color:var(--muted);text-decoration:line-through}
+.branches{display:flex;flex-direction:column;gap:10px}
+.branch{display:flex;align-items:flex-start;position:relative}
+.branch:not(:only-child)::before{content:"";position:absolute;left:0;width:2px;background:var(--line);top:0;bottom:-10px}
+.branch:not(:only-child):first-child::before{top:18px}
+.branch:not(:only-child):last-child::before{bottom:auto;height:19px}
+.edge{flex:none;height:36px;display:flex;align-items:center;font-size:12px;color:var(--muted);white-space:nowrap}
+.edge::before,.edge::after{content:"";height:2px;width:14px;background:var(--line)}
+.edge span{padding:0 5px}
+.down{margin-left:26px;border-left:2px solid var(--line);padding:5px 0 5px 8px;font-size:12px;color:var(--muted);min-height:16px}
+ul.obs{margin:0;padding-left:20px;max-width:80ch;display:flex;flex-direction:column;gap:6px}
+code{font-family:var(--mono);font-size:.9em}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="sub">
+    <nav><a href="/">← Back to the game</a></nav>
+    <h1>Tarokk bot decision trees</h1>
+    <p class="lede">The bot player as it is implemented today in <code>server/bots/strategy.py</code>. Every check and every action has its own number, so you can say “change C17” or “swap A9 and A12”. Read each tree downwards: the first check that matches decides. Small grey text gives the tactic name and the source line. A problem report lists, for every bot action, the checks it went through with the same source lines (<code>route</code>), so a report can be followed through these trees.</p>
+    <nav>
+      <a href="#bid">A · Bidding</a>
+      <a href="#call">B · Calls and announcements</a>
+      <a href="#play">C · Card play</a>
+      <a href="#skart">D · Skart</a>
+      <a href="#notes">Things I noticed</a>
+    </nav>
+  </header>
+
+  <section id="bid">
+    <h2>A · How the bot bids</h2>
+    <p>“The candidate” is the cheapest way to stay in the auction: <i>hold</i> when that is allowed, otherwise the lowest legal bid. Bids rise three → two → one → solo.</p>
+    <div class="legend"><span class="k-act">bid</span><span class="k-pass">pass</span><span class="k-off">switched off</span></div>
+    <div class="scroll" id="treeA"></div>
+  </section>
+
+  <section id="call">
+    <h2>B · What the bot calls, and in which order</h2>
+    <p>First the declarer's partner call, then the announcements. After the call every bot knows its team for certain, so the announcement tree starts there. Announcements are not either-or: the bot walks down its list, collects everything that applies (the “+” boxes). The final step then decides how much of that list is said in this turn: the caller team says at most two things and lets the partner answer. Only when it has nothing to announce does it consider a kontra.</p>
+    <div class="legend"><span class="k-act">call / announce</span><span class="k-honour">kontra</span><span class="k-pass">pass</span><span class="k-off">switched off</span></div>
+    <div class="sub"><h3>Partner call (declarer)</h3><div class="scroll" id="treeB1"></div></div>
+    <div class="sub"><h3>Announcements (every seat, each turn)</h3><div class="scroll" id="treeB2"></div></div>
+    <div class="sub"><h3>Final step for every seat</h3><div class="scroll" id="treeB3"></div></div>
+  </section>
+
+  <section id="play">
+    <h2>C · Which card the bot plays</h2>
+    <p>Split the way you asked: one branch while an XXI catch is still possible, one branch once trull is announced, one hand holds both great honours, or one of them is gone. The code itself has no such single switch; it is one long list of checks. I sorted each check into the branch where it can fire, and kept the order the code uses.</p>
+    <div class="defs">
+      <div><b>My team (certain after the call).</b> Caller team: I am the declarer, or I hold the called card. Enemy team: everybody else. The bot always knows this in card play.</div>
+      <div><b>Known teammate / known opponent (can be open).</b> Who the others are. Certain for the holder of the called card. The declarer and the enemy team know it only once the partner shows: the called card is played, an invit or yielded game fixes it, or a non-declarer announces something. Until then the declarer has no known teammate, and an enemy-team bot has no known teammate and one known opponent, the declarer.</div>
+      <div><b>Tarokks still out.</b> Every tarokk the bot has not seen: not in its hand, not in its own skart, not yet played.</div>
+      <div><b>Low suit card.</b> The lowest card of a suit a teammate cannot follow; failing that, a suit the fewest opponents are void in; failing that, the longest suit. <code>voids</code></div>
+      <div><b>Cheapest card.</b> Suit cards first, fewest points first; then the lowest tarokk; the pagát last. If a teammate announced pagát ulti, the smallest tarokk is kept and the next one up goes. <code>ulti_keep_small</code></div>
+      <div><b>Hard tarokk.</b> The lowest tarokk that nothing still out can beat, else the highest. Never the pagát; the skíz only when the trick holds 5+ points.</div>
+      <div><b>Opponent after me.</b> Somebody who still plays to this trick and is not a known teammate.</div>
+    </div>
+    <div class="legend"><span class="k-tarokk">plays a tarokk</span><span class="k-suit">plays a suit card</span><span class="k-honour">plays skíz / XXI / pagát</span><span class="k-any">depends on the hand</span><span class="k-goto">falls through</span></div>
+    <div class="sub"><h3>The split</h3><div class="scroll" id="treeC0"></div></div>
+    <div class="sub" id="c-i-lead"><h3>Branch I · catch possible · leading</h3><div class="scroll" id="treeC1"></div></div>
+    <div class="sub" id="c-i-follow"><h3>Branch I · catch possible · following</h3><div class="scroll" id="treeC2"></div></div>
+    <div class="sub" id="c-ii-lead"><h3>Branch II · trull or catch settled · leading</h3><div class="scroll" id="treeC3"></div></div>
+    <div class="sub" id="c-ii-follow"><h3>Branch II · trull or catch settled · following</h3><div class="scroll" id="treeC4"></div></div>
+  </section>
+
+  <section id="skart">
+    <h2>D · What the bot discards</h2>
+    <p>The fourth tree. Kings and honours can never be discarded. The bid winner's skart counts for the caller team; everybody else's skart counts for the enemy team, also the called partner's. The skart happens before the call, so a bot that did not win the bidding can only guess its team from its own cards.</p>
+    <div class="scroll" id="treeS"></div>
+  </section>
+
+  <section id="notes">
+    <h2>Things I noticed while mapping</h2>
+    <ul class="obs">
+      <li>A bot declarer has no rule for four kings or double game at all; only the holder of the called card announces them. So the declarer never “answers” with four kings, and the holder of the called card with the pagát and eight tarokks now stays silent and never gets to announce pagát ulti, unless the declarer declares 8 or 9 tarokks.</li>
+      <li>Trull now means “our team holds both great honours”. Branch II still has two exception checks for a trull from the other team that cannot be true because I hold a great honour myself. Between bots this happens only after an invit: the declarer announces trull with one great honour, trusting the invit to show the other, but an invit can also be given with the pagát alone.</li>
+      <li>The bot always knows its own team after the call, but many card-play checks ask about a <i>known teammate</i> instead. For an enemy-team bot those checks stay silent until the partner shows.</li>
+      <li>Protecting the XXI by leading is an enemy-team rule only. On the caller team the bot just never leads the XXI while the skíz is out, and otherwise leads tarokks.</li>
+      <li>Helping a teammate's pagát ulti leads the second-lowest tarokk without checking whether that card is the XXI.</li>
+      <li>Bots never announce volát or XXI catch, never kontra the game, trull or double game, never rekontra, and never start an invit.</li>
+      <li>The enemy team announces nothing except the eight or nine tarokks declaration; an announcement from a non-declarer is read by the whole table as “I am the partner”.</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+const LM={"1":1,"2":2,"3":3,"4":4,"5":5,"6":6,"7":7,"8":8,"9":9,"10":10,"11":11,"12":12,"13":13,"14":15,"15":16,"16":17,"17":18,"18":19,"19":20,"20":21,"21":22,"22":23,"23":24,"24":25,"25":26,"26":27,"27":28,"28":29,"29":30,"30":31,"31":32,"32":33,"33":34,"34":35,"35":36,"36":37,"37":38,"38":39,"39":40,"40":41,"41":42,"42":43,"43":44,"44":45,"45":46,"46":47,"47":48,"48":49,"49":50,"50":51,"51":52,"52":53,"53":54,"54":55,"55":56,"56":57,"57":58,"58":59,"59":60,"60":61,"61":62,"62":63,"63":64,"64":65,"65":66,"66":67,"67":68,"68":69,"69":70,"70":71,"71":72,"72":75,"73":76,"74":77,"75":78,"76":79,"77":80,"78":81,"79":82,"80":83,"81":84,"82":85,"83":86,"84":87,"85":88,"86":89,"87":90,"88":91,"89":92,"90":93,"91":94,"92":95,"93":96,"94":97,"95":98,"96":99,"97":100,"98":101,"99":102,"100":103,"101":104,"102":105,"103":106,"104":107,"105":108,"106":109,"107":110,"108":111,"109":112,"110":113,"111":114,"112":115,"113":116,"114":117,"115":118,"116":119,"117":120,"118":121,"119":122,"120":123,"121":124,"122":125,"123":126,"124":127,"125":128,"126":129,"127":130,"128":131,"129":132,"130":133,"131":134,"132":135,"133":136,"134":137,"135":138,"136":139,"137":140,"138":141,"139":142,"140":143,"141":144,"142":145,"143":146,"144":147,"145":148,"146":149,"147":150,"148":151,"149":152,"150":153,"151":154,"152":155,"153":156,"154":157,"155":158,"156":159,"157":160,"158":161,"159":162,"160":163,"161":164,"162":165,"163":166,"164":167,"165":168,"166":169,"167":170,"168":171,"169":172,"170":173,"171":174,"172":175,"173":176,"174":177,"175":178,"176":179,"177":180,"178":184,"179":185,"180":186,"181":187,"182":188,"183":189,"184":190,"185":191,"186":192,"187":193,"188":194,"189":195,"190":196,"191":197,"192":198,"193":199,"194":200,"195":201,"196":202,"197":203,"198":204,"199":205,"200":206,"201":207,"202":208,"203":209,"204":210,"205":211,"206":212,"207":213,"208":214,"209":215,"210":216,"211":217,"212":218,"213":219,"214":220,"215":221,"216":222,"217":223,"218":224,"219":225,"220":226,"221":227,"222":228,"223":229,"224":230,"225":231,"226":232,"227":233,"228":273,"229":274,"230":275,"231":276,"232":277,"233":278,"234":279,"235":280,"236":281,"237":282,"238":283,"239":284,"240":285,"241":286,"242":287,"243":288,"244":289,"245":290,"246":291,"247":292,"248":293,"249":295,"250":296,"251":297,"252":298,"253":298,"254":298,"255":298,"256":299,"257":300,"258":301,"259":302,"260":303,"261":307,"262":308,"263":309,"264":310,"265":311,"266":312,"267":313,"268":314,"269":315,"270":316,"271":319,"272":320,"273":321,"274":324,"275":325,"276":326,"277":327,"278":328,"279":329,"280":334,"281":335,"282":336,"283":337,"284":338,"285":339,"286":340,"287":341,"288":342,"289":343,"290":344,"291":345,"292":346,"293":347,"294":348,"295":349,"296":350,"297":351,"298":352,"299":353,"300":354,"301":355,"302":356,"303":357,"304":358,"305":359,"306":360,"307":361,"308":362,"309":363,"310":364,"311":365,"312":366,"313":367,"314":368,"315":369,"316":370,"317":371,"318":372,"319":373,"320":374,"321":375,"322":376,"323":377,"324":378,"325":379,"326":380,"327":381,"328":382,"329":383,"330":384,"331":385,"332":386,"333":387,"334":388,"335":389,"336":390,"337":391,"338":392,"339":393,"340":394,"341":395,"342":396,"343":397,"344":398,"345":399,"346":400,"347":401,"348":402,"349":403,"350":404,"351":405,"352":406,"353":407,"354":408,"355":409,"356":410,"357":411,"358":412,"359":413,"360":414,"361":415,"362":416,"363":417,"364":418,"365":419,"366":420,"367":421,"368":422,"369":423,"370":455,"371":456,"372":457,"373":458,"374":459,"375":460,"376":461,"377":462,"378":463,"379":464,"380":465,"381":466,"382":467,"383":468,"384":469,"385":470,"386":471,"387":472,"388":473,"389":474,"390":475,"391":476,"392":477,"393":478,"394":479,"395":480,"396":481,"397":482,"398":483,"399":484,"400":485,"401":486,"402":487,"403":488,"404":489,"405":490,"406":491,"407":492,"408":493,"409":494,"410":495,"411":496,"412":497,"413":498,"414":499,"415":500,"416":501,"417":502,"418":503,"419":504,"420":505,"421":506,"422":507,"423":508,"424":509,"425":510,"426":511,"427":512,"428":513,"429":514,"430":515,"431":516,"432":517,"433":518,"434":519,"435":520,"436":521,"437":522,"438":523,"439":524,"440":525,"441":526,"442":527,"443":528,"444":529,"445":530,"446":531,"447":532,"448":533,"449":534,"450":535,"451":536,"452":537,"453":537,"454":537,"455":537,"456":537,"457":538,"458":539,"459":540,"460":541,"461":542,"462":543,"463":544,"464":545,"465":546,"466":555,"467":556,"468":557,"469":558,"470":563,"471":564,"472":565,"473":566,"474":567,"475":568,"476":577,"477":578,"478":579,"479":580,"480":581,"481":582,"482":583,"483":584,"484":585,"485":586,"486":587,"487":588,"488":601,"489":602,"490":603,"491":604,"492":605,"493":606,"494":607,"495":608,"496":609,"497":610,"498":611,"499":614,"500":615,"501":628,"502":629,"503":630,"504":631,"505":632,"506":633,"507":634,"508":635,"509":636,"510":637,"511":638,"512":639,"513":640,"514":641,"515":642,"516":643,"517":644,"518":645,"519":646,"520":647,"521":648,"522":649,"523":650,"524":651,"525":652,"526":653,"527":654,"528":655,"529":656,"530":657,"531":658,"532":659,"533":660,"534":661,"535":662,"536":663,"537":670,"538":671,"539":672,"540":673,"541":678,"542":679,"543":680,"544":681,"545":682,"546":683,"547":685,"548":687,"549":688,"550":689,"551":690,"552":691,"553":692,"554":693,"555":694,"556":695,"557":696,"558":697,"559":698,"560":699,"561":700,"562":701,"563":702,"564":703,"565":704,"566":705,"567":713,"568":714,"569":719,"570":720,"571":721,"572":722,"573":723,"574":724,"575":725,"576":726,"577":727,"578":728,"579":729,"580":730,"581":731,"582":732,"583":733,"584":734,"585":735,"586":736,"587":752,"588":753,"589":754,"590":755,"591":756,"592":757,"593":758,"594":759,"595":760,"596":761,"597":762,"598":763,"599":764,"600":765,"601":766,"602":767,"603":768,"604":769,"605":770,"606":771,"607":772,"608":773,"609":774,"610":775,"611":776,"612":777,"613":778,"614":779,"615":780,"616":781,"617":782,"618":783,"619":784,"620":785,"621":786,"622":787,"623":788,"624":789,"625":790,"626":791,"627":792,"628":793,"629":794,"630":795,"631":796,"632":797,"633":798,"634":799,"635":800,"636":801,"637":802,"638":803,"639":804,"640":805,"641":806,"642":807,"643":808,"644":809,"645":810,"646":811,"647":812,"648":813,"649":814,"650":815,"651":816,"652":817,"653":818,"654":819,"655":820,"656":821,"657":822,"658":823,"659":824,"660":825,"661":826,"662":827,"663":846,"664":847,"665":848,"666":849,"667":854,"668":855,"669":856};
+// ---- tiny DSL ---------------------------------------------------------------
+// q(text, opts, rightLabel, rightNode, downLabel): a check; one answer goes right, the other continues down
+// seq(a, b, c, ...): chains checks downwards; the last item may be an action
+// m(text, opts, [[label,node],...]): a check whose answers all go right
+const q=(text,o,rl,rn,dl)=>({text,...(o||{}),right:rn?[[rl,rn]]:[],down:null,dl:dl||'no'});
+const seq=(...xs)=>{for(let i=0;i<xs.length-1;i++)xs[i].down=[xs[i].dl,xs[i+1]];return xs[0]};
+const m=(text,o,right)=>({text,...(o||{}),right,down:null});
+const leaf=k=>(text,detail)=>({leaf:k,text,detail});
+const BID=leaf('act'),PASS=leaf('pass'),SAY=leaf('act'),KON=leaf('honour'),OFF=leaf('off');
+const T=leaf('tarokk'),S=leaf('suit'),H=leaf('honour'),X=leaf('any'),G=leaf('goto');
+const L=n=>'strategy.py:'+(LM[n]||n);
+
+// ---- A: bidding -------------------------------------------------------------
+const A=seq(
+  q('Do I hold an honour: skíz, XXI or pagát?',{src:L(110)},'no',PASS('Pass','no honour, no bid'),'yes'),
+  q('Is there any bid I may still make?',{src:'strategy.py:117'},'no',PASS('Pass'),'yes'),
+  q('Did I give an invit myself, and somebody else now holds the highest bid?',{src:'strategy.py:124',note:'Only reached as a hint for a human seat: bots never start an invit.'},'yes',PASS('Pass','they took my invit and will call my card')),
+  q('Somebody else gave an invit, I hold the skíz or the XXI, and the candidate is below solo (or I hold 6+ tarokks)?',{src:'strategy.py:129',tag:'invit_accept'},'yes',BID('Bid the candidate','take the auction, then call the invited card')),
+  q('I hold the XIX, a great honour and 6+ tarokks, and a jump bid up to “one” is open?',{src:L(128),tag:'invit_give · off'},'yes',OFF('Jump bid to invite the XIX','switched off: lost points in testing')),
+  q('Yield turn: I said three, one other said two, the rest passed, and I am allowed to pass (I hold the XX and a great honour)?',{src:L(132),tag:'yield_game'},'yes',PASS('Pass','yields the game: the other player calls my XX')),
+  q('Do I hold the XXI?',{src:L(136)},'yes',seq(
+    q('Would the candidate be solo?',{src:L(138)},'yes',PASS('Pass','never solo with the XXI')),
+    BID('Bid the candidate','always bids with the XXI, up to “one”'))),
+  q('Do I hold the skíz?',{src:L(142)},'yes',seq(
+    q('4 or more tarokks beside the skíz?',{src:L(144)},'yes',PASS('Pass','a strong skíz stays out and waits for the XXI')),
+    q('Would the candidate be above “two”?',{src:L(146)},'yes',PASS('Pass','limit reached')),
+    BID('Bid the candidate','a weak skíz bids up to “two”')),'no: pagát only'),
+  q('The candidate is “two” over a “three” from the seat right before me, that is the only bidding so far, and I have not bid yet?',{src:L(151),tag:'bid_over_three'},'yes',BID('Bid “two”','either a yielded game with a strong partner, or more talon cards')),
+  q('Fewer than 8 tarokks?',{src:L(158)},'yes',PASS('Pass')),
+  q('Would the candidate be above “two”?',{src:L(160)},'yes',PASS('Pass','limit reached')),
+  BID('Bid the candidate','pagát with 8+ tarokks bids up to “two”'));
+const A2=seq(
+  q('Safety net after every decision above: is it a Pass that is not legal here? (On a yield turn a pass needs the XX and a great honour.)',{src:L(96)},'yes',BID('Bid the candidate instead','must hold')),
+  X('The decision above stands'));
+
+// ---- B: partner call --------------------------------------------------------
+const B1=seq(
+  q('Is the call fixed by the auction?',{src:L(205)},'yes',
+    m('Why?',{src:L(207)},[['I accepted an invit',SAY('Call the invited card','XIX or XVIII')],['the game was yielded to me',SAY('Call the XX')]])),
+  q('Do I hold the XX myself?',{src:L(210)},'no',SAY('Call the XX'),'yes'),
+  SAY('Call the highest tarokk below it that I do not hold','XIX, then XVIII … down to XII; if I hold all of them, call the XX (myself)'));
+
+// ---- B: announcements -------------------------------------------------------
+const tarokkDecl=()=>q('I hold exactly 8 or exactly 9 tarokks and have not declared them?',{src:'strategy.py:318'},'yes',SAY('+ eight / nine tarokks','always declared: everybody else pays'),'then');
+const ulti=()=>q('I hold the pagát and have 9+ tarokks, or 8 with three of them XVII or higher?',{src:'strategy.py:307'},'yes',SAY('+ pagát ulti'),'then');
+const B2=m('Which team am I on? (Certain once the card is called.)',{src:L(251)},[
+  ['caller team: I am the declarer',seq(
+    q('I accepted somebody\'s invit and hold the skíz or the XXI?',{src:L(238),tag:'invit_trull',note:'One great honour is enough here: the invit is taken to show the other one.'},'yes',SAY('+ trull'),'then'),
+    q('I hold both the skíz and the XXI?',{src:L(255)},'yes',SAY('+ trull','if not already on the list; pagát and tarokk count do not matter'),'then'),
+    q('I hold the pagát and have 9+ tarokks; or 8 with three of them XVII or higher, once my partner has announced four kings or declared 8 or 9 tarokks?',{src:'strategy.py:307'},'yes',SAY('+ pagát ulti'),'then'),
+    q('I hold 6+ tarokks and a great honour, and a non-declarer has announced something?',{src:L(264),tag:'signal_double · off'},'yes',OFF('+ double game','switched off: costs about a quarter point per hand'),'then'),
+    q('I hold exactly 8 or exactly 9 tarokks, have not declared them, and trull has been called (by anyone, or by me in this turn or earlier)?',{src:'strategy.py:318'},'yes',SAY('+ eight / nine tarokks','everybody else pays'),'then'),
+    G('Go to the final step'))],
+  ['caller team: I hold the called card',seq(
+    q('I gave an invit with the pagát as my only honour, and my card was called?',{src:L(234)},'yes',SAY('+ pagát ulti','obligatory'),'then'),
+    q('6+ tarokks?',{src:L(243)},'yes',SAY('+ four kings'),'then'),
+    q('5+ tarokks above the XIII?',{src:L(245),tag:'partner_double'},'yes',SAY('+ double game'),'then'),
+    q('I hold both the skíz and the XXI?',{src:'strategy.py:294',note:'Trull means: our team holds both great honours. I cannot see the declarer\'s hand, so one is not enough.'},'yes',SAY('+ trull'),'then'),
+    q('I hold the pagát and have 9+ tarokks; or 8 with three of them XVII or higher, once the declarer has announced four kings or declared 8 or 9 tarokks?',{src:'strategy.py:307'},'yes',SAY('+ pagát ulti'),'then'),
+    q('I hold exactly 8 or exactly 9 tarokks, have not declared them, and trull has been called (by anyone, or by me in this turn or earlier)?',{src:'strategy.py:318'},'yes',SAY('+ eight / nine tarokks','everybody else pays'),'then'),
+    G('Go to the final step'))],
+  ['enemy team',seq(
+    tarokkDecl(),
+    q('Nothing on my list, the caller team announced four kings, no kontra on it yet, and I hold 5+ tarokks above the XIII?',{src:'strategy.py:330',tag:'kontra',note:'“Caller team” here means the declarer, or a non-declarer who announced something.'},'yes',KON('Kontra the four kings','strong hand')),
+    G('Go to the final step','the enemy team announces nothing else'))]]);
+const B3=seq(
+  q('Strike from my list what may no longer be announced (already announced by anyone).',{src:L(273),rule:true},null,null,'then'),
+  q('Am I on the caller team?',{src:'strategy.py:322',note:'Announcements carry information, so the partner must get a turn to answer.'},'yes',seq(
+    q('Four kings is on my list, and: double game is on it too, or I hold the pagát with 8+ tarokks, or I declare (or already declared) 8 or 9 tarokks?',{src:'strategy.py:265'},'yes',PASS('Take four kings off my list for this turn','double game goes first; with a pagát ulti hand I want to hear four kings from my partner; a tarokk count already says “long hand”'),'then'),
+    q('More than two things left on my list?',{src:'strategy.py:270'},'yes',PASS('Keep the first two, in this order: trull, double game, tarokk count, four kings, pagát ulti','the rest waits for my next turn; trull is never held back, and a pagát ulti owed for an invit goes first'),'then'),
+    G('Carry on below'))),
+  q('Is my list empty?',{src:'strategy.py:324'},'yes',seq(
+    q('A known opponent announced four kings, no kontra on it yet, and I hold 6+ tarokks with two at XVII or higher?',{src:'strategy.py:334',tag:'kontra'},'yes',KON('Kontra the four kings')),
+    q('A known opponent announced pagát ulti, no kontra on it yet, and I hold 7+ tarokks?',{src:'strategy.py:337',tag:'kontra'},'yes',KON('Kontra the pagát ulti')),
+    PASS('Pass'))),
+  SAY('Announce what is on the list'));
+
+// ---- C: card play -----------------------------------------------------------
+const C0=m('Can the XXI still be caught, as far as this seat can tell?',{note:'My grouping. The code checks these facts one by one inside the rules below.'},[
+  ['yes',m('Branch I. No trull announced by anyone, skíz and XXI both still unplayed, and I do not hold both.',{},[
+    ['I lead',G('Branch I · leading','next tree below')],['I follow',G('Branch I · following')]])],
+  ['no',m('Branch II. Trull is announced (the announcing team holds both great honours), or I hold both skíz and XXI, or one of the two has been played.',{},[
+    ['I lead',G('Branch II · leading')],['I follow',G('Branch II · following')]])]]);
+
+function leadTree(two){
+  const strong = two ? 'not the pagát; not the XXI while the skíz is in another hand' : 'not the pagát, not the XXI';
+  const hunt=()=>seq(
+    q('Are 3 or fewer tarokks still out (the XXI among them)?',{src:'strategy.py:561'},'yes',H('Lead the skíz','three players follow: the XXI has to fall under it')),
+    q('Do I have a suit card?',{src:'strategy.py:564'},'yes',S('Lead the cheapest card of a suit whose king I do not hold','any suit if I hold every king; the XXI\'s holder may have to follow')),
+    q('Do I have a tarokk other than skíz and pagát?',{src:'strategy.py:567'},'yes',T('Lead my lowest tarokk')),
+    G('Carry on with the checks below','ends up leading the skíz'));
+  const head=[
+    q('I announced pagát ulti and still hold the pagát?',{src:'strategy.py:610'},'yes',seq(
+      q('Tarokks are still out, and I have one to lead ('+strong+')?',{src:'strategy.py:611',tag:'ulti_small'},'yes',T('Lead my lowest such tarokk','draw the tarokks, keep the pagát for the end')),
+      q('Do I have a suit card?',{src:'strategy.py:614'},'yes',S('Lead a king if I hold one, otherwise the low suit card','a king should keep the lead; keep the pagát')),
+      G('Carry on with the checks below'))),
+    q('Somebody not known as my teammate announced pagát ulti, I have exactly one tarokk beside the pagát, and a suit card?',{src:'strategy.py:626'},'yes',S('Lead the low suit card','keep the tarokk for the last trick'))];
+  const mid = two ? [
+    q('Exception: the other team announced trull, yet I hold the skíz myself and the XXI is still unplayed?',{src:L(469),tag:'skiz_hunt',note:'Their trull cannot be true, so the bot keeps waiting for the XXI.'},'yes',hunt()),
+    q('Trull was called, I am on the enemy team, and I have a suit card?',{src:'strategy.py:575'},'yes',S('Lead the low suit card','general rule: once trull is called, the enemy team leads suits; with four kings or double game also announced, a suit whose king I do not hold')),
+    q('General rule once trull is called: the caller team leads a tarokk. The checks below pick which one. A suit is led only with no tarokk to lead, or in the pagát ulti cases.',{rule:true},null,null,'then'),
+    q('Skíz and XXI are both still unplayed, I hold neither, a known teammate who plays last to this trick seems to wait with the skíz, and I have a tarokk beside the pagát?',{src:L(479),tag:'skiz_drive'},'yes',T('Lead my highest tarokk','drive the XXI out')),
+    q('Trull is announced on my side, the pagát has not been seen yet, I hold 5+ tarokks, and have one to lead ('+strong+')?',{src:L(483),tag:'pagat_catch'},'yes',T('Lead my highest such tarokk','draw tarokks until the pagát falls')),
+    q('Four kings or double game is announced, I am on the enemy team, and I have a suit card?',{src:'strategy.py:598'},'yes',S('Lead the cheapest card of a suit whose king I do not hold','keep my own kings away from their tarokks; any suit if I hold every king')),
+    q('General rule once four kings or double game is announced: the caller team leads a tarokk. The checks below pick which one.',{rule:true},null,null,'then'),
+    q('I am on the enemy team, the skíz or the XXI has already been played, and I have a suit card?',{src:L(489)},'yes',S('Lead the low suit card','nothing left to protect'))
+  ] : [
+    q('Do I hold the skíz?',{src:L(469),tag:'skiz_hunt'},'yes',hunt()),
+    q('A known teammate who plays last to this trick seems to wait with the skíz, I do not hold the XXI, and I have a tarokk beside the pagát?',{src:L(479),tag:'skiz_drive',note:'“Seems to wait”: they threw a XIV–XX under a higher card instead of winning.'},'yes',T('Lead my highest tarokk','drive the XXI out')),
+    q('I am on the enemy team, hold neither the skíz nor the XXI, the player who plays last to this trick is a known teammate, and I have a tarokk beside the pagát?',{src:'strategy.py:593'},'yes',T('Lead my lowest tarokk','the teammate\'s XXI can go home in last seat')),
+    q('Four kings or double game is announced, I am on the enemy team, and I have a suit card?',{src:'strategy.py:598'},'yes',S('Lead the cheapest card of a suit whose king I do not hold','keep my own kings away from their tarokks; any suit if I hold every king')),
+    q('General rule once four kings or double game is announced: the caller team leads a tarokk. The checks below pick which one.',{rule:true},null,null,'then'),
+    q('I am on the enemy team, hold neither the skíz nor the XXI, and have a suit card?',{src:'strategy.py:605'},'yes',S('Lead the low suit card','protect a teammate\'s XXI'))
+  ];
+  const tail=[
+    q('A known teammate announced pagát ulti, I have 2+ tarokks beside the pagát, and tarokks are still out?',{src:L(504),tag:'ulti_support'},'yes',T('Lead my second-lowest tarokk','help to draw tarokks, keep the smallest for the end')),
+    q('I am on the caller team, hold more than half as many tarokks as are still out, and have one to lead ('+strong+')?',{src:L(511)},'yes',T('Lead my highest such tarokk','draw the tarokks')),
+    q('I am on the caller team and have such a tarokk at all?',{src:L(516),tag:'declarer_tarokk'},'yes',T('Lead my lowest such tarokk','the caller team leads a tarokk whenever it has one')),
+    q('Do I have a suit card?',{src:L(519)},'yes',S('Lead the low suit card')),
+    q('Do I have a tarokk beside the pagát?',{src:L(521)},'yes',T('Lead my lowest tarokk','can be the XXI when nothing else is left')),
+    H('Lead the pagát','the only card left')];
+  const xxi=q(two?'Exception: the other team announced trull, yet I hold the XXI myself and the skíz is still unplayed?':'Do I hold the XXI?',{src:'strategy.py:540',note:'Leading the XXI is never safe while the skíz can take it.'},'yes',
+    m('Which team am I on?',{src:'strategy.py:542'},[
+      ['caller team',seq(
+        q('My partner has not shown yet, and I hold 3+ tarokks beside the XXI?',{src:'strategy.py:545'},'yes',T('Lead my lowest tarokk (not the pagát)','my partner can take it with the called card and show who they are')),
+        q('My partner is known, and my tarokks beside the XXI and pagát number more than half of the other tarokks still out (the skíz not counted)?',{src:'strategy.py:547'},'yes',T('Lead my highest tarokk below the XXI','keep leading high tarokks until the skíz has to fall')),
+        q('Do I have a suit card?',{src:'strategy.py:551'},'yes',S('Lead the lowest card of my shortest suit','soon I can trump that suit')),
+        G('Carry on with the checks below'))],
+      ['enemy team',seq(
+        q('Do I have a suit card?',{src:'strategy.py:553'},'yes',S('Lead the low suit card','a suit, never a tarokk')),
+        G('Carry on with the checks below'))]]));
+  const drop=q('It is the second-last trick, I hold the pagát and one more card, I did not announce pagát ulti, and more than 3 tarokks are still out?',{src:'strategy.py:536',note:'Count the tarokks: three players can play at most three of them to this trick, so one is left for the last trick and beats the pagát there. That is a lost silent pagát ulti, whoever takes it.'},'yes',H('Lead the pagát','better lost now than as a lost silent ulti in the last trick'));
+  return seq(drop,xxi,...mid,...head,...tail);
+}
+
+function followTree(two){
+  const huntQ = two
+    ? 'Exception: the other team announced trull, yet I hold the skíz myself and the XXI is still unplayed?'
+    : 'Do I hold the skíz (so I am waiting for the XXI)?';
+  const xxiQ = two ? 'Exception: the other team announced trull, yet I hold the XXI myself and the skíz is still unplayed.' : 'I hold the XXI.';
+  const drive = two ? ', or (while skíz and XXI are both unplayed) the known teammate seated before me seems to wait with the skíz' : ', or the known teammate seated before me seems to wait with the skíz';
+  const mate=seq(
+    q('Their card is certain to hold (no opponent after me, or their tarokk beats everything still out), I have the pagát, and I did not announce pagát ulti?',{src:L(593)},'yes',H('Play the pagát','bring it home')),
+    q('Not certain, they are winning with a suit card, an opponent plays after me, all I can play are tarokks, and a king is in the trick or my teammate led the suit?',{src:L(595),tag:'hit_hard · hit_hard_lead'},'yes',T('Play a hard tarokk','keep the trick and the lead on our side')),
+    q('The trick is certain and I have a suit card?',{src:L(600),tag:'safe_feed'},'yes',S('Play my most valuable suit card','feed the teammate')),
+    X('Play my cheapest card'));
+  const foe=seq(
+    q('I can win, an opponent plays after me, all I can play are tarokks, and a king is in the trick or a known teammate led a suit?',{src:L(611),tag:'hit_hard'},'yes',T('Play a hard tarokk')),
+    q('Kurta: I could win, but the trick holds under 5 points, it is one of the first four tricks, I hold 7+ tarokks and a known teammate plays after me?',{src:L(619),tag:'kurta'},'yes',X('Play my cheapest card','leave it to the shorter hand')),
+    q('Can I win the trick? (The pagát counts as a winner only when I play last.)',{src:L(606)},'no',X('Play my cheapest card'),'yes'),
+    q('Am I the last to play?',{src:L(627)},'yes',seq(
+      q('Does the pagát win it?',{src:L(628)},'yes',H('Play the pagát','bring it home')),
+      X('Win with my cheapest winning card'))),
+    q('Worth it: 5+ points in the trick, or a known opponent is winning it'+drive+'?',{src:L(615),tag:'stop_foe · skiz_drive'},'yes',X('Win with my cheapest winning card')),
+    X('Play my cheapest card'));
+  const hunt=seq(
+    q('A tarokk was led, and no more tarokks are still out than players still to play after me?',{src:'strategy.py:717'},'yes',H('Play the skíz','the XXI has to come, even though it is not in the trick yet')),
+    q('Can I stay under the trick with a card other than skíz and pagát?',{src:'strategy.py:721'},'yes',seq(
+      q('Are all those losing cards tarokks?',{src:L(572)},'yes',T('Play the highest tarokk that still loses','shed high tarokks, stay out of the lead')),
+      q('Is a known teammate winning the trick?',{src:L(574)},'yes',S('Play my most valuable losing card','feed the teammate')),
+      X('Play my cheapest losing card'))),
+    q('Do I have any card other than skíz and pagát?',{src:L(577)},'yes',X('Play the cheapest of them','forced to win')),
+    G('Carry on with the checks below'));
+  const trullWin=q('Trull was called, I can win the trick, and my team does not already hold it for certain?',{src:'strategy.py:744',note:'General rule once trull is called: every trick is fought for. “For certain” means a known teammate is winning and no opponent can still beat their card.'},'yes',seq(
+    q('Does an opponent still play after me?',{src:'strategy.py:745'},'yes',X('Win with my best card','a hard tarokk, or my highest card of the suit led; also over a teammate who is winning')),
+    q('Does the pagát win it?',{src:'strategy.py:747'},'yes',H('Play the pagát','bring it home')),
+    X('Win with my cheapest winning card')));
+  return seq(
+    q('Only one legal card?',{src:L(529)},'yes',X('Play it')),
+    q(xxiQ+' I may play the XXI, and nobody but known teammates plays after me (or I am last)?',{src:'strategy.py:667'},'yes',H('Play the XXI','it escapes: nobody left to play can hold the skíz against me')),
+    q('I can play the skíz, and the XXI of somebody not known as my teammate lies in the trick?',{src:L(539)},'yes',H('Play the skíz','XXI caught')),
+    q('It is the second-last trick, I hold the pagát and one more card, both are legal, I did not announce pagát ulti, and more tarokks are still out than players still to play after me?',{src:'strategy.py:676',note:'Count the tarokks: one is left for the last trick and beats the pagát there. That is a lost silent pagát ulti, whoever takes it.'},'yes',H('Play the pagát','better lost now than as a lost silent ulti in the last trick')),
+    q('I hold the called card but neither the skíz nor the XXI, the declarer led a tarokk, an opponent plays after me, and my called card would take over the trick?',{src:L(547),tag:'show_called'},'yes',T('Play the called card','shows the table who is with whom')),
+    q('Set aside before choosing (if another card is legal): the XXI, while the skíz is in another hand and an opponent plays after me; the pagát, if I announced pagát ulti.',{src:L(553),rule:true},null,null,'then'),
+    q(xxiQ+' An opponent plays after me, and I have a card (not the XXI, not the pagát) that does not win the trick?',{src:'strategy.py:708'},'yes',X('Play my cheapest card that does not win','stay out of the lead; if the player after me takes the trick, I play last to the next one')),
+    q(huntQ,{src:L(568),tag:'skiz_hunt'},'yes',hunt),
+    ...(two?[trullWin]:[]),
+    m('Who is winning the trick so far?',{src:L(588)},[['a known teammate',mate],['an opponent, or somebody whose side I do not know',foe]]));
+}
+
+// ---- D: skart ---------------------------------------------------------------
+const SK=seq(
+  q('Did I give the invit? Then the card I invited with is never discarded.',{src:L(170),rule:true},null,null,'then'),
+  q('I hold the skíz without the XXI and more than 6 tarokks?',{src:L(189),tag:'skiz_weak_skart'},'yes',T('Discard my highest allowed tarokks first, until 6 tarokks are left','a skíz hoping to catch the XXI wants to stay out of the lead; any discards still owed follow the checks below')),
+  m('Whose team does my skart count for?',{src:'strategy.py:182',tag:'xx_cheap_skart'},[
+    ['I won the bidding',S('Suit cards: kingless suits first, shortest suit first, dearest card first. Then tarokks, lowest first.','my skart counts for my own team: put points into it')],
+    ['I expect to be called: I hold the XX, or the bid winner took my invit',S('Suit cards: kingless suits first, shortest suit first, cheapest card first. Then tarokks, lowest first.','my skart counts for the enemy team: give away as little as possible')],
+    ['anybody else',S('Suit cards: kingless suits first, shortest suit first, dearest card first. Then tarokks, lowest first.','my skart counts for the enemy team, which I expect to be on: put points into it')]]));
+
+// ---- numbering --------------------------------------------------------------
+// Every box gets its number here, in reading order: a check, then what hangs to its right, then what follows below.
+function number(roots,prefix,start){
+  let n=start||0;
+  const visit=node=>{
+    let cur=node;
+    while(cur){
+      cur.id=prefix+(++n);
+      if(cur.leaf)break;
+      for(const [,child] of cur.right)visit(child);
+      cur=cur.down?cur.down[1]:null;
+    }
+  };
+  roots.forEach(visit);
+  return n;
+}
+const TREES={
+  A:[A,A2], B1:[B1], B2:[B2], B3:[B3],
+  C0:[C0], CIlead:[leadTree(false)], CIfollow:[followTree(false)], CIIlead:[leadTree(true)], CIIfollow:[followTree(true)],
+  D:[SK],
+};
+number(TREES.A,'A');
+number(TREES.B3,'B',number(TREES.B2,'B',number(TREES.B1,'B')));
+number(TREES.CIIfollow,'C',number(TREES.CIIlead,'C',number(TREES.CIfollow,'C',number(TREES.CIlead,'C',number(TREES.C0,'C')))));
+number(TREES.D,'D');
+
+// ---- for the server: which source line is which box -------------------------
+// {line: [{id, yes, no}]}: "yes" is the action box right of a check, "no" the action box below it
+function collect(roots){
+  const out={};
+  const leafId=node=>node&&node.leaf&&node.leaf!=='goto'?node.id:null;
+  const visit=node=>{
+    let cur=node;
+    while(cur&&!cur.leaf){
+      const m=/:(\d+)$/.exec(cur.src||'');
+      if(m)(out[m[1]]=out[m[1]]||[]).push({id:cur.id,yes:cur.right.length===1?leafId(cur.right[0][1]):null,no:cur.down?leafId(cur.down[1]):null});
+      for(const [,child] of cur.right)visit(child);
+      cur=cur.down?cur.down[1]:null;
+    }
+  };
+  roots.forEach(visit);
+  return out;
+}
+const team=i=>Object.assign(collect([TREES.B2[0].right[i][1]]),collect(TREES.B3));
+const CONTEXTS={
+  A:collect(TREES.A), B1:collect(TREES.B1),
+  'B.declarer':team(0), 'B.partner':team(1), 'B.enemy':team(2),
+  'C.I':collect([...TREES.CIlead,...TREES.CIfollow]), 'C.II':collect([...TREES.CIIlead,...TREES.CIIfollow]),
+  D:collect(TREES.D),
+};
+
+// ---- drawing ----------------------------------------------------------------
+function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e}
+const idTag=node=>'<span class="id">'+node.id+'</span>';
+function leafEl(node){
+  return el('div','leaf k-'+node.leaf,idTag(node)+node.text+(node.detail?'<small>'+node.detail+'</small>':''));
+}
+function render(node){
+  if(node.leaf)return leafEl(node);
+  const chain=el('div','chain');
+  let cur=node;
+  while(cur){
+    if(cur.leaf){chain.appendChild(leafEl(cur));break}
+    const step=el('div','step');
+    let meta='';
+    if(cur.tag||cur.src)meta='<div class="meta">'+(cur.tag?'<span class="tag">'+cur.tag+'</span>':'')+(cur.src?'<span>'+cur.src+'</span>':'')+'</div>';
+    step.appendChild(el('div','node'+(cur.rule?' rule':''),idTag(cur)+cur.text+(cur.note?'<span class="note">'+cur.note+'</span>':'')+meta));
+    if(cur.right.length){
+      const bs=el('div','branches');
+      for(const [label,child] of cur.right){
+        const b=el('div','branch');
+        b.appendChild(el('div','edge','<span>'+label+'</span>'));
+        b.appendChild(render(child));
+        bs.appendChild(b);
+      }
+      step.appendChild(bs);
+    }
+    chain.appendChild(step);
+    if(!cur.down)break;
+    chain.appendChild(el('div','down',cur.down[0]+' ↓'));
+    cur=cur.down[1];
+  }
+  return chain;
+}
+function mount(target,roots){
+  const box=el('div','chain');box.style.gap='18px';
+  roots.forEach(r=>box.appendChild(render(r)));
+  document.getElementById(target).appendChild(box);
+}
+if(typeof document==='undefined'){
+  module.exports={CONTEXTS,TREES};
+}else{
+  mount('treeA',TREES.A);mount('treeB1',TREES.B1);mount('treeB2',TREES.B2);mount('treeB3',TREES.B3);
+  mount('treeC0',TREES.C0);mount('treeC1',TREES.CIlead);mount('treeC2',TREES.CIfollow);mount('treeC3',TREES.CIIlead);mount('treeC4',TREES.CIIfollow);
+  mount('treeS',TREES.D);
+}
+</script>
+</body>
+</html>

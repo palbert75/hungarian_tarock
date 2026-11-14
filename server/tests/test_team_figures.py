@@ -124,6 +124,24 @@ def test_xxi_catch_from_recorded_trick_format():
     assert result["player_scores"][1] == result["player_scores"][3] == 50 + result["final_game_value"] + 21
 
 
+def test_pagat_beaten_in_the_last_trick_is_a_lost_silent_ulti_whoever_takes_it():
+    # The owner's report: the declarer's pagát falls to the partner's tarokk in the last trick
+    result = score("hK", history=last_trick(2, [(1, "dC"), (3, "hQ"), (2, "XVI"), (0, "I")]))
+    assert kinds(result, achieved=False) == [("pagat_ultimo", False)]
+    lost = [a for a in result["announcement_details"] if not a["achieved"]][0]
+    assert lost["points"] == -5 and lost["team"] == "declarer_team"
+    # Taken by a defender: the same
+    result = score("hK", history=last_trick(1, [(1, "XVI"), (0, "I")]))
+    assert kinds(result, achieved=False) == [("pagat_ultimo", False)]
+    # A pagát that went earlier loses nothing
+    result = score("hK", history=last_trick(1, [(1, "XVI"), (0, "II")]))
+    assert kinds(result, achieved=False) == []
+    # An announced ulti is lost once, not twice
+    ulti = Announcement(player_position=2, announcement_type=AnnouncementType.PAGAT_ULTIMO, announced=True)
+    result = score("hK", announcements=[ulti], history=last_trick(1, [(1, "XVI"), (0, "I")]))
+    assert kinds(result, achieved=False) == [("pagat_ultimo", True)]
+
+
 def test_failed_announced_double_game_and_volat_cost_their_multiple():
     # The reported hand: declarer announced double game, partner volát; the defenders won
     double = Announcement(player_position=0, announcement_type=AnnouncementType.DOUBLE_GAME, announced=True)

@@ -6,7 +6,8 @@ from models.announcement import Announcement, AnnouncementType
 from models.bid import Bid
 from game_logic.announcement_checker import (
     check_announcement_achieved,
-    check_silent_achievements
+    check_silent_achievements,
+    check_silent_failures
 )
 
 
@@ -108,6 +109,9 @@ def calculate_final_score(
         trick_history, declarer_team_points, opponent_team_points
     )
     achieved_announcements.extend(silent_achievements)
+    failed_announcements.extend(check_silent_failures(
+        players, declarer_position, partner_position, announcements, trick_history
+    ))
 
     # Calculate base game value
     base_game_value = winning_bid.game_value

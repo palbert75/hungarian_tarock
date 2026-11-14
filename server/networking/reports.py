@@ -37,6 +37,10 @@ def log_decision(room: Room, position: int, decision, fallback: bool = False) ->
         "payload": decision.payload,
         "reason_key": decision.reason_key,
         "reason_params": decision.reason_params,
+        # The route through the decision tree as the box numbers of the page (Settings > How the bots play)
+        "tree_route": " → ".join(getattr(decision, "boxes", [])),
+        # The checks in the order they were asked; the last match decided
+        "route": list(getattr(decision, "route", [])),
         "fallback": fallback,
     })
     del room.decision_log[:-MAX_DECISIONS]
