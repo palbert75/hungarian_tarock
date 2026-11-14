@@ -116,7 +116,7 @@ function leadTree(two){
     q('A known teammate announced pagát ulti, I have 2+ tarokks beside the pagát, and tarokks are still out?',{src:L(504),tag:'ulti_support'},'yes',T('Lead my second-lowest tarokk','help to draw tarokks, keep the smallest for the end')),
     q('I am on the caller team, hold more than half as many tarokks as are still out, and have one to lead ('+strong+')?',{src:L(511)},'yes',T('Lead my highest such tarokk','draw the tarokks')),
     q('I am on the caller team and have such a tarokk at all?',{src:L(516),tag:'declarer_tarokk'},'yes',T('Lead my lowest such tarokk','the caller team leads a tarokk whenever it has one')),
-    q('Do I have a suit card?',{src:L(519)},'yes',S('Lead the low suit card')),
+    q('Do I have a suit card?',{src:L(519)},'yes',S('Lead the low suit card','caller team: from a suit whose king I do not hold, or a king if I hold the king of every suit I have')),
     q('Do I have a tarokk beside the pagát?',{src:L(521)},'yes',T('Lead my lowest tarokk','can be the XXI when nothing else is left')),
     H('Lead the pagát','the only card left')];
   const xxi=q(two?'Exception: the other team announced trull, yet I hold the XXI myself and the skíz is still unplayed?':'Do I hold the XXI?',{src:LS(`if _xxi_at_risk(view):`),note:'Leading the XXI is never safe while the skíz can take it.'},'yes',
@@ -124,7 +124,7 @@ function leadTree(two){
       ['caller team',seq(
         q('My partner has not shown yet, and I hold 3+ tarokks beside the XXI?',{src:LS(`len(view.tarokks) - 1 >= XXI_FIND_PARTNER_TAROKKS`)},'yes',T('Lead my lowest tarokk (not the pagát)','my partner can take it with the called card and show who they are')),
         q('My partner is known, and my tarokks beside the XXI and pagát number more than half of the other tarokks still out (the skíz not counted)?',{src:LS(`elif others and len(others) > (len(out) - 1) / 2`)},'yes',T('Lead my highest tarokk below the XXI','keep leading high tarokks until the skíz has to fall')),
-        q('Do I have a suit card?',{src:LS(`if short:`)},'yes',S('Lead the lowest card of my shortest suit','soon I can trump that suit')),
+        q('Do I have a suit card?',{src:LS(`if short:`)},'yes',S('Lead the lowest card of my shortest suit whose king I do not hold; a king if I hold the king of every suit I have','soon I can trump that suit; my partner can tell where the king is')),
         G('Carry on with the checks below'))],
       ['enemy team',seq(
         q('Do I have a suit card?',{src:LS(`elif low_suit:`)},'yes',S('Lead the low suit card','a suit, never a tarokk')),
@@ -167,6 +167,8 @@ function followTree(two){
     X('Win with my cheapest winning card')));
   return seq(
     q('Only one legal card?',{src:L(529)},'yes',X('Play it')),
+    q('Working out who must follow suit: my known teammate on the caller team led a low suit card (by our convention not from a suit whose king they hold), I do not hold that king, and all but one of the other players have shown they are out of the suit. That one player holds the king and has to follow suit. Once the trick is trumped, that player does not count as an opponent after me in the checks below.',{rule:true,note:'A king cannot lie in the skart, so it must be in that hand.'},null,null,'then'),
+    q(xxiQ+' I may play the XXI, and the only opponent after me is the player who must follow suit with the king?',{src:LS(`if at_risk and xxi and bound is not None and not foe_after:`)},'yes',H('Play the XXI','nobody can put the skíz on it; it comes home, usually with the king')),
     q(xxiQ+' I may play the XXI, and nobody but known teammates plays after me (or I am last)?',{src:LS(`if at_risk and xxi and not foe_after:`)},'yes',H('Play the XXI','it escapes: nobody left to play can hold the skíz against me')),
     q('I can play the skíz, and the XXI of somebody not known as my teammate lies in the trick?',{src:L(539)},'yes',H('Play the skíz','XXI caught')),
     q('It is the second-last trick, I hold the pagát and one more card, both are legal, I did not announce pagát ulti, and more tarokks are still out than players still to play after me?',{src:LA(`doomed_pagat = _pagat_must_go(view, len(seats_after))`,`if doomed_pagat:`),note:'Count the tarokks: one is left for the last trick and beats the pagát there. That is a lost silent pagát ulti, whoever takes it.'},'yes',H('Play the pagát','better lost now than as a lost silent ulti in the last trick')),

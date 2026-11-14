@@ -36,7 +36,7 @@ export default function PartnerCallPhase({ table }: { table: Table }) {
       turn={game.declarer_position}
       content={(position) =>
         position === game.declarer_position ? (
-          <span className="bubble bubble-hi">{t(`bid.${game.winning_bid?.bid_type ?? 'three'}`)}</span>
+          <span className="bubble bubble-muted">…</span>
         ) : null
       }
     />

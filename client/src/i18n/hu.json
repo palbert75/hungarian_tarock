@@ -252,7 +252,7 @@
       "skiz_force": "Már csak {{count}} tarokk van kint, köztük a XXI, és hárman tesznek utánad: hívd a skízt, a XXI-nek alá kell esnie.",
       "xxi_find_partner": "Nálad a XXI, és még nem tudod, ki a partnered: hívj kis tarokkot ({{card}}), hogy a partnered a hívott lappal üthesse, és megmutassa magát.",
       "xxi_drive_skiz": "Nálad a XXI, és elég tarokkod van ahhoz, hogy kitarokkozd a skízt: hívj nagy tarokkot ({{card}}), és folytasd, amíg a skíznek le nem kell esnie.",
-      "xxi_short_suit": "Nálad a XXI, és a skíz még kint van: ne hívj tarokkot. Hívj a legrövidebb színedből ({{card}}), hogy hamar lophasd.",
+      "xxi_short_suit": "Nálad a XXI, és a skíz még kint van: ne hívj tarokkot. Hívj színt ({{card}}): a legrövidebb olyan színedet, amelynek a királya nincs nálad, vagy királyt, ha minden színedben nálad a király. Így a partnered tudja, hol a király.",
       "xxi_suit": "Nálad a XXI a felvevők ellen, és a skíz még kint van: színt hívj ({{card}}), ne tarokkot.",
       "ulti_draw": "Pagátultimót mondtál: hívd ezt: {{card}}, hogy kihúzd a többieknél még lehetséges {{count}} tarokkot.",
       "ulti_keep_pagat": "Pagátultimót mondtál: hívd ezt: {{card}}, a pagátot tartsd meg az utolsó ütésre.",
@@ -272,6 +272,7 @@
       "declarer_tarokk": "A felvevők oldalán állsz, és van tarokkod: hívj tarokkot ({{card}}). A felvevők tarokkot hívnak, hogy elfogyjon az ellenfél tarokkja."
     },
     "follow": {
+      "xxi_escape_king": "A partnered olyan színt hívott, amelynek a királya nincs nála, az előtted ülőknek pedig nincs ebből a színből: a király az utánad jövőnél van, neki színt kell adnia. Senki sem tehet skízt a XXI-edre: tedd most, a királlyal együtt hazajön.",
       "pagat_drop": "Még {{count}} tarokk van kint, több, mint amennyit az utánad jövők ebbe az ütésbe tehetnek: az utolsó ütésre is marad, és ott elüti a pagátodat, ami bukott csendes pagátulti. Tedd be most a pagátot ({{card}}).",
       "trull_win": "Trull van bemondva, minden ütés számít: vidd el ezt ezzel: {{card}}. Ha még ellenfél tesz utánad, olyan lappal üss, amit nem tud felülütni.",
       "skiz_force": "Tarokkot hívtak, és az utánad következőknél már csak {{count}} tarokk lehet: tedd most a skízt, a XXI-nek jönnie kell.",
@@ -300,7 +301,6 @@
     "playerDropped": "{{name}} kiesett",
     "allPassed": "Mindenki passzolt – új osztás",
     "talonReceived": "Lapok a talonból: {{count}}",
-    "tarokksDiscarded": "{{name}} tarokkot skartolt: {{count}}",
     "partnerCalled": "A hívott lap: {{card}}",
     "partnerRevealed": "{{name}} a partner",
     "contraGame": "{{name}} skartolta a hívott lapot: kontra a játékra, a felvevő egyedül játszik",
@@ -363,6 +363,7 @@
     "invitHelp": "Az ugrás invit: csak akkor mondhatod, ha nálad van a jelzett tarokk."
   },
   "speech": {
-    "call": "Hívom: {{card}}"
+    "call": "Hívom: {{card}}",
+    "tarokkLies": "{{count}} tarokk fekszik"
   }
 }

@@ -10,7 +10,7 @@ from typing import List, Optional
 
 import structlog
 
-from bots.counting import PAGAT, SKIZ, XXI, observed_voids, skiz_out, tarokks_out, xxi_played
+from bots.counting import PAGAT, SKIZ, XXI, observed_voids, played_cards, skiz_out, tarokks_out, xxi_played
 from bots import route
 from bots.decision import CALL_ORDER, Decision, fallback_decision
 from bots.view import Play, SeatView, build_view
@@ -452,6 +452,43 @@ def _shortest_suit_low(cards: List[Card], view: SeatView) -> Optional[Card]:
     return min(suit_cards, key=lambda c: (length[c.suit], c.points, c.suit.value))
 
 
+def _readable_suit_lead(view: SeatView, pick: Optional[Card]) -> Optional[Card]:
+    """
+    The owner's convention for the caller's team: a suit lead comes from a suit whose king I do
+    not hold; with a king in every suit I have, I lead the king itself. So my partner can tell
+    where the king is.
+    """
+    if pick is None or not view.on_declarer_side or pick.is_king():
+        return pick
+    kings = {c.suit for c in view.hand if c.is_king()}
+    if pick.suit not in kings:
+        return pick
+    length = {s: len([c for c in view.hand if c.suit == s]) for s in Suit}
+    kingless = [c for c in view.legal_cards if not c.is_tarokk() and c.suit not in kings]
+    if kingless:
+        return min(kingless, key=lambda c: (length[c.suit], c.points, c.suit.value))
+    return next(c for c in view.legal_cards if c.is_king() and c.suit == pick.suit)
+
+
+def _king_holder(view: SeatView) -> Optional[int]:
+    """
+    The seat that must hold the king of the suit led, and so has to follow suit.
+    My teammate on the caller's team led a low card of the suit, so by our convention the king
+    is not theirs; it is not mine, a king cannot lie in the skart, and all but one of the
+    other players have shown they are out of the suit.
+    """
+    lead_seat, lead_card = view.current_trick[0]
+    if lead_card.is_tarokk() or lead_card.is_king():
+        return None
+    if not view.on_declarer_side or not view.is_teammate(lead_seat):
+        return None
+    if any(c.is_king() and c.suit == lead_card.suit for c in view.hand + played_cards(view)):
+        return None
+    voids = observed_voids(view)
+    seats = [s for s in range(4) if s not in (view.position, lead_seat) and (s, lead_card.suit) not in voids]
+    return seats[0] if len(seats) == 1 else None
+
+
 def _side_announced(view: SeatView, kinds) -> bool:
     return any(
         a.announcement_type.value in kinds
@@ -547,7 +584,7 @@ def _lead(view: SeatView) -> Decision:
             elif others and len(others) > (len(out) - 1) / 2:
                 # Enough tarokks to run the skíz's hand dry: lead high ones until the skíz must fall
                 return _play(others[-1], "hint.lead.xxi_drive_skiz")
-            short = _shortest_suit_low(legal, view)
+            short = _readable_suit_lead(view, _shortest_suit_low(legal, view))
             if short:
                 return _play(short, "hint.lead.xxi_short_suit")
         elif low_suit:
@@ -644,7 +681,7 @@ def _lead(view: SeatView) -> Decision:
         return _play(strong_tarokks()[0], "hint.lead.declarer_tarokk")
 
     if low_suit:
-        return _play(low_suit, "hint.lead.long_suit")
+        return _play(_readable_suit_lead(view, low_suit), "hint.lead.long_suit")
     if plain_tarokks:
         return _play(plain_tarokks[0], "hint.lead.low_tarokk")
     return _play(legal[0], "hint.lead.only_card")
@@ -657,13 +694,20 @@ def _follow(view: SeatView) -> Decision:
         return _play(legal[0], "hint.follow.only_card")
 
     seats_after = [(view.position + i) % 4 for i in range(1, 4 - len(trick))]
-    foe_after = any(not view.is_teammate(seat) for seat in seats_after)
     winner_seat, winner_card = _winning_play(trick)
     out = tarokks_out(view)
+    # The owner's rule: a player who must hold the king of the suit led has to follow suit,
+    # and cannot beat a tarokk. Once the trick is trumped, they are no danger after me.
+    bound = _king_holder(view)
+    if bound not in seats_after or not (winner_card.is_tarokk() or all(c.is_tarokk() for c in legal)):
+        bound = None
+    foe_after = any(not view.is_teammate(seat) and seat != bound for seat in seats_after)
 
     # The owner's rule: nobody who could hold the skíz plays after me, so the XXI escapes now
     at_risk = _xxi_at_risk(view)
     xxi = next((c for c in legal if _is(c, XXI)), None)
+    if at_risk and xxi and bound is not None and not foe_after:
+        return _play(xxi, "hint.follow.xxi_escape_king")
     if at_risk and xxi and not foe_after:
         return _play(xxi, "hint.follow.xxi_escape")
 

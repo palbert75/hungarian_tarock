@@ -158,11 +158,9 @@ class SocketManager {
 
     socket.on('player_discarded', (payload) => {
       const data = unwrap<{ player_position: number; tarokks_discarded: number }>(payload)
+      // "Tarokk fekszik": said aloud at the table, like a bid
       if (data.tarokks_discarded > 0) {
-        toast('info', t('toast.tarokksDiscarded', {
-          name: this.nameAt(data.player_position),
-          count: data.tarokks_discarded,
-        }), 4000)
+        store().say(data.player_position, t('speech.tarokkLies', { count: data.tarokks_discarded }))
       }
     })
 

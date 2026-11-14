@@ -359,6 +359,37 @@ def test_xxi_holder_on_the_callers_team_leads_its_shortest_suit_otherwise():
     assert decide_card(view).reason_key.startswith("hint.lead.d")
 
 
+def test_xxi_goes_home_when_the_player_after_me_must_follow_suit_with_the_king():
+    # The owner's report: my partner led a heart without its king, seat 1 trumped, I have no
+    # heart: the king is with seat 3, who has to follow suit and cannot put the skíz on the XXI
+    first = [[(0, "XX"), (1, "III"), (2, "II"), (3, "XIX")]]
+    view = play_view("XXI XVIII XIV IV sK sQ sJ", trick=[(0, "hQ"), (1, "VI")], position=2, declarer=2,
+                     partner=0, history=first)
+    d = decide_card(view)
+    assert played(d, view) == "XXI" and d.reason_key == "hint.follow.xxi_escape_king"
+    # Seat 1 followed suit: the king can be there or with seat 3, so the XXI still ducks
+    view = play_view("XXI XVIII XIV IV sK sQ sJ", trick=[(0, "hQ"), (1, "hJ")], position=2, declarer=2,
+                     partner=0, history=first)
+    assert played(decide_card(view), view) != "XXI"
+    # Led by an opponent: no convention to read
+    view = play_view("XXI XVIII XIV IV sK sQ sJ", trick=[(3, "hQ"), (0, "hJ"), (1, "VI")], position=2,
+                     declarer=2, partner=0, history=first)
+    assert played(decide_card(view), view) == "XXI"  # last to play, the old rule
+    view = play_view("XXI XVIII XIV IV sK sQ sJ", trick=[(1, "hQ")], position=2, declarer=2,
+                     partner=0, history=first)
+    assert played(decide_card(view), view) != "XXI"
+
+
+def test_caller_team_leads_a_suit_without_its_king_or_the_king_itself():
+    # XXI at risk, partner known: diamonds are shortest but I hold their king, so the heart goes
+    view = play_view("XXI II dK dJ hQ hJ h10", position=1, declarer=1, partner=3)
+    d = decide_card(view)
+    assert played(d, view) == "h10" and d.reason_key == "hint.lead.xxi_short_suit"
+    # A king in every suit I hold: lead the king
+    view = play_view("XXI II dK dJ", position=1, declarer=1, partner=3)
+    assert played(decide_card(view), view) == "dK"
+
+
 def test_xxi_escapes_when_nobody_dangerous_plays_after_me():
     # Last to play, the skíz is not in the trick
     view = play_view("XXI X hQ", trick=[(1, "V"), (2, "VI"), (3, "VII")], position=0, declarer=1, partner=2)

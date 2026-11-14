@@ -252,7 +252,7 @@
       "skiz_force": "Only {{count}} tarokks are still out, the XXI among them, and three players follow: lead the skíz, the XXI has to fall under it.",
       "xxi_find_partner": "You hold the XXI and do not know your partner yet: lead a small tarokk ({{card}}) so your partner can take it with the called card and show themselves.",
       "xxi_drive_skiz": "You hold the XXI and enough tarokks to run the skíz's hand dry: lead a high one ({{card}}) and keep going until the skíz has to fall.",
-      "xxi_short_suit": "You hold the XXI and the skíz is still out: do not lead tarokks. Lead from your shortest suit ({{card}}), so you can soon trump it.",
+      "xxi_short_suit": "You hold the XXI and the skíz is still out: do not lead tarokks. Lead a suit ({{card}}): your shortest suit whose king you do not hold, or a king if you hold the king of every suit you have. Your partner can then tell where the king is.",
       "xxi_suit": "You hold the XXI against the caller's team and the skíz is still out: lead a suit ({{card}}), not a tarokk.",
       "ulti_draw": "You announced pagát ultimo: lead {{card}} to draw out the {{count}} tarokks the others may still hold.",
       "ulti_keep_pagat": "You announced pagát ultimo: lead {{card}} and keep the pagát for the last trick.",
@@ -272,6 +272,7 @@
       "declarer_tarokk": "You are on the declarer's side and hold a tarokk: lead one ({{card}}). The declarers lead tarokks to run the defenders out of them."
     },
     "follow": {
+      "xxi_escape_king": "Your partner led a suit without its king, and the others before you are out of it: the player after you must hold the king and has to follow suit. Nobody can put the skíz on your XXI: play it now, it comes home with the king.",
       "pagat_drop": "{{count}} tarokks are still out, more than the players after you can play to this trick: one is left for the last trick and beats your pagát there, a lost silent pagát ulti. Play the pagát ({{card}}) now.",
       "trull_win": "Trull is called, so every trick counts: win this one with {{card}}. With an opponent still to play, use a card they cannot beat.",
       "skiz_force": "A tarokk was led and only {{count}} tarokks are still out for the players after you: play the skíz now, the XXI has to come.",
@@ -300,7 +301,6 @@
     "playerDropped": "{{name}} dropped out",
     "allPassed": "Everyone passed – new deal",
     "talonReceived": "Cards from the talon: {{count}}",
-    "tarokksDiscarded": "{{name}} discarded tarokks: {{count}}",
     "partnerCalled": "Called partner: {{card}}",
     "partnerRevealed": "{{name}} is the partner",
     "contraGame": "{{name}} discarded the called card: kontra on the game, the declarer plays alone",
@@ -363,6 +363,7 @@
     "invitHelp": "A jump is an invit: you may only bid it if you hold the tarokk it shows."
   },
   "speech": {
-    "call": "I call: {{card}}"
+    "call": "I call: {{card}}",
+    "tarokkLies": "Tarokks in the skart: {{count}}"
   }
 }

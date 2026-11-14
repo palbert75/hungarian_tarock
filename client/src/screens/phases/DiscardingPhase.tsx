@@ -43,13 +43,18 @@ export default function DiscardingPhase({ table }: { table: Table }) {
   ) : (
     <Seats
       table={table}
-      content={(position) =>
-        discarded.includes(position) ? (
-          <span className="bubble">✓ {t('discard.done')}</span>
+      content={(position) => {
+        const lying = game.players.find((p) => p.position === position)?.tarokks_discarded ?? 0
+        return discarded.includes(position) ? (
+          lying > 0 ? (
+            <span className="bubble bubble-hi">{t('speech.tarokkLies', { count: lying })}</span>
+          ) : (
+            <span className="bubble">✓ {t('discard.done')}</span>
+          )
         ) : (
           <span className="bubble bubble-muted">{position === game.current_turn ? '…' : '–'}</span>
         )
-      }
+      }}
     />
   )
 

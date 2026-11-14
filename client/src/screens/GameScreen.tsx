@@ -15,29 +15,47 @@ import AnnouncementsPhase from './phases/AnnouncementsPhase'
 import PlayingPhase from './phases/PlayingPhase'
 import GameOverScreen from './GameOverScreen'
 
-/** One line saying what is being played: who bid what, the called card, what was announced. */
+/** What is being played, said player by player: the bid and the called card, then what each one announced. */
 function ContractLine({ table }: { table: Table }) {
   const { t } = useTranslation()
   const { game } = table
   if (game.declarer_position === null || !game.winning_bid || game.phase === 'bidding') return null
-  const parts = [`${table.nameAt(game.declarer_position)}: ${t(`bid.${game.winning_bid.bid_type}`)}`]
-  if (game.called_card_rank) parts.push(t('game.called', { card: tarokkName(game.called_card_rank, t) }))
-  if (game.required_call && game.invit) parts.push(`${t('bidding.invit', { card: game.invit.card })} (${table.nameAt(game.invit.by)})`)
+  const declarer = game.declarer_position
+  const said = new Map<number, string[]>()
+  const add = (position: number, text: string) => said.set(position, [...(said.get(position) ?? []), text])
+
+  add(declarer, t(`bid.${game.winning_bid.bid_type}`))
+  if (game.called_card_rank) add(declarer, t('game.called', { card: tarokkName(game.called_card_rank, t) }))
+  if (game.declarer_alone) add(declarer, t('game.alone'))
+  if (game.required_call && game.invit) add(game.invit.by, t('bidding.invit', { card: game.invit.card }))
   else if (game.required_call && game.yielded_by !== null && game.yielded_by !== undefined) {
-    parts.push(`${t('bidding.yielded')} (${table.nameAt(game.yielded_by)})`)
+    add(game.yielded_by, t('bidding.yielded'))
   }
-  if (game.declarer_alone) parts.push(t('game.alone'))
-  if (game.game_contra) parts.push(t('announce.contraGame'))
+  if (game.game_contra) add(game.game_contra_by ?? declarer, t('announce.contraGame'))
+  for (const p of game.players) {
+    if (p.tarokks_discarded) add(p.position, t('speech.tarokkLies', { count: p.tarokks_discarded }))
+  }
   for (const [seat, count] of Object.entries(game.tarokk_declarations || {})) {
-    parts.push(`${t(`announcement.${count === 9 ? 'nine_tarokks' : 'eight_tarokks'}`)} (${table.nameAt(Number(seat))})`)
+    add(Number(seat), t(`announcement.${count === 9 ? 'nine_tarokks' : 'eight_tarokks'}`))
   }
   for (const a of game.announcements) {
-    const mark = a.recontra ? ` (${t('announce.recontraShort')})` : a.contra ? ` (${t('announce.contraShort')})` : ''
-    parts.push(`${t(`announcement.${a.announcement_type}`)}${mark}`)
+    const name = t(`announcement.${a.announcement_type}`)
+    add(a.player_position, name)
+    // A kontra is said by the other side: it stands with the player who said it
+    if (a.contra_by != null) add(a.contra_by, `${t('announce.contraShort')}: ${name}`)
+    if (a.recontra_by != null) add(a.recontra_by, `${t('announce.recontraShort')}: ${name}`)
   }
+  // The declarer first, the others in the order they sit after them
+  const order = [0, 1, 2, 3].map((i) => (declarer + i) % 4).filter((position) => said.has(position))
   return (
     <div className="flex-none safe-x py-1 text-center text-[0.72rem] text-slate-200/90 bg-black/25">
-      <div className="truncate">{parts.join(' · ')}</div>
+      <div className="flex flex-wrap justify-center gap-x-3 gap-y-0.5">
+        {order.map((position) => (
+          <span key={position}>
+            <span className="font-semibold text-white">{table.nameAt(position)}:</span> {said.get(position)!.join(', ')}
+          </span>
+        ))}
+      </div>
       <div className="pt-0.5 text-[0.65rem]">
         <SideLegend table={table} />
       </div>
