@@ -1,0 +1,14 @@
+# The server's data: the saved tables (SQLite) and the problem reports.
+# It outlives the pod, so a deploy does not end the running games.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tarokk-data
+  namespace: tarokk
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: do-block-storage
+  resources:
+    requests:
+      storage: 1Gi

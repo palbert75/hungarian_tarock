@@ -14,6 +14,7 @@
   "connection": {
     "connecting": "Kapcsolódás…",
     "reconnecting": "Megszakadt a kapcsolat – újracsatlakozás…",
+    "restarting": "A szerver frissül – a játék mindjárt folytatódik…",
     "returning": "Vissza a helyedre…"
   },
   "lobby": {

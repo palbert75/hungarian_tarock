@@ -67,6 +67,9 @@ class PersistenceManager:
                 game_state_dict["room_meta"] = {
                     "owner_id": room.owner_id,
                     "bot_speed": room.bot_speed,
+                    # The result on the table and the bots' reasons must outlive a restart too
+                    "last_game_over": room.last_game_over,
+                    "decision_log": room.decision_log,
                 }
                 self.db.save_game_state(room.room_id, game_state_dict)
 
@@ -212,6 +215,8 @@ class PersistenceManager:
             meta = game_state_dict.get("room_meta") or {}
             room.owner_id = meta.get("owner_id")
             room.bot_speed = meta.get("bot_speed", "normal")
+            room.last_game_over = meta.get("last_game_over")
+            room.decision_log = meta.get("decision_log") or []
             logger.debug("game_state_reconstructed",
                         room_id=room_id,
                         players_loaded=len(room.game_state.players))

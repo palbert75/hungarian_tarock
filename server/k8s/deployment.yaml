@@ -1,3 +1,4 @@
+# Applied by deploy.sh, which puts the image tag (the git commit) in place of IMAGE_TAG.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -6,22 +7,60 @@ metadata:
   name: app
   namespace: tarokk
 spec:
+  # All tables live in the memory of one process, and the volume attaches to
+  # one pod: the old pod must be gone before the new one starts.
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: app
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app: app
     spec:
-      automountServiceAccountToken: true
+      # On SIGTERM the server tells the players, saves every table and exits (about a second)
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        fsGroup: 1000  # the server runs as user 1000 and must be able to write the volume
       containers:
-      - image: palbert75/hungarian-tarokk-server
-        imagePullPolicy: Always
+      - image: palbert75/hungarian-tarokk-server:IMAGE_TAG
+        imagePullPolicy: IfNotPresent
         name: app
         ports:
         - containerPort: 8000
           protocol: TCP
+        env:
+        - name: DEBUG
+          value: "false"
+        - name: LOG_LEVEL
+          value: INFO
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          periodSeconds: 3
+          failureThreshold: 2
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 20
+          periodSeconds: 20
+          timeoutSeconds: 5
+          failureThreshold: 3
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            memory: 512Mi
+        volumeMounts:
+        - name: data
+          mountPath: /app/data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: tarokk-data
       restartPolicy: Always

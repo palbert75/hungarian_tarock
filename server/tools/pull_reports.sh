@@ -1,6 +1,6 @@
 #!/bin/bash
 # Copy problem reports from the live server pod into server/data/reports.
-# The pod has no volume, so reports are lost when it restarts: run this before a deploy.
+# The reports stay on the pod's volume across deploys; this only fetches a copy to read.
 #   cd server; tools/pull_reports.sh
 set -e
 CONTEXT="${KUBE_CONTEXT:-do-ams3-general}"

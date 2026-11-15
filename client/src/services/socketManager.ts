@@ -47,7 +47,7 @@ class SocketManager {
     const socket = this.socket
 
     socket.on('connect', () => {
-      const wasReconnecting = store().connectionStatus === 'reconnecting'
+      const wasReconnecting = ['reconnecting', 'restarting'].includes(store().connectionStatus)
       store().setConnectionStatus('connected')
       if (wasReconnecting) toast('success', t('toast.reconnected'))
 
@@ -64,11 +64,17 @@ class SocketManager {
     })
 
     socket.on('connect_error', () => {
-      store().setConnectionStatus(store().connectionStatus === 'connecting' ? 'connecting' : 'reconnecting')
+      const now = store().connectionStatus
+      store().setConnectionStatus(now === 'connecting' || now === 'restarting' ? now : 'reconnecting')
+    })
+
+    // The server is being updated: it saved every table and is back in a moment
+    socket.on('server_restarting', () => {
+      store().setConnectionStatus('restarting')
     })
 
     socket.on('disconnect', (reason) => {
-      store().setConnectionStatus('reconnecting')
+      if (store().connectionStatus !== 'restarting') store().setConnectionStatus('reconnecting')
       if (reason === 'io server disconnect') socket.connect()
     })
 

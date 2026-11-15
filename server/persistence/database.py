@@ -26,6 +26,11 @@ class GameDatabase:
 
         self.conn = sqlite3.connect(db_path, check_same_thread=False)
         self.conn.row_factory = sqlite3.Row  # Access columns by name
+        # Write-ahead log: a commit appends to the log instead of rewriting and
+        # syncing the database file. With synchronous=NORMAL a crash of the
+        # server loses nothing; only a power cut may lose the last few commits.
+        self.conn.execute("PRAGMA journal_mode=WAL")
+        self.conn.execute("PRAGMA synchronous=NORMAL")
         self._init_schema()
         logger.info("database_initialized", path=db_path)
 
@@ -437,5 +442,7 @@ class GameDatabase:
 
     def close(self):
         """Close database connection."""
+        # Fold the log back into the database file, so the file alone is complete
+        self.conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
         self.conn.close()
         logger.info("database_connection_closed")

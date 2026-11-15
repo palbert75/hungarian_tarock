@@ -1,5 +1,7 @@
 """Main entry point for Hungarian Tarokk server."""
 
+import logging
+
 import uvicorn
 import structlog
 import asyncio
@@ -10,8 +12,12 @@ from fastapi.middleware.cors import CORSMiddleware
 import socketio
 import time
 
-from networking.server import sio, init_persistence, shutdown_persistence
+from networking.server import sio, init_persistence, shutdown_persistence, announce_restart
 from config import settings
+
+# The server's own log lines go through the standard logging; without a
+# handler nothing below a warning would ever be printed.
+logging.basicConfig(level=getattr(logging, settings.log_level.upper(), logging.INFO), format="%(message)s")
 
 # Configure structured logging
 structlog.configure(
@@ -114,6 +120,14 @@ async def health():
 app = socketio.ASGIApp(sio, other_asgi_app=fastapi_app)
 
 
+class GracefulServer(uvicorn.Server):
+    """Tells the players and saves every table before the connections are closed."""
+
+    async def shutdown(self, sockets=None):
+        await announce_restart()
+        await super().shutdown(sockets)
+
+
 def main():
     """Run the server."""
     logger.info("server_starting",
@@ -131,13 +145,13 @@ def main():
         debug=settings.debug
     )
 
-    uvicorn.run(
-        "main:app",
-        host=settings.host,
-        port=settings.port,
-        reload=settings.debug,
-        log_level="debug"  # Force debug level for more output
-    )
+    if settings.debug:
+        # Development: restart on every code change, print every frame
+        uvicorn.run("main:app", host=settings.host, port=settings.port, reload=True, log_level="debug")
+        return
+
+    config = uvicorn.Config(app, host=settings.host, port=settings.port, log_level="info", access_log=False)
+    GracefulServer(config).run()
 
 
 if __name__ == "__main__":

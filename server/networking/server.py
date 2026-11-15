@@ -35,6 +35,13 @@ room_manager = RoomManager()
 # Persistence manager instance (will be initialized in init_persistence)
 persistence_manager: Optional[Any] = None
 
+# Set once the server is going down for a restart: from then on the tables stay as they were saved
+shutting_down = False
+
+# After a restart nobody is connected yet. A table is kept this long for its
+# people to come back (their apps reconnect by themselves within seconds).
+RESTART_GRACE_SECONDS = 600
+
 
 async def auto_save_room(room: Room) -> None:
     """Auto-save room state to database."""
@@ -81,9 +88,9 @@ def owner_seat_of(sid: str) -> Tuple[Room, Player]:
     return room, player
 
 
-async def hold_seat_then_free(room_id: str, player_id: str) -> None:
+async def hold_seat_then_free(room_id: str, player_id: str, grace: float = WAITING_GRACE_SECONDS) -> None:
     """A dropped player's seat is held for a while; a table left with nobody is closed."""
-    await asyncio.sleep(WAITING_GRACE_SECONDS)
+    await asyncio.sleep(grace)
     if not room_manager.get_room(room_id):
         return
     room = room_manager.expire_seat(room_id, player_id, now=time.time())
@@ -108,6 +115,9 @@ async def connect(sid: str, environ: dict):
 async def disconnect(sid: str):
     """A socket dropped: the player keeps the seat and may come back."""
     logger.info("client_disconnected", sid=sid)
+    if shutting_down:
+        # The server closes the connections itself; everybody keeps seat and table ownership
+        return
     room, player = room_manager.disconnect_session(sid)
     if not room or not player:
         return
@@ -466,8 +476,14 @@ async def init_persistence(db_path: str = "data/tarokk_game.db"):
         loaded_count = await persistence_manager.load_all_rooms(room_manager)
         logger.info("rooms_loaded_on_startup", count=loaded_count)
 
-        # A bot may be the one to move in a restored game
-        for room in room_manager.rooms.values():
+        now = time.time()
+        for room in list(room_manager.rooms.values()):
+            # Nobody is connected yet: hold every seat as if its player had just dropped
+            for player in room.humans():
+                if not player.is_connected:
+                    room.dropped_at[player.id] = now + RESTART_GRACE_SECONDS - WAITING_GRACE_SECONDS
+                    asyncio.create_task(hold_seat_then_free(room.room_id, player.id, RESTART_GRACE_SECONDS))
+            # A bot may be the one to move in a restored game
             service.schedule_bot(room)
 
         return persistence_manager
@@ -475,6 +491,22 @@ async def init_persistence(db_path: str = "data/tarokk_game.db"):
     except Exception as e:
         logger.error("persistence_init_error", error=str(e))
         return None
+
+
+async def announce_restart() -> None:
+    """Before the connections are closed for a restart: tell the players, save every table."""
+    global shutting_down
+    shutting_down = True
+    try:
+        await sio.emit("server_restarting", {})
+        if persistence_manager:
+            for room in list(room_manager.rooms.values()):
+                await persistence_manager.save_room_complete(room)
+        logger.info("restart_announced", rooms=len(room_manager.rooms))
+        # Let the notice leave before the sockets are closed
+        await asyncio.sleep(0.3)
+    except Exception as e:
+        logger.error("restart_announce_error", error=str(e))
 
 
 async def shutdown_persistence():

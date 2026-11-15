@@ -168,6 +168,8 @@ export type ConnectionStatus =
   | 'connecting'
   | 'connected'
   | 'reconnecting'
+  /** The server said it is restarting for an update; the table is kept */
+  | 'restarting'
   | 'error'
 
 /** A recommended action with a translatable reason (tutorial hint). */

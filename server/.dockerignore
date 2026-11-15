@@ -42,9 +42,8 @@ htmlcov/
 .tox/
 .hypothesis/
 
-# Database (will be in volume)
-data/*.db
-data/*.db-*
+# Saved tables and problem reports live on the volume, never in the image
+data/
 
 # Logs
 *.log
