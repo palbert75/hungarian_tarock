@@ -264,8 +264,8 @@ def _one_turn_of(view: SeatView, wanted: list) -> list:
     ulti_chance = view.holds("I") and len(view.tarokks) >= ULTI_MIN_TAROKKS
     if "double_game" in kinds or counted or ulti_chance:
         wanted = [w for w in wanted if w[0] != "four_kings"]
-    # A pagát ulti owed for an invit cannot wait: it is due at the first chance
-    wanted = sorted(wanted, key=lambda w: -1 if w[1] == "hint.announce.ulti_obligatory"
+    # A pagát ulti owed for an invit, or said to show a hand without a great honour, cannot wait
+    wanted = sorted(wanted, key=lambda w: -1 if w[1] in ("hint.announce.ulti_obligatory", "hint.announce.ulti_signal")
                     else ANNOUNCE_PRIORITY.index(w[0]))
     return wanted[:ANNOUNCE_PER_TURN]
 
@@ -278,6 +278,12 @@ def decide_announcement(view: SeatView) -> Decision:
 
     if view.must_ulti:
         wanted.append(("pagat_ultimo", "hint.announce.ulti_obligatory", {}))
+    # The owner's rule: a declarer who bid on the pagát alone says pagát ulti. It tells the
+    # partner that the declarer holds no great honour, so the XXI can still be caught.
+    pagat_only = (view.position == view.declarer_position and view.holds("I") and not view.holds("skiz")
+                  and not view.holds("XXI") and not view.holds(view.called_rank))
+    if pagat_only and not view.must_ulti:
+        wanted.append(("pagat_ultimo", "hint.announce.ulti_signal", {}))
     accepted_invit = (view.invit is not None and view.position == view.declarer_position
                       and view.invit["by"] != view.position and view.called_rank == view.invit["card"])
     if "invit_trull" in TACTICS and accepted_invit and (view.holds("skiz") or view.holds("XXI")):
@@ -289,10 +295,15 @@ def decide_announcement(view: SeatView) -> Decision:
             wanted.append(("four_kings", "hint.announce.four_kings", {"count": tarokk_count}))
         if "partner_double" in TACTICS and high >= 5:
             wanted.append(("double_game", "hint.announce.double_game", {"count": high}))
-        # The owner's rule: trull says "our team holds both great honours". The partner
-        # cannot see the declarer's hand, so it announces trull only when it holds both itself.
+        # The owner's rule: trull says "our team holds both great honours". A declarer without
+        # one says pagát ulti, so the partner holding one great honour takes the other to be
+        # with the declarer unless that ulti was said.
+        declarer_ulti = any(a.announcement_type.value == "pagat_ultimo" and a.player_position == view.declarer_position
+                            for a in view.announcements)
         if view.holds("skiz") and view.holds("XXI"):
             wanted.append(("trull", "hint.announce.trull_partner", {}))
+        elif (view.holds("skiz") or view.holds("XXI")) and not declarer_ulti:
+            wanted.append(("trull", "hint.announce.trull_partner_one", {}))
     # At this table only the declarer's side announces: an announcement shows who is with whom
     my_side_declares = view.position == view.declarer_position or view.i_am_partner
     if (not any(w[0] == "trull" for w in wanted) and view.holds("skiz") and view.holds("XXI")
@@ -304,7 +315,7 @@ def decide_announcement(view: SeatView) -> Decision:
     eight_allowed = _partner_showed_tarokks(view)
     ulti_hand = tarokk_count >= ULTI_SURE_TAROKKS or (
         tarokk_count >= ULTI_MIN_TAROKKS and top >= ULTI_MIN_HIGH and eight_allowed)
-    if my_side_declares and view.holds("I") and ulti_hand and not view.must_ulti:
+    if my_side_declares and view.holds("I") and ulti_hand and not view.must_ulti and not pagat_only:
         wanted.append(("pagat_ultimo", "hint.announce.pagat_ultimo", {"count": tarokk_count}))
 
     if ("signal_double" in TACTICS and view.position == view.declarer_position and tarokk_count >= 6

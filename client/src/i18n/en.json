@@ -235,6 +235,8 @@
       "double_game": "You are the caller's partner with {{count}} tarokks above the XIII: announce double game.",
       "trull_two": "You are the declarer and hold both the skíz and the XXI: announce trull.",
       "trull_partner": "You are the declarer's partner and hold both great honours (skíz and XXI): announce trull. Trull tells the table that your team holds both.",
+      "trull_partner_one": "You are the declarer's partner and hold a great honour. The declarer did not say pagát ulti, so the other great honour is with them: announce trull.",
+      "ulti_signal": "You bid on the pagát alone, without the skíz or the XXI: announce pagát ultimo. It tells your partner that the XXI can still be caught.",
       "pagat_ultimo": "You hold the pagát and {{count}} tarokks: announce pagát ultimo and keep the pagát for the last trick.",
       "several": "This hand is good for {{count}} announcements, starting with {{announcement}}.",
       "double_after_signal": "The four kings told you your partner is long in tarokks, and you hold {{count}} tarokks with a great honour: answer with double game.",

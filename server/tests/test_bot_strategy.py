@@ -236,13 +236,14 @@ def test_never_volat_xxi_catch():
 
 
 def test_pagat_ulti_needs_a_long_tarokk_hand():
-    nine = "I II III IV V VI VII VIII IX"
+    # The XXI is there so that this is not a bid on the pagát alone (that one always says ulti)
+    nine = "I II III IV V VI VII VIII XXI"
     assert decide_announcement(as_declarer(announce_view(nine))).payload["announcement_types"] == ["pagat_ultimo"]
-    assert decide_announcement(as_declarer(announce_view("I II III IV V VI VII hQ hJ"))).action == "pass_announcement"
+    assert decide_announcement(as_declarer(announce_view("I II III IV V VI XXI hQ hJ"))).action == "pass_announcement"
 
 
 def test_declarer_with_eight_tarokks_announces_ulti_only_after_the_partners_four_kings():
-    eight = "I II III IV V XVII XVIII XIX hQ"
+    eight = "I II III IV XVII XVIII XIX XXI hQ"
     alone = as_declarer(announce_view(eight))
     assert decide_announcement(alone).action == "pass_announcement"
     kings = Announcement(player_position=2, announcement_type=AnnouncementType.FOUR_KINGS)
@@ -706,12 +707,27 @@ def test_leads_the_suit_a_teammate_is_void_in():
     assert played(decide_card(view), view) == "dJ"
 
 
-def test_called_partner_announces_trull_only_with_both_great_honours():
-    """Trull means: our team holds the skíz and the XXI."""
+def test_called_partner_announces_trull_with_a_great_honour_unless_the_declarer_said_ulti():
+    """Trull means: our team holds the skíz and the XXI. A declarer without one says pagát ulti."""
     d = decide_announcement(announce_view("skiz XXI X hK hQ hJ h10 dQ dJ", partner=True))
     assert d.payload["announcement_types"] == ["trull"] and d.reason_key == "hint.announce.trull_partner"
+    ulti = Announcement(player_position=0, announcement_type=AnnouncementType.PAGAT_ULTIMO)
     for hand in ("skiz X hK hQ hJ h10 dQ dJ d10", "XXI X hK hQ hJ h10 dQ dJ d10"):
-        assert decide_announcement(announce_view(hand, partner=True)).action == "pass_announcement"
+        d = decide_announcement(announce_view(hand, partner=True))
+        assert d.payload["announcement_types"] == ["trull"] and d.reason_key == "hint.announce.trull_partner_one"
+        warned = announce_view(hand, partner=True, made=("pagat_ultimo",))
+        warned.announcements = [ulti]
+        assert decide_announcement(warned).action == "pass_announcement"
+
+
+def test_declarer_on_the_pagat_alone_says_ulti_as_information():
+    view = announce_view("I X IX VIII hK hQ hJ h10 dQ")
+    view.position = view.declarer_position
+    d = decide_announcement(view)
+    assert d.payload["announcement_types"] == ["pagat_ultimo"] and d.reason_key == "hint.announce.ulti_signal"
+    with_honour = announce_view("I XXI IX VIII hK hQ hJ h10 dQ")
+    with_honour.position = with_honour.declarer_position
+    assert decide_announcement(with_honour).action == "pass_announcement"
 
 
 def test_partner_without_great_honour_or_non_partner_does_not_announce_trull():

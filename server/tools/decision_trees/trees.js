@@ -45,6 +45,7 @@ const tarokkDecl=()=>q('I hold exactly 8 or exactly 9 tarokks and have not decla
 const ulti=()=>q('I hold the pagát and have 9+ tarokks, or 8 with three of them XVII or higher?',{src:LS(`if my_side_declares and view.holds("I") and ulti_hand`)},'yes',SAY('+ pagát ulti'),'then');
 const B2=m('Which team am I on? (Certain once the card is called.)',{src:L(251)},[
   ['caller team: I am the declarer',seq(
+    q('I hold the pagát but neither the skíz nor the XXI (and not the called card)?',{src:LS(`if pagat_only and not view.must_ulti:`),note:'Said first. It tells the partner that I hold no great honour, so the XXI can still be caught.'},'yes',SAY('+ pagát ulti','as information'),'then'),
     q('I accepted somebody\'s invit and hold the skíz or the XXI?',{src:L(238),tag:'invit_trull',note:'One great honour is enough here: the invit is taken to show the other one.'},'yes',SAY('+ trull'),'then'),
     q('I hold both the skíz and the XXI?',{src:L(255)},'yes',SAY('+ trull','if not already on the list; pagát and tarokk count do not matter'),'then'),
     q('I hold the pagát and have 9+ tarokks; or 8 with three of them XVII or higher, once my partner has announced four kings or declared 8 or 9 tarokks?',{src:LS(`if my_side_declares and view.holds("I") and ulti_hand`)},'yes',SAY('+ pagát ulti'),'then'),
@@ -55,7 +56,8 @@ const B2=m('Which team am I on? (Certain once the card is called.)',{src:L(251)}
     q('I gave an invit with the pagát as my only honour, and my card was called?',{src:L(234)},'yes',SAY('+ pagát ulti','obligatory'),'then'),
     q('6+ tarokks?',{src:L(243)},'yes',SAY('+ four kings'),'then'),
     q('5+ tarokks above the XIII?',{src:L(245),tag:'partner_double'},'yes',SAY('+ double game'),'then'),
-    q('I hold both the skíz and the XXI?',{src:LS(`if view.holds("skiz") and view.holds("XXI"):`),note:'Trull means: our team holds both great honours. I cannot see the declarer\'s hand, so one is not enough.'},'yes',SAY('+ trull'),'then'),
+    q('I hold both the skíz and the XXI?',{src:LS(`if view.holds("skiz") and view.holds("XXI"):`),note:'Trull means: our team holds both great honours.'},'yes',SAY('+ trull'),'no'),
+    q('I hold one of them, and the declarer has not announced pagát ulti?',{src:LS(`elif (view.holds("skiz") or view.holds("XXI")) and not declarer_ulti:`),note:'A declarer without a great honour says pagát ulti. No ulti from them: the other great honour is theirs.'},'yes',SAY('+ trull','as information'),'then'),
     q('I hold the pagát and have 9+ tarokks; or 8 with three of them XVII or higher, once the declarer has announced four kings or declared 8 or 9 tarokks?',{src:LS(`if my_side_declares and view.holds("I") and ulti_hand`)},'yes',SAY('+ pagát ulti'),'then'),
     q('I hold exactly 8 or exactly 9 tarokks, have not declared them, and trull has been called (by anyone, or by me in this turn or earlier)?',{src:LS(`if declaration and (not my_side_declares or trull_called):`)},'yes',SAY('+ eight / nine tarokks','everybody else pays'),'then'),
     G('Go to the final step'))],

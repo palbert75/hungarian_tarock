@@ -235,6 +235,8 @@
       "double_game": "Te vagy a felvevő partnere, és {{count}} tarokkod van a XIII fölött: mondd be a duplajátékot.",
       "trull_two": "Te vagy a felvevő, és nálad a skíz és a XXI is: mondj trullt.",
       "trull_partner": "Te vagy a felvevő partnere, és nálad a skíz és a XXI is: mondj trullt. A trull azt jelzi, hogy mindkét nagy honőr a csapatodnál van.",
+      "trull_partner_one": "Te vagy a felvevő partnere, és nálad van az egyik nagy honőr. A felvevő nem mondott pagátultimót, tehát a másik nála van: mondj trullt.",
+      "ulti_signal": "Csak a pagátra licitáltál, nincs nálad sem a skíz, sem a XXI: mondd be a pagátultimót. Ebből a partnered tudja, hogy a XXI-et még el lehet fogni.",
       "pagat_ultimo": "Nálad a pagát és {{count}} tarokk: mondd be a pagátultimót, és tartsd meg a pagátot az utolsó ütésre.",
       "several": "Ez a lap {{count}} bemondást is megér, kezdve ezzel: {{announcement}}.",
       "double_after_signal": "A négy király elárulta, hogy a partnered hosszú tarokkban, nálad pedig {{count}} tarokk és nagy honőr van: válaszolj duplajátékkal.",
