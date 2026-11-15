@@ -47,7 +47,7 @@ class SuitRank(str, Enum):
     QUEEN = "Q"     # 4 points
     CAVALIER = "C"  # 3 points (Rider/Knight)
     JACK = "J"      # 2 points
-    TEN = "10"      # 1 point
+    TEN = "10"      # 1 point; in hearts and diamonds this card is the ace (the game treats both alike)
 
 
 class CardType(str, Enum):
@@ -133,7 +133,7 @@ class Card(BaseModel):
     def suit_rank_value(self) -> int:
         """
         Get the numerical value of a suit card's rank for comparison.
-        King is highest, then Queen, Cavalier, Jack, Ten.
+        King is highest, then Queen, Cavalier, Jack, Ten (black suits) or Ace (red suits).
         """
         if self.is_tarokk():
             return 0
@@ -151,7 +151,8 @@ class Card(BaseModel):
         """String representation of the card."""
         if self.is_tarokk():
             return f"Tarokk {self.rank}"
-        return f"{self.rank} of {self.suit.value}"
+        rank = "Ace" if self.rank == SuitRank.TEN.value and self.suit in (Suit.HEARTS, Suit.DIAMONDS) else self.rank
+        return f"{rank} of {self.suit.value}"
 
     def __repr__(self) -> str:
         """Representation for debugging."""

@@ -86,7 +86,7 @@ tarokk/
 
 **Hungarian Tarokk** is a 4-player trick-taking game using a 42-card deck:
 - **22 Tarokk (Trump) Cards**: skíz, XXI-II, pagát (I)
-- **20 Suit Cards**: K, Q, C, J, 10 in 4 suits (Hearts, Diamonds, Spades, Clubs)
+- **20 Suit Cards**: K, Q, C, J and a fifth card in 4 suits: the 10 in Spades and Clubs, the Ace in Hearts and Diamonds
 
 **Objective**: Declarer and partner must score 48+ points (out of 94 total)
 
@@ -252,7 +252,7 @@ socket.emit('play_card', { card_id: 'card-uuid' });
 - Others (1 pt each): XX-II
 
 **Suits (20 cards, 5 per suit):**
-- King (5 pts), Queen (4 pts), Cavalier (3 pts), Jack (2 pts), Ten (1 pt)
+- King (5 pts), Queen (4 pts), Cavalier (3 pts), Jack (2 pts), Ten in the black suits / Ace in the red suits (1 pt)
 
 ### Bidding
 

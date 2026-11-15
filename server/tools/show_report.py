@@ -9,7 +9,11 @@ SUIT = {"hearts": "♥", "diamonds": "♦", "spades": "♠", "clubs": "♣"}
 
 
 def name(card: dict) -> str:
-    return card["rank"] if card["suit"] == "tarokk" else f"{SUIT.get(card['suit'], '?')}{card['rank']}"
+    if card["suit"] == "tarokk":
+        return card["rank"]
+    # The lowest red card is an ace; the game stores it as rank "10" like the black tens
+    rank = "A" if card["rank"] == "10" and card["suit"] in ("hearts", "diamonds") else card["rank"]
+    return f"{SUIT.get(card['suit'], '?')}{rank}"
 
 
 def order(card: dict):

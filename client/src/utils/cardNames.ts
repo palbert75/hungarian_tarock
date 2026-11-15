@@ -14,7 +14,14 @@ export function rankLabel(card: Pick<Card, 'suit' | 'rank'>, t: TFunction): stri
   if (card.suit === 'tarokk') {
     return card.rank.toLowerCase() === 'skiz' ? t('card.skiz') : card.rank
   }
+  // The lowest card is a ten in the black suits and an ace in the red ones.
+  // The game knows both as rank "10"; only the name differs.
+  if (card.rank === '10' && isRedSuit(card.suit)) return t('card.rank.ace')
   return t(`card.rank.${card.rank}`, { defaultValue: card.rank })
+}
+
+export function isRedSuit(suit: Suit): boolean {
+  return suit === 'hearts' || suit === 'diamonds'
 }
 
 /** Short name for buttons and hints: "XVII", "Skíz", "♥K". */

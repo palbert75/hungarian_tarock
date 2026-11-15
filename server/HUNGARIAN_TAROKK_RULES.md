@@ -32,7 +32,7 @@ Each suit contains (highest to lowest):
 - **Queen (Dáma, Q)** - 4 points
 - **Rider/Cavalier (Lovas, C)** - 3 points
 - **Jack (Bubi, J)** - 2 points
-- **Ten/Ace** - 1 point
+- **Ten (Tízes, 10)** in Spades and Clubs, **Ace (Ász)** in Hearts and Diamonds - 1 point
 
 **Total Deck Value:** 94 points
 - Honours: 3 × 5 = 15 points
