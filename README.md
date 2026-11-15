@@ -12,7 +12,7 @@ A complete implementation of Hungarian Tarokk (Illustrated Hungarian Tarokk / XX
 - **4-Player Support**: Room-based matchmaking
 - **Full Game Flow**: Bidding → Talon → Discard → Partner Call → Trick-Taking → Scoring
 - **Rule Validation**: Enforces all game rules (follow suit, honour requirements, etc.)
-- **Test Environment**: Interactive and automated testing tools
+- **Games Survive a Server Update**: Every table is saved; after a restart players are back at their seats within seconds
 - **Phone-First Web App**: Three-band game screen (table, hand, thumb buttons), installable to the home screen (PWA)
 - **Bots**: Fill free seats with rule-based bots, or let the host hand a dropped player's seat to a bot
 - **Tutorial Hints**: Optional hints in every phase, with the reason; the same rules the bots follow
@@ -24,25 +24,10 @@ A complete implementation of Hungarian Tarokk (Illustrated Hungarian Tarokk / XX
 
 See [QUICK_START.md](QUICK_START.md) for a 5-minute getting started guide.
 
-**TL;DR:**
-
-```bash
-# Terminal 1: Start server
-cd server
-pip install -r requirements.txt
-python -m server.main
-
-# Terminal 2: Test with 4 players
-cd test_client
-pip install -r requirements.txt
-python interactive_test.py
-```
-
-### Play in the browser (web client)
-
 ```bash
 # Terminal 1: server on port 8000
 cd server
+pip install -r requirements.txt
 python main.py
 
 # Terminal 2: web client on http://localhost:3003
@@ -74,7 +59,11 @@ tarokk/
 │   ├── models/                  # Data models (Card, Deck, Player, GameState, Bid)
 │   ├── game_logic/              # Game rules (Bidding, Scoring)
 │   ├── validation/              # Rule validators
-│   ├── networking/              # WebSocket server (Socket.IO)
+│   ├── bots/                    # Bot rules (also used for the hints)
+│   ├── networking/              # WebSocket server (Socket.IO), tables, reports, limits
+│   ├── persistence/             # Saved tables (SQLite) and statistics
+│   ├── tools/                   # Reports, statistics, restart trial, decision trees
+│   ├── k8s/ + deploy.sh         # Production deployment
 │   ├── utils/                   # Utilities (position helpers)
 │   ├── tests/                   # Unit tests (pytest)
 │   ├── main.py                  # Server entry point
@@ -82,15 +71,13 @@ tarokk/
 │   ├── requirements.txt         # Python dependencies
 │   └── README.md                # Server documentation
 │
-├── test_client/                 # Test clients
-│   ├── client.py                # Socket.IO client library
-│   ├── interactive_test.py      # Interactive 4-player test CLI
-│   ├── automated_test.py        # Automated test suite
-│   ├── quick_test.py            # Quick connection test
-│   ├── requirements.txt         # Test client dependencies
-│   └── README.md                # Test client documentation
+├── client/                      # Web client (React + TypeScript + Vite, installable PWA)
+│   ├── src/screens/             # Opening screen, lobby, table, result
+│   ├── src/components/          # Cards, hand, seats, chat, hints
+│   ├── src/services/            # Socket connection
+│   └── src/i18n/                # Hungarian and English texts
 │
-├── HUNGARIAN_TAROKK_RULES.md    # Complete game rules (from pagat.com)
+├── docs/                        # Player guide (Hungarian)
 ├── QUICK_START.md               # Quick start guide
 └── README.md                    # This file
 ```
@@ -123,66 +110,50 @@ See [HUNGARIAN_TAROKK_RULES.md](server/HUNGARIAN_TAROKK_RULES.md) for complete r
 - structlog (structured logging)
 - pytest (testing)
 
-**Test Client:**
-- python-socketio (client)
-- rich (terminal UI)
-- prompt-toolkit (interactive prompts)
+**Web client:**
+- React + TypeScript
+- Vite (build, PWA)
+- socket.io-client
 
 ## 📖 Documentation
 
 - **[QUICK_START.md](QUICK_START.md)** - Get started in 5 minutes
 - **[server/README.md](server/README.md)** - Server documentation, API reference
-- **[test_client/README.md](test_client/README.md)** - Test client usage
 - **[HUNGARIAN_TAROKK_RULES.md](server/HUNGARIAN_TAROKK_RULES.md)** - Complete game rules
 
 ## 🧪 Testing
 
-### Quick Test (Verify Server Running)
-
-```bash
-cd test_client
-python quick_test.py
-```
-
-### Interactive 4-Player Test
-
-Control 4 players manually through a complete game:
-
-```bash
-cd test_client
-python interactive_test.py
-```
-
-Features:
-- View all players' hands
-- Switch between players
-- Place bids, discard, call partner, play cards
-- Auto-play mode for quick testing
-- Beautiful terminal UI
-
-### Automated Test Suite
-
-Run complete game simulations:
-
-```bash
-cd test_client
-python automated_test.py
-```
-
-Tests:
-- Connection/disconnection
-- Room creation and joining
-- Bidding phase
-- Full game simulation
-
-### Unit Tests
+### Server
 
 ```bash
 cd server
 pytest                    # Run all tests
 pytest -v                 # Verbose output
-pytest --cov=server       # With coverage report
 ```
+
+The tests cover the rules, one test per bot rule, 300 whole hands played by
+four bots, saving and restoring a table at every moment of a hand, the
+statistics and the limits.
+
+### Web client
+
+```bash
+cd client
+npx tsc --noEmit && npm test && npm run build
+```
+
+### Does a running game survive a restart?
+
+```bash
+cd server
+pip install "python-socketio[client]"     # only this trial needs it
+python tools/restart_trial.py             # against a server started from this folder
+python tools/restart_trial.py image NAME  # against a Docker image, with a data volume
+```
+
+A player sits down against three bots, the server is restarted in the fourth
+trick, and the trial checks that the player is back at the same table and the
+hand can be finished.
 
 ## 🎯 API Overview
 
@@ -221,64 +192,30 @@ See [server/README.md](server/README.md) for complete API documentation.
 
 ```bash
 cd server
-
-# Install dependencies
 pip install -r requirements.txt
-
-# Run server (development)
-python -m server.main
-
-# Run with auto-reload
-uvicorn server.main:app --reload
-
-# Run tests
+python main.py            # development mode: restarts on every code change
 pytest
-
-# Lint code
-ruff check server/
 ```
 
-### Test Client
+`DEBUG=false python main.py` runs it the way production does: no reloader,
+quiet logs, and on shutdown it tells the players and saves every table.
+
+### Web client
 
 ```bash
-cd test_client
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Run interactive test
-python interactive_test.py
-
-# Run automated tests
-python automated_test.py
+cd client
+npm install
+VITE_SERVER_URL=http://localhost:8000 npm run dev
 ```
+
+### Production
+
+The client is built by Netlify on every push to `main`. The server is
+deployed with `server/deploy.sh` (tests, image tagged with the commit,
+rollout, health check; `./deploy.sh rollback` goes back one version).
+`server/tools/stats.sh` prints the hands played per day.
 
 ## 🌟 Example Usage
-
-### Python Client
-
-```python
-from test_client.client import TarokkClient
-
-# Create and connect client
-client = TarokkClient("http://localhost:8000", "Alice")
-client.connect()
-
-# Join room
-client.join_room()
-
-# Mark ready
-client.ready()
-
-# Wait for game to start...
-
-# Place a bid
-client.place_bid("three")
-
-# Play a card
-hand = client.get_hand()
-client.play_card(hand[0]["id"])
-```
 
 ### JavaScript/TypeScript Client
 
@@ -358,7 +295,7 @@ socket.emit('play_card', { card_id: 'card-uuid' });
 lsof -ti:8000 | xargs kill -9
 
 # Or change port
-PORT=8001 python -m server.main
+PORT=8001 python main.py
 ```
 
 ### Connection refused
@@ -382,15 +319,12 @@ pip install -r requirements.txt
 
 ## 🤝 Contributing
 
-Contributions welcome! Areas for improvement:
+Contributions welcome! Open ideas:
 
-- Additional bonus announcements (kontra/rekontra)
-- Advanced scoring (double game, volát, pagát ultimó)
 - Hand annulment
 - 5-player variant
-- Web-based client UI
-- AI opponents
 - Game replay system
+- Player accounts and rankings
 
 ## 📜 License
 
@@ -406,7 +340,7 @@ Game rules based on:
 For issues, questions, or suggestions, please check:
 - Server logs for error messages
 - [QUICK_START.md](QUICK_START.md) for setup help
-- [test_client/README.md](test_client/README.md) for testing help
+- The problem report in the app (☰ → report a problem), which stores the whole table with your description
 
 ---
 
