@@ -7,12 +7,14 @@ import structlog
 import asyncio
 from contextlib import asynccontextmanager
 from datetime import datetime
-from fastapi import FastAPI, Request
+import hmac
+
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 import socketio
 import time
 
-from networking.server import sio, init_persistence, shutdown_persistence, announce_restart
+from networking.server import sio, init_persistence, shutdown_persistence, announce_restart, stats
 from config import settings
 
 # The server's own log lines go through the standard logging; without a
@@ -113,6 +115,18 @@ async def root():
 async def health():
     """Health check endpoint."""
     return {"status": "healthy"}
+
+
+@fastapi_app.get("/stats")
+async def played_hands(request: Request, days: int = 30):
+    """Played hands per day. Needs the header `Authorization: Bearer <STATS_TOKEN>`."""
+    token = settings.stats_token
+    given = request.headers.get("authorization", "")
+    if not token:
+        raise HTTPException(status_code=404)
+    if not hmac.compare_digest(given.encode(), f"Bearer {token}".encode()):
+        raise HTTPException(status_code=401)
+    return stats(days)
 
 
 # Wrap FastAPI app with Socket.IO

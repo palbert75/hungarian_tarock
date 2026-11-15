@@ -36,6 +36,14 @@ spec:
           value: "false"
         - name: LOG_LEVEL
           value: INFO
+        # /stats answers only to this token (see tools/stats.sh). Made once with:
+        #   kubectl -n tarokk create secret generic tarokk-stats --from-literal=token="$(openssl rand -hex 24)"
+        - name: STATS_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: tarokk-stats
+              key: token
+              optional: true
         readinessProbe:
           httpGet:
             path: /health

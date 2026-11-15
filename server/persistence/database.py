@@ -92,6 +92,29 @@ class GameDatabase:
             )
         """)
 
+        # One row per finished hand, for the statistics. It has no link to
+        # `rooms` on purpose: a table is deleted when it closes, its hands stay.
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS hands (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                finished_at INTEGER NOT NULL,
+                room_id TEXT NOT NULL,
+                hand_number INTEGER,
+                people INTEGER NOT NULL,
+                bots INTEGER NOT NULL,
+                player_names TEXT,
+                bid TEXT,
+                declarer_is_person INTEGER,
+                declarer_alone INTEGER,
+                winner TEXT,
+                declarer_team_points INTEGER,
+                game_value INTEGER,
+                announcements TEXT,
+                duration_seconds INTEGER
+            )
+        """)
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_hands_finished ON hands(finished_at)")
+
         # Create indices for better query performance
         cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_players_room
@@ -203,6 +226,22 @@ class GameDatabase:
             json.dumps(game_state_dict)
         ))
         self.conn.commit()
+
+    def save_hand(self, record: Dict[str, Any]) -> None:
+        """Keep one finished hand (see persistence.stats.hand_record)."""
+        columns = list(record)
+        self.conn.execute(
+            f"INSERT INTO hands ({', '.join(columns)}) VALUES ({', '.join('?' for _ in columns)})",
+            [record[c] for c in columns],
+        )
+        self.conn.commit()
+
+    def load_hands_since(self, timestamp: int) -> List[Dict[str, Any]]:
+        """Finished hands from the given moment (seconds since the epoch) on."""
+        rows = self.conn.execute(
+            "SELECT * FROM hands WHERE finished_at >= ? ORDER BY finished_at", (timestamp,)
+        ).fetchall()
+        return [dict(row) for row in rows]
 
     def save_chat_message(self, room_id: str, chat_message: Dict[str, Any]) -> None:
         """

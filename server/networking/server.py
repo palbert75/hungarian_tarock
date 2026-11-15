@@ -59,7 +59,28 @@ def _load_strategy():
 
 
 _strategy = _load_strategy()
-service = GameService(room_manager, sio.emit, save=auto_save_room, decide=_strategy)
+def record_hand(room: Room, result: dict) -> None:
+    """A hand is over: keep it for the statistics."""
+    if persistence_manager:
+        persistence_manager.record_hand(room, result)
+
+
+def stats(days: int = 30) -> dict:
+    """Played hands per day, and what is going on right now."""
+    if not persistence_manager:
+        raise RuntimeError("No database")
+    result = persistence_manager.stats(days)
+    tables = [room for room in room_manager.rooms.values() if any(p.is_connected for p in room.humans())]
+    result["now"] = {
+        "tables_with_people": len(tables),
+        "people_connected": sum(1 for room in tables for p in room.humans() if p.is_connected),
+        "tables_in_a_hand": sum(1 for room in tables
+                                if room.game_state.phase not in (GamePhase.WAITING, GamePhase.GAME_END)),
+    }
+    return result
+
+
+service = GameService(room_manager, sio.emit, save=auto_save_room, decide=_strategy, record_hand=record_hand)
 service.hint = _strategy
 
 

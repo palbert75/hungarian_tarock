@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     # Logging
     log_level: str = "INFO"
 
+    # Statistics: /stats answers only to this token; without one it does not exist
+    stats_token: Optional[str] = None
+
     # CORS
     cors_origins: str = "*"  # Comma-separated list or "*"
 

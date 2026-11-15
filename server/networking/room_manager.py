@@ -42,6 +42,7 @@ class Room:
         self.last_game_over: Optional[dict] = None  # Result of the hand just played
         self.decision_log: List[dict] = []  # What the bots did this hand and why (for problem reports)
         self.dropped_at: Dict[str, float] = {}  # player_id -> time the connection dropped
+        self.hand_started_at: Optional[float] = None  # When the hand in play was dealt (for the statistics)
 
     # ------------------------------------------------------------------ seats
 

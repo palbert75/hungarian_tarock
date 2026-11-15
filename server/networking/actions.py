@@ -7,6 +7,7 @@ and wakes a bot if that seat is played by one.
 """
 
 import asyncio
+import time
 from typing import Any, Awaitable, Callable, List, Optional
 
 import structlog
@@ -47,10 +48,13 @@ class GameService:
         emit: Emit,
         save: Optional[Callable[[Room], Awaitable[None]]] = None,
         decide: Optional[DecideFn] = None,
+        record_hand: Optional[Callable[[Room, dict], None]] = None,
     ):
         self.room_manager = room_manager
         self.emit = emit
         self.save = save
+        # Called with the table and its result when a hand is over (statistics)
+        self.record_hand = record_hand
         self.decide: DecideFn = decide or fallback_decision
         # Hints are computed with this when set (see bots.strategy)
         self.hint: Optional[DecideFn] = None
@@ -269,6 +273,7 @@ class GameService:
         if [p.position for p in game_state.players] != [0, 1, 2, 3] or any(p.vacant for p in game_state.players):
             raise ValueError("Need four players to deal")
         room.decision_log.clear()
+        room.hand_started_at = time.time()
         game_state.start_dealing()
         game_state.start_bidding()
         await self.broadcast_room_state(room)
@@ -600,6 +605,8 @@ class GameService:
         }
         game_state.phase = GamePhase.GAME_END
         room.last_game_over = payload
+        if self.record_hand:
+            self.record_hand(room, payload)
         await self.broadcast(room, MessageType.GAME_OVER, payload)
         await self.broadcast_room_state(room)
 

@@ -26,6 +26,7 @@ def _form(room) -> dict:
         "bot_speed": room.bot_speed,
         "last_game_over": room.last_game_over,
         "decision_log": room.decision_log,
+        "hand_started_at": room.hand_started_at,
         "seats": [[p.id, p.name, p.position, p.is_bot, p.bot_controlled, p.vacant] for p in room.players],
     }
 

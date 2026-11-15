@@ -1,11 +1,13 @@
 """Persistence manager for coordinating room and game state persistence."""
 
 import asyncio
+import time
 from typing import Optional, Dict, Any
 import structlog
 from datetime import datetime
 
 from persistence.database import GameDatabase
+from persistence.stats import hand_record, summarize
 from networking.room_manager import Room, RoomManager
 from models.game_state import GameState, GamePhase
 from models.player import Player
@@ -70,6 +72,7 @@ class PersistenceManager:
                     # The result on the table and the bots' reasons must outlive a restart too
                     "last_game_over": room.last_game_over,
                     "decision_log": room.decision_log,
+                    "hand_started_at": room.hand_started_at,
                 }
                 self.db.save_game_state(room.room_id, game_state_dict)
 
@@ -82,6 +85,18 @@ class PersistenceManager:
 
         except Exception as e:
             logger.error("save_room_error", room_id=room.room_id, error=str(e))
+
+    def record_hand(self, room: Room, result: dict) -> None:
+        """Keep a finished hand for the statistics; a failure here must never disturb the game."""
+        try:
+            self.db.save_hand(hand_record(room, result))
+        except Exception as e:
+            logger.error("record_hand_error", room_id=room.room_id, error=str(e))
+
+    def stats(self, days: int = 30) -> Dict[str, Any]:
+        """Hands, tables and people per day for the last `days` days."""
+        days = max(1, min(int(days), 366))
+        return summarize(self.db.load_hands_since(int(time.time()) - (days + 1) * 86400), days)
 
     def save_chat_message(self, room_id: str, chat_message: Dict[str, Any]) -> None:
         """
@@ -217,6 +232,7 @@ class PersistenceManager:
             room.bot_speed = meta.get("bot_speed", "normal")
             room.last_game_over = meta.get("last_game_over")
             room.decision_log = meta.get("decision_log") or []
+            room.hand_started_at = meta.get("hand_started_at")
             logger.debug("game_state_reconstructed",
                         room_id=room_id,
                         players_loaded=len(room.game_state.players))
