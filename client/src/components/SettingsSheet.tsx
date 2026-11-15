@@ -134,7 +134,7 @@ export default function SettingsSheet({ open, onClose }: { open: boolean; onClos
         )}
         <Row label={t('settings.botTrees')} detail={t('settings.botTreesDetail')}>
           {/* A static page of its own: a new tab keeps the table connected */}
-          <a className="chip chip-on" href="/bot-decision-trees.html" target="_blank" rel="noopener">
+          <a className="chip chip-on" href={`/bot-decision-trees.html?lang=${language}`} target="_blank" rel="noopener">
             🌳 {t('settings.botTreesGo')}
           </a>
         </Row>

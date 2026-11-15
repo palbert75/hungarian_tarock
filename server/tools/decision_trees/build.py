@@ -5,6 +5,7 @@ Build the bot decision tree page and the table that lets a problem report name i
 
 Reads   tools/decision_trees/trees.js   the trees: every check and action, in a small notation
         tools/decision_trees/page.html  the page around them
+        tools/decision_trees/hu.js      the Hungarian of every text (the build stops if one is missing)
 Writes  ../client/public/bot-decision-trees.html   the page in the app (Settings > How the bots play)
         bots/tree_nodes.json                       source line of a check -> number of its box
 
@@ -66,7 +67,7 @@ def resolve_lines(js: str) -> str:
 
 
 def main() -> None:
-    js = resolve_lines((HERE / "trees.js").read_text(encoding="utf-8"))
+    js = (HERE / "hu.js").read_text(encoding="utf-8") + resolve_lines((HERE / "trees.js").read_text(encoding="utf-8"))
     page = (HERE / "page.html").read_text(encoding="utf-8")
     fragment = page + "<script>\n" + js + "</script>\n"
 
@@ -79,9 +80,11 @@ def main() -> None:
     head_end = web.index("</style>") + len("</style>\n")
     head, body = web[:head_end], web[head_end:]
     head = head.replace("<style>\n", "<style>\nhtml{color-scheme:light}body{margin:0}\n", 1)
-    title = "    <h1>Tarokk bot decision trees</h1>"
-    assert title in body
-    body = body.replace(title, '    <nav><a href="/">← Back to the game</a></nav>\n' + title, 1)
+    # In the app the page follows the language set in the app's settings (the link passes it on)
+    body, switches = re.subn(r' *<nav class="lang">.*?</nav>\n', "", body)
+    assert switches == 1
+    title = body.index("    <h1")
+    body = body[:title] + '    <nav><a href="/" data-t="back">← Back to the game</a></nav>\n' + body[title:]
     (SERVER.parent / "client" / "public" / "bot-decision-trees.html").write_text(
         '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
         '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
@@ -91,10 +94,20 @@ def main() -> None:
     # Number the boxes the way the page does, and keep which code line is which box
     with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8") as handle:
         handle.write(js)
-    contexts = json.loads(subprocess.run(
-        ["node", "-e", "process.stdout.write(JSON.stringify(require(process.argv[1]).CONTEXTS))", handle.name],
+    made = json.loads(subprocess.run(
+        ["node", "-e", "process.stdout.write(JSON.stringify(require(process.argv[1])))", handle.name],
         capture_output=True, text=True, check=True).stdout)
     Path(handle.name).unlink()
+    contexts = made["CONTEXTS"]
+
+    # The Hungarian page: every text of the trees and of the page around them needs its translation
+    missing = [text for text in made["STRINGS"] if text not in made["HU"]]
+    missing += [key for key in re.findall(r'data-t="([^"]+)"', page) + ["back", "title"] if key not in made["PAGE_HU"]]
+    if missing:
+        sys.exit("hu.js has no Hungarian for:\n  " + "\n  ".join(missing))
+    unused = [text for text in made["HU"] if text not in made["STRINGS"]]
+    if unused:
+        print("hu.js: no longer used:\n  " + "\n  ".join(unused))
     (SERVER / "bots" / "tree_nodes.json").write_text(
         json.dumps({"strategy_sha256": strategy_digest(), "contexts": contexts}, indent=1, sort_keys=True) + "\n",
         encoding="utf-8")

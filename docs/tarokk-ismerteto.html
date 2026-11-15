@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Magyar tarokk online – ismertető</title>
+<style>
+:root{
+  --bg:#f3f5f0; --surface:#ffffff; --ink:#17221c; --muted:#56655b; --line:#cfd8d0;
+  --accent:#1f6b4a; --accent-ink:#ffffff; --gold:#9a7400; --gold-bg:#fbf0cc;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#0f1512; --surface:#18211c; --ink:#e6ece8; --muted:#9aa89f; --line:#34443b;
+  --accent:#5fc596; --accent-ink:#0f1512; --gold:#e0b84a; --gold-bg:#3a3013;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:32px 16px 64px}
+main{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:36px}
+h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(30px,6vw,44px);line-height:1.1;margin:0 0 10px;text-wrap:balance}
+h2{font-family:Georgia,"Times New Roman",serif;font-size:24px;line-height:1.2;margin:0 0 12px;padding-bottom:6px;border-bottom:2px solid var(--accent)}
+h3{font-size:16px;margin:0 0 2px}
+p{margin:0 0 10px}
+.lede{font-size:18px;color:var(--muted);max-width:60ch}
+.go{display:inline-block;margin-top:14px;background:var(--accent);color:var(--accent-ink);text-decoration:none;font-weight:600;padding:12px 20px;border-radius:6px}
+.go:hover,.go:focus-visible{filter:brightness(1.1)}
+.url{display:block;margin-top:8px;font-size:14px;color:var(--muted);word-break:break-all}
+ol.steps{margin:0;padding:0;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:10px}
+ol.steps li{counter-increment:s;position:relative;padding:12px 14px 12px 54px;background:var(--surface);border:1px solid var(--line);border-radius:6px}
+ol.steps li::before{content:counter(s);position:absolute;left:14px;top:12px;width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-weight:700;display:grid;place-items:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px}
+.card p{margin:0;color:var(--muted);font-size:15px}
+dl{margin:0;display:grid;grid-template-columns:minmax(110px,auto) 1fr;gap:8px 16px}
+dt{font-weight:600}
+dd{margin:0;color:var(--muted)}
+.note{background:var(--gold-bg);border-left:4px solid var(--gold);padding:12px 14px;border-radius:0 6px 6px 0}
+.note p:last-child{margin:0}
+footer{color:var(--muted);font-size:14px;border-top:1px solid var(--line);padding-top:14px}
+@media (max-width:480px){dl{grid-template-columns:1fr;gap:2px 0}dd{margin-bottom:8px}}
+</style>
+</head>
+<body>
+<main>
+
+<header>
+  <h1>Magyar tarokk online</h1>
+  <p class="lede">Négyszemélyes magyar tarokk a böngészőben: élőben a barátaiddal, vagy gépek ellen, amikor éppen nincs meg a négy ember. Nem kell regisztrálni és semmit sem kell letölteni, telefonon és számítógépen is megy.</p>
+  <a class="go" href="https://huntarokk.netlify.app">Játék megnyitása</a>
+  <span class="url">https://huntarokk.netlify.app</span>
+</header>
+
+<section>
+  <h2>Így kezdj játszani</h2>
+  <ol class="steps">
+    <li><h3>Nyisd meg a játékot, és írd be a neved</h3>Csak egy nevet kér, amin a többiek látnak az asztalnál.</li>
+    <li><h3>Válassz: gépek ellen vagy barátokkal</h3>A „Játék gépek ellen” azonnal indít egy asztalt három géppel. Az „Új asztal” saját asztalt nyit, ahová másokat hívhatsz.</li>
+    <li><h3>Hívd meg a többieket</h3>A „Meghívás” gomb linket ad, amit elküldhetsz. Aki megnyitja, egyből az asztalodhoz ül. Asztalkóddal vagy a nyitott asztalok listájából is be lehet ülni.</li>
+    <li><h3>Töltsd fel az üres helyeket</h3>Ha nincs meg a négy ember, az üres helyekre gépet ültethetsz.</li>
+    <li><h3>Mindenki jelzi, hogy kész</h3>Amikor mind a négy hely foglalt és mindenki kész, indul az osztás.</li>
+  </ol>
+</section>
+
+<section>
+  <h2>A játék menete</h2>
+  <p>A program a teljes játszmát végigvezeti, és mindig csak a szabályos lépéseket engedi meg.</p>
+  <dl>
+    <dt>Licit</dt><dd>Három, kettő, egy, szóló, tartom vagy passz. Az invit és az engedett játék is benne van. Ha mindenki passzol, új osztás jön.</dd>
+    <dt>Skart</dt><dd>Megkapod a talonból a lapjaidat, és kiválasztod, mit teszel le. Amit nem szabad skartolni, az szürke. A skart után látszik, kinél hány tarokk fekszik.</dd>
+    <dt>Hívás</dt><dd>A felvevő kiválasztja, melyik tarokkot hívja partnernek.</dd>
+    <dt>Bemondások</dt><dd>Trull, négy király, duplajáték, volát, pagátultimó, XXI-fogás, nyolc és kilenc tarokk, valamint kontra és rekontra.</dd>
+    <dt>Lapjáték</dt><dd>Koppints a lapra, vagy húzd az asztalra. A most nem kijátszható lapok szürkék.</dd>
+    <dt>Elszámolás</dt><dd>A játszma végén látod a játék értékét, a figurákat (a csendeseket is), a pontokat játékosonként, az összesített állást és visszanézheted az ütéseket.</dd>
+  </dl>
+</section>
+
+<section>
+  <h2>Ami segít játék közben</h2>
+  <div class="grid">
+    <div class="card"><h3>Oktató tippek</h3><p>Bekapcsolva minden lépésednél megmutatja, mit érdemes tenned, és azt is, hogy miért. Kezdőknek és újrakezdőknek hasznos.</p></div>
+    <div class="card"><h3>Ki mit mondott</h3><p>Az asztal fölött játékosonként olvasható a licit, a hívott lap és minden bemondás, kontrával együtt.</p></div>
+    <div class="card"><h3>Ki van veled</h3><p>A program jelzi, kiről tudható már, hogy veled vagy ellened játszik, és kiről nem tudni még.</p></div>
+    <div class="card"><h3>Tarokkszámláló</h3><p>Mutatja, hány tarokk ment már ki, hány van nálad, és hány lehet még a többieknél.</p></div>
+    <div class="card"><h3>Csevegés</h3><p>Az asztalnál ülők írhatnak egymásnak játék közben.</p></div>
+    <div class="card"><h3>Gépek sebessége</h3><p>A házigazda beállíthatja, mennyit „gondolkodjanak” a gépek: gyors, normál vagy lassú.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>A gépi játékosok</h2>
+  <p>A gépek a tarokk bevett fogásai szerint játszanak: figyelik a XXI-fogást, a bemondásokkal információt adnak a partnernek, számolják a kiment tarokkokat.</p>
+  <p>A beállításokban a „Hogyan játszanak a gépek” alatt lépésről lépésre megnézheted a döntési fáikat: mit licitálnak, mit mondanak be és melyik lapot miért teszik.</p>
+  <div class="note">
+    <p><b>Rosszul játszott egy gép?</b> A beállításokban a „Hiba jelentése” gombbal pár szóban leírhatod, mi volt a gond. A program a leírással együtt elmenti az asztal teljes állását, így a hibát ki tudjuk javítani.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Hasznos tudnivalók</h2>
+  <dl>
+    <dt>Megszakadt a kapcsolat</dt><dd>A játék magától újracsatlakozik, és visszaültet a helyedre. Ha valaki tartósan kiesik, a házigazda gépet ültethet a helyére, így a játszma nem áll meg.</dd>
+    <dt>Ültetés</dt><dd>Az asztalt nyitó játékos a házigazda: ő dönti el, ki hol ül.</dd>
+    <dt>Telepítés</dt><dd>A beállításokban alkalmazásként is telepítheted: saját ikont kap a kezdőképernyőn, és teljes képernyőn fut. iPhone-on a Megosztás gomb, majd a „Főképernyőhöz adás” kell hozzá.</dd>
+    <dt>Nyelv</dt><dd>Magyarul és angolul használható, a beállításokban váltható.</dd>
+    <dt>Hangok</dt><dd>A beállításokban ki- és bekapcsolhatók.</dd>
+    <dt>Ár</dt><dd>A játék ingyenes. Aki szeretné, a beállításokban támogathatja a szerver fenntartását.</dd>
+  </dl>
+</section>
+
+<footer>Jó játékot! · <a href="https://huntarokk.netlify.app" style="color:inherit">huntarokk.netlify.app</a></footer>
+
+</main>
+</body>
+</html>

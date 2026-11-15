@@ -243,10 +243,13 @@ const CONTEXTS={
 };
 
 // ---- drawing ----------------------------------------------------------------
+// Texts are written in English above; hu.js holds the Hungarian for each of them, word for word as the key
+let LANG='en';
+const tr=s=>(LANG==='hu'&&HU[s])||s;
 function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e}
 const idTag=node=>'<span class="id">'+node.id+'</span>';
 function leafEl(node){
-  return el('div','leaf k-'+node.leaf,idTag(node)+node.text+(node.detail?'<small>'+node.detail+'</small>':''));
+  return el('div','leaf k-'+node.leaf,idTag(node)+tr(node.text)+(node.detail?'<small>'+tr(node.detail)+'</small>':''));
 }
 function render(node){
   if(node.leaf)return leafEl(node);
@@ -257,12 +260,12 @@ function render(node){
     const step=el('div','step');
     let meta='';
     if(cur.tag||cur.src)meta='<div class="meta">'+(cur.tag?'<span class="tag">'+cur.tag+'</span>':'')+(cur.src?'<span>'+cur.src+'</span>':'')+'</div>';
-    step.appendChild(el('div','node'+(cur.rule?' rule':''),idTag(cur)+cur.text+(cur.note?'<span class="note">'+cur.note+'</span>':'')+meta));
+    step.appendChild(el('div','node'+(cur.rule?' rule':''),idTag(cur)+tr(cur.text)+(cur.note?'<span class="note">'+tr(cur.note)+'</span>':'')+meta));
     if(cur.right.length){
       const bs=el('div','branches');
       for(const [label,child] of cur.right){
         const b=el('div','branch');
-        b.appendChild(el('div','edge','<span>'+label+'</span>'));
+        b.appendChild(el('div','edge','<span>'+tr(label)+'</span>'));
         b.appendChild(render(child));
         bs.appendChild(b);
       }
@@ -270,7 +273,7 @@ function render(node){
     }
     chain.appendChild(step);
     if(!cur.down)break;
-    chain.appendChild(el('div','down',cur.down[0]+' ↓'));
+    chain.appendChild(el('div','down',tr(cur.down[0])+' ↓'));
     cur=cur.down[1];
   }
   return chain;
@@ -278,12 +281,52 @@ function render(node){
 function mount(target,roots){
   const box=el('div','chain');box.style.gap='18px';
   roots.forEach(r=>box.appendChild(render(r)));
-  document.getElementById(target).appendChild(box);
+  const host=document.getElementById(target);
+  host.textContent='';
+  host.appendChild(box);
 }
-if(typeof document==='undefined'){
-  module.exports={CONTEXTS,TREES};
-}else{
+// Every text a tree shows, for the build to check that hu.js covers all of them
+function strings(){
+  const out=new Set();
+  const visit=node=>{
+    let cur=node;
+    while(cur){
+      out.add(cur.text);
+      for(const extra of [cur.detail,cur.note])if(extra)out.add(extra);
+      if(cur.leaf)break;
+      for(const [label,child] of cur.right){if(label)out.add(label);visit(child)}
+      if(!cur.down)break;
+      out.add(cur.down[0]);
+      cur=cur.down[1];
+    }
+  };
+  Object.values(TREES).forEach(roots=>roots.forEach(visit));
+  return [...out];
+}
+function show(lang){
+  LANG=lang==='hu'?'hu':'en';
+  document.documentElement.lang=LANG;
+  for(const e of document.querySelectorAll('[data-t]')){
+    if(e.dataset.en===undefined)e.dataset.en=e.innerHTML;
+    e.innerHTML=(LANG==='hu'&&PAGE_HU[e.dataset.t])||e.dataset.en;
+  }
+  document.title=LANG==='hu'?PAGE_HU.title:'Tarokk Bot Decision Trees';
+  for(const a of document.querySelectorAll('[data-lang]'))a.setAttribute('aria-current',a.dataset.lang===LANG?'true':'false');
   mount('treeA',TREES.A);mount('treeB1',TREES.B1);mount('treeB2',TREES.B2);mount('treeB3',TREES.B3);
   mount('treeC0',TREES.C0);mount('treeC1',TREES.CIlead);mount('treeC2',TREES.CIfollow);mount('treeC3',TREES.CIIlead);mount('treeC4',TREES.CIIfollow);
   mount('treeS',TREES.D);
+}
+if(typeof document==='undefined'){
+  module.exports={CONTEXTS,TREES,HU,PAGE_HU,STRINGS:strings()};
+}else{
+  // ?lang=hu from the app's link; otherwise what was picked here last time, then the browser's language
+  let lang=new URLSearchParams(location.search).get('lang');
+  try{lang=lang||localStorage.getItem('treeLang')}catch(e){}
+  lang=lang||(navigator.language||'en').slice(0,2);
+  for(const a of document.querySelectorAll('[data-lang]'))a.addEventListener('click',event=>{
+    event.preventDefault();
+    try{localStorage.setItem('treeLang',a.dataset.lang)}catch(e){}
+    show(a.dataset.lang);
+  });
+  show(lang);
 }

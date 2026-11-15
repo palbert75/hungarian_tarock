@@ -38,6 +38,7 @@ p{margin:0;max-width:72ch}
 .lede{color:var(--muted)}
 nav{display:flex;flex-wrap:wrap;gap:8px}
 nav a{font-family:var(--mono);font-size:13px;color:var(--ink);text-decoration:none;border:1px solid var(--line);background:var(--surface);padding:6px 10px;border-radius:4px}
+nav a[aria-current="true"]{border-color:var(--accent);color:var(--accent);font-weight:600}
 nav a:hover,nav a:focus-visible{border-color:var(--accent);color:var(--accent);outline:none}
 section{display:flex;flex-direction:column;gap:14px;min-width:0}
 .sub{display:flex;flex-direction:column;gap:10px;min-width:0}
@@ -81,69 +82,70 @@ code{font-family:var(--mono);font-size:.9em}
 
 <div class="wrap">
   <header class="sub">
-    <h1>Tarokk bot decision trees</h1>
-    <p class="lede">The bot player as it is implemented today in <code>server/bots/strategy.py</code>. Every check and every action has its own number, so you can say “change C17” or “swap A9 and A12”. Read each tree downwards: the first check that matches decides. Small grey text gives the tactic name and the source line. A problem report lists, for every bot action, the checks it went through with the same source lines (<code>route</code>), so a report can be followed through these trees.</p>
+    <h1 data-t="t1">Tarokk bot decision trees</h1>
+    <p class="lede" data-t="t2">The bot player as it is implemented today in <code>server/bots/strategy.py</code>. Every check and every action has its own number, so you can say “change C17” or “swap A9 and A12”. Read each tree downwards: the first check that matches decides. Small grey text gives the tactic name and the source line. A problem report lists, for every bot action, the checks it went through with the same source lines (<code>route</code>), so a report can be followed through these trees.</p>
+    <nav class="lang"><a href="?lang=en" data-lang="en">English</a><a href="?lang=hu" data-lang="hu">Magyar</a></nav>
     <nav>
-      <a href="#bid">A · Bidding</a>
-      <a href="#call">B · Calls and announcements</a>
-      <a href="#play">C · Card play</a>
-      <a href="#skart">D · Skart</a>
-      <a href="#notes">Things I noticed</a>
+      <a href="#bid" data-t="t3">A · Bidding</a>
+      <a href="#call" data-t="t4">B · Calls and announcements</a>
+      <a href="#play" data-t="t5">C · Card play</a>
+      <a href="#skart" data-t="t6">D · Skart</a>
+      <a href="#notes" data-t="t7">Things I noticed</a>
     </nav>
   </header>
 
   <section id="bid">
-    <h2>A · How the bot bids</h2>
-    <p>“The candidate” is the cheapest way to stay in the auction: <i>hold</i> when that is allowed, otherwise the lowest legal bid. Bids rise three → two → one → solo.</p>
-    <div class="legend"><span class="k-act">bid</span><span class="k-pass">pass</span><span class="k-off">switched off</span></div>
+    <h2 data-t="t8">A · How the bot bids</h2>
+    <p data-t="t9">“The candidate” is the cheapest way to stay in the auction: <i>hold</i> when that is allowed, otherwise the lowest legal bid. Bids rise three → two → one → solo.</p>
+    <div class="legend"><span class="k-act" data-t="t10">bid</span><span class="k-pass" data-t="t11">pass</span><span class="k-off" data-t="t12">switched off</span></div>
     <div class="scroll" id="treeA"></div>
   </section>
 
   <section id="call">
-    <h2>B · What the bot calls, and in which order</h2>
-    <p>First the declarer's partner call, then the announcements. After the call every bot knows its team for certain, so the announcement tree starts there. Announcements are not either-or: the bot walks down its list, collects everything that applies (the “+” boxes). The final step then decides how much of that list is said in this turn: the caller team says at most two things and lets the partner answer. Only when it has nothing to announce does it consider a kontra.</p>
-    <div class="legend"><span class="k-act">call / announce</span><span class="k-honour">kontra</span><span class="k-pass">pass</span><span class="k-off">switched off</span></div>
-    <div class="sub"><h3>Partner call (declarer)</h3><div class="scroll" id="treeB1"></div></div>
-    <div class="sub"><h3>Announcements (every seat, each turn)</h3><div class="scroll" id="treeB2"></div></div>
-    <div class="sub"><h3>Final step for every seat</h3><div class="scroll" id="treeB3"></div></div>
+    <h2 data-t="t13">B · What the bot calls, and in which order</h2>
+    <p data-t="t14">First the declarer's partner call, then the announcements. After the call every bot knows its team for certain, so the announcement tree starts there. Announcements are not either-or: the bot walks down its list, collects everything that applies (the “+” boxes). The final step then decides how much of that list is said in this turn: the caller team says at most two things and lets the partner answer. Only when it has nothing to announce does it consider a kontra.</p>
+    <div class="legend"><span class="k-act" data-t="t15">call / announce</span><span class="k-honour" data-t="t16">kontra</span><span class="k-pass" data-t="t17">pass</span><span class="k-off" data-t="t18">switched off</span></div>
+    <div class="sub"><h3 data-t="t19">Partner call (declarer)</h3><div class="scroll" id="treeB1"></div></div>
+    <div class="sub"><h3 data-t="t20">Announcements (every seat, each turn)</h3><div class="scroll" id="treeB2"></div></div>
+    <div class="sub"><h3 data-t="t21">Final step for every seat</h3><div class="scroll" id="treeB3"></div></div>
   </section>
 
   <section id="play">
-    <h2>C · Which card the bot plays</h2>
-    <p>Split the way you asked: one branch while an XXI catch is still possible, one branch once trull is announced, one hand holds both great honours, or one of them is gone. The code itself has no such single switch; it is one long list of checks. I sorted each check into the branch where it can fire, and kept the order the code uses.</p>
+    <h2 data-t="t22">C · Which card the bot plays</h2>
+    <p data-t="t23">Split the way you asked: one branch while an XXI catch is still possible, one branch once trull is announced, one hand holds both great honours, or one of them is gone. The code itself has no such single switch; it is one long list of checks. I sorted each check into the branch where it can fire, and kept the order the code uses.</p>
     <div class="defs">
-      <div><b>My team (certain after the call).</b> Caller team: I am the declarer, or I hold the called card. Enemy team: everybody else. The bot always knows this in card play.</div>
-      <div><b>Known teammate / known opponent (can be open).</b> Who the others are. Certain for the holder of the called card. The declarer and the enemy team know it only once the partner shows: the called card is played, an invit or yielded game fixes it, or a non-declarer announces something. Until then the declarer has no known teammate, and an enemy-team bot has no known teammate and one known opponent, the declarer.</div>
-      <div><b>Tarokks still out.</b> Every tarokk the bot has not seen: not in its hand, not in its own skart, not yet played.</div>
-      <div><b>Low suit card.</b> The lowest card of a suit a teammate cannot follow; failing that, a suit the fewest opponents are void in; failing that, the longest suit. <code>voids</code></div>
-      <div><b>Cheapest card.</b> Suit cards first, fewest points first; then the lowest tarokk; the pagát last. If a teammate announced pagát ulti, the smallest tarokk is kept and the next one up goes. <code>ulti_keep_small</code></div>
-      <div><b>Hard tarokk.</b> The lowest tarokk that nothing still out can beat, else the highest. Never the pagát; the skíz only when the trick holds 5+ points.</div>
-      <div><b>Opponent after me.</b> Somebody who still plays to this trick and is not a known teammate.</div>
+      <div data-t="t44"><b>My team (certain after the call).</b> Caller team: I am the declarer, or I hold the called card. Enemy team: everybody else. The bot always knows this in card play.</div>
+      <div data-t="t45"><b>Known teammate / known opponent (can be open).</b> Who the others are. Certain for the holder of the called card. The declarer and the enemy team know it only once the partner shows: the called card is played, an invit or yielded game fixes it, or a non-declarer announces something. Until then the declarer has no known teammate, and an enemy-team bot has no known teammate and one known opponent, the declarer.</div>
+      <div data-t="t46"><b>Tarokks still out.</b> Every tarokk the bot has not seen: not in its hand, not in its own skart, not yet played.</div>
+      <div data-t="t47"><b>Low suit card.</b> The lowest card of a suit a teammate cannot follow; failing that, a suit the fewest opponents are void in; failing that, the longest suit. <code>voids</code></div>
+      <div data-t="t48"><b>Cheapest card.</b> Suit cards first, fewest points first; then the lowest tarokk; the pagát last. If a teammate announced pagát ulti, the smallest tarokk is kept and the next one up goes. <code>ulti_keep_small</code></div>
+      <div data-t="t49"><b>Hard tarokk.</b> The lowest tarokk that nothing still out can beat, else the highest. Never the pagát; the skíz only when the trick holds 5+ points.</div>
+      <div data-t="t50"><b>Opponent after me.</b> Somebody who still plays to this trick and is not a known teammate.</div>
     </div>
-    <div class="legend"><span class="k-tarokk">plays a tarokk</span><span class="k-suit">plays a suit card</span><span class="k-honour">plays skíz / XXI / pagát</span><span class="k-any">depends on the hand</span><span class="k-goto">falls through</span></div>
-    <div class="sub"><h3>The split</h3><div class="scroll" id="treeC0"></div></div>
-    <div class="sub" id="c-i-lead"><h3>Branch I · catch possible · leading</h3><div class="scroll" id="treeC1"></div></div>
-    <div class="sub" id="c-i-follow"><h3>Branch I · catch possible · following</h3><div class="scroll" id="treeC2"></div></div>
-    <div class="sub" id="c-ii-lead"><h3>Branch II · trull or catch settled · leading</h3><div class="scroll" id="treeC3"></div></div>
-    <div class="sub" id="c-ii-follow"><h3>Branch II · trull or catch settled · following</h3><div class="scroll" id="treeC4"></div></div>
+    <div class="legend"><span class="k-tarokk" data-t="t24">plays a tarokk</span><span class="k-suit" data-t="t25">plays a suit card</span><span class="k-honour" data-t="t26">plays skíz / XXI / pagát</span><span class="k-any" data-t="t27">depends on the hand</span><span class="k-goto" data-t="t28">falls through</span></div>
+    <div class="sub"><h3 data-t="t29">The split</h3><div class="scroll" id="treeC0"></div></div>
+    <div class="sub" id="c-i-lead"><h3 data-t="t30">Branch I · catch possible · leading</h3><div class="scroll" id="treeC1"></div></div>
+    <div class="sub" id="c-i-follow"><h3 data-t="t31">Branch I · catch possible · following</h3><div class="scroll" id="treeC2"></div></div>
+    <div class="sub" id="c-ii-lead"><h3 data-t="t32">Branch II · trull or catch settled · leading</h3><div class="scroll" id="treeC3"></div></div>
+    <div class="sub" id="c-ii-follow"><h3 data-t="t33">Branch II · trull or catch settled · following</h3><div class="scroll" id="treeC4"></div></div>
   </section>
 
   <section id="skart">
-    <h2>D · What the bot discards</h2>
-    <p>The fourth tree. Kings and honours can never be discarded. The bid winner's skart counts for the caller team; everybody else's skart counts for the enemy team, also the called partner's. The skart happens before the call, so a bot that did not win the bidding can only guess its team from its own cards.</p>
+    <h2 data-t="t34">D · What the bot discards</h2>
+    <p data-t="t35">The fourth tree. Kings and honours can never be discarded. The bid winner's skart counts for the caller team; everybody else's skart counts for the enemy team, also the called partner's. The skart happens before the call, so a bot that did not win the bidding can only guess its team from its own cards.</p>
     <div class="scroll" id="treeS"></div>
   </section>
 
   <section id="notes">
-    <h2>Things I noticed while mapping</h2>
+    <h2 data-t="t36">Things I noticed while mapping</h2>
     <ul class="obs">
-      <li>A bot declarer has no rule for four kings or double game at all; only the holder of the called card announces them. So the declarer never “answers” with four kings, and the holder of the called card with the pagát and eight tarokks now stays silent and never gets to announce pagát ulti, unless the declarer declares 8 or 9 tarokks.</li>
-      <li>Trull now means “our team holds both great honours”. Branch II still has two exception checks for a trull from the other team that cannot be true because I hold a great honour myself. Between bots this happens only after an invit: the declarer announces trull with one great honour, trusting the invit to show the other, but an invit can also be given with the pagát alone.</li>
-      <li>The bot always knows its own team after the call, but many card-play checks ask about a <i>known teammate</i> instead. For an enemy-team bot those checks stay silent until the partner shows.</li>
-      <li>Protecting the XXI by leading is an enemy-team rule only. On the caller team the bot just never leads the XXI while the skíz is out, and otherwise leads tarokks.</li>
-      <li>Helping a teammate's pagát ulti leads the second-lowest tarokk without checking whether that card is the XXI.</li>
-      <li>Bots never announce volát or XXI catch, never kontra the game, trull or double game, never rekontra, and never start an invit.</li>
-      <li>The enemy team announces nothing except the eight or nine tarokks declaration; an announcement from a non-declarer is read by the whole table as “I am the partner”.</li>
+      <li data-t="t37">A bot declarer has no rule for four kings or double game at all; only the holder of the called card announces them. So the declarer never “answers” with four kings, and the holder of the called card with the pagát and eight tarokks now stays silent and never gets to announce pagát ulti, unless the declarer declares 8 or 9 tarokks.</li>
+      <li data-t="t38">Trull now means “our team holds both great honours”. Branch II still has two exception checks for a trull from the other team that cannot be true because I hold a great honour myself. Between bots this happens only after an invit: the declarer announces trull with one great honour, trusting the invit to show the other, but an invit can also be given with the pagát alone.</li>
+      <li data-t="t39">The bot always knows its own team after the call, but many card-play checks ask about a <i>known teammate</i> instead. For an enemy-team bot those checks stay silent until the partner shows.</li>
+      <li data-t="t40">Protecting the XXI by leading is an enemy-team rule only. On the caller team the bot just never leads the XXI while the skíz is out, and otherwise leads tarokks.</li>
+      <li data-t="t41">Helping a teammate's pagát ulti leads the second-lowest tarokk without checking whether that card is the XXI.</li>
+      <li data-t="t42">Bots never announce volát or XXI catch, never kontra the game, trull or double game, never rekontra, and never start an invit.</li>
+      <li data-t="t43">The enemy team announces nothing except the eight or nine tarokks declaration; an announcement from a non-declarer is read by the whole table as “I am the partner”.</li>
     </ul>
   </section>
 </div>

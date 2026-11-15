@@ -172,7 +172,7 @@
   },
   "settings": {
     "botTrees": "How the bots play",
-    "botTreesDetail": "The decision trees behind every bot move (in English)",
+    "botTreesDetail": "The decision trees behind every bot move",
     "botTreesGo": "Open",
     "title": "Settings",
     "tutorial": "Tutorial hints",

@@ -43,6 +43,7 @@ p{margin:0;max-width:72ch}
 .lede{color:var(--muted)}
 nav{display:flex;flex-wrap:wrap;gap:8px}
 nav a{font-family:var(--mono);font-size:13px;color:var(--ink);text-decoration:none;border:1px solid var(--line);background:var(--surface);padding:6px 10px;border-radius:4px}
+nav a[aria-current="true"]{border-color:var(--accent);color:var(--accent);font-weight:600}
 nav a:hover,nav a:focus-visible{border-color:var(--accent);color:var(--accent);outline:none}
 section{display:flex;flex-direction:column;gap:14px;min-width:0}
 .sub{display:flex;flex-direction:column;gap:10px;min-width:0}
@@ -88,75 +89,652 @@ code{font-family:var(--mono);font-size:.9em}
 
 <div class="wrap">
   <header class="sub">
-    <nav><a href="/">← Back to the game</a></nav>
-    <h1>Tarokk bot decision trees</h1>
-    <p class="lede">The bot player as it is implemented today in <code>server/bots/strategy.py</code>. Every check and every action has its own number, so you can say “change C17” or “swap A9 and A12”. Read each tree downwards: the first check that matches decides. Small grey text gives the tactic name and the source line. A problem report lists, for every bot action, the checks it went through with the same source lines (<code>route</code>), so a report can be followed through these trees.</p>
+    <nav><a href="/" data-t="back">← Back to the game</a></nav>
+    <h1 data-t="t1">Tarokk bot decision trees</h1>
+    <p class="lede" data-t="t2">The bot player as it is implemented today in <code>server/bots/strategy.py</code>. Every check and every action has its own number, so you can say “change C17” or “swap A9 and A12”. Read each tree downwards: the first check that matches decides. Small grey text gives the tactic name and the source line. A problem report lists, for every bot action, the checks it went through with the same source lines (<code>route</code>), so a report can be followed through these trees.</p>
     <nav>
-      <a href="#bid">A · Bidding</a>
-      <a href="#call">B · Calls and announcements</a>
-      <a href="#play">C · Card play</a>
-      <a href="#skart">D · Skart</a>
-      <a href="#notes">Things I noticed</a>
+      <a href="#bid" data-t="t3">A · Bidding</a>
+      <a href="#call" data-t="t4">B · Calls and announcements</a>
+      <a href="#play" data-t="t5">C · Card play</a>
+      <a href="#skart" data-t="t6">D · Skart</a>
+      <a href="#notes" data-t="t7">Things I noticed</a>
     </nav>
   </header>
 
   <section id="bid">
-    <h2>A · How the bot bids</h2>
-    <p>“The candidate” is the cheapest way to stay in the auction: <i>hold</i> when that is allowed, otherwise the lowest legal bid. Bids rise three → two → one → solo.</p>
-    <div class="legend"><span class="k-act">bid</span><span class="k-pass">pass</span><span class="k-off">switched off</span></div>
+    <h2 data-t="t8">A · How the bot bids</h2>
+    <p data-t="t9">“The candidate” is the cheapest way to stay in the auction: <i>hold</i> when that is allowed, otherwise the lowest legal bid. Bids rise three → two → one → solo.</p>
+    <div class="legend"><span class="k-act" data-t="t10">bid</span><span class="k-pass" data-t="t11">pass</span><span class="k-off" data-t="t12">switched off</span></div>
     <div class="scroll" id="treeA"></div>
   </section>
 
   <section id="call">
-    <h2>B · What the bot calls, and in which order</h2>
-    <p>First the declarer's partner call, then the announcements. After the call every bot knows its team for certain, so the announcement tree starts there. Announcements are not either-or: the bot walks down its list, collects everything that applies (the “+” boxes). The final step then decides how much of that list is said in this turn: the caller team says at most two things and lets the partner answer. Only when it has nothing to announce does it consider a kontra.</p>
-    <div class="legend"><span class="k-act">call / announce</span><span class="k-honour">kontra</span><span class="k-pass">pass</span><span class="k-off">switched off</span></div>
-    <div class="sub"><h3>Partner call (declarer)</h3><div class="scroll" id="treeB1"></div></div>
-    <div class="sub"><h3>Announcements (every seat, each turn)</h3><div class="scroll" id="treeB2"></div></div>
-    <div class="sub"><h3>Final step for every seat</h3><div class="scroll" id="treeB3"></div></div>
+    <h2 data-t="t13">B · What the bot calls, and in which order</h2>
+    <p data-t="t14">First the declarer's partner call, then the announcements. After the call every bot knows its team for certain, so the announcement tree starts there. Announcements are not either-or: the bot walks down its list, collects everything that applies (the “+” boxes). The final step then decides how much of that list is said in this turn: the caller team says at most two things and lets the partner answer. Only when it has nothing to announce does it consider a kontra.</p>
+    <div class="legend"><span class="k-act" data-t="t15">call / announce</span><span class="k-honour" data-t="t16">kontra</span><span class="k-pass" data-t="t17">pass</span><span class="k-off" data-t="t18">switched off</span></div>
+    <div class="sub"><h3 data-t="t19">Partner call (declarer)</h3><div class="scroll" id="treeB1"></div></div>
+    <div class="sub"><h3 data-t="t20">Announcements (every seat, each turn)</h3><div class="scroll" id="treeB2"></div></div>
+    <div class="sub"><h3 data-t="t21">Final step for every seat</h3><div class="scroll" id="treeB3"></div></div>
   </section>
 
   <section id="play">
-    <h2>C · Which card the bot plays</h2>
-    <p>Split the way you asked: one branch while an XXI catch is still possible, one branch once trull is announced, one hand holds both great honours, or one of them is gone. The code itself has no such single switch; it is one long list of checks. I sorted each check into the branch where it can fire, and kept the order the code uses.</p>
+    <h2 data-t="t22">C · Which card the bot plays</h2>
+    <p data-t="t23">Split the way you asked: one branch while an XXI catch is still possible, one branch once trull is announced, one hand holds both great honours, or one of them is gone. The code itself has no such single switch; it is one long list of checks. I sorted each check into the branch where it can fire, and kept the order the code uses.</p>
     <div class="defs">
-      <div><b>My team (certain after the call).</b> Caller team: I am the declarer, or I hold the called card. Enemy team: everybody else. The bot always knows this in card play.</div>
-      <div><b>Known teammate / known opponent (can be open).</b> Who the others are. Certain for the holder of the called card. The declarer and the enemy team know it only once the partner shows: the called card is played, an invit or yielded game fixes it, or a non-declarer announces something. Until then the declarer has no known teammate, and an enemy-team bot has no known teammate and one known opponent, the declarer.</div>
-      <div><b>Tarokks still out.</b> Every tarokk the bot has not seen: not in its hand, not in its own skart, not yet played.</div>
-      <div><b>Low suit card.</b> The lowest card of a suit a teammate cannot follow; failing that, a suit the fewest opponents are void in; failing that, the longest suit. <code>voids</code></div>
-      <div><b>Cheapest card.</b> Suit cards first, fewest points first; then the lowest tarokk; the pagát last. If a teammate announced pagát ulti, the smallest tarokk is kept and the next one up goes. <code>ulti_keep_small</code></div>
-      <div><b>Hard tarokk.</b> The lowest tarokk that nothing still out can beat, else the highest. Never the pagát; the skíz only when the trick holds 5+ points.</div>
-      <div><b>Opponent after me.</b> Somebody who still plays to this trick and is not a known teammate.</div>
+      <div data-t="t44"><b>My team (certain after the call).</b> Caller team: I am the declarer, or I hold the called card. Enemy team: everybody else. The bot always knows this in card play.</div>
+      <div data-t="t45"><b>Known teammate / known opponent (can be open).</b> Who the others are. Certain for the holder of the called card. The declarer and the enemy team know it only once the partner shows: the called card is played, an invit or yielded game fixes it, or a non-declarer announces something. Until then the declarer has no known teammate, and an enemy-team bot has no known teammate and one known opponent, the declarer.</div>
+      <div data-t="t46"><b>Tarokks still out.</b> Every tarokk the bot has not seen: not in its hand, not in its own skart, not yet played.</div>
+      <div data-t="t47"><b>Low suit card.</b> The lowest card of a suit a teammate cannot follow; failing that, a suit the fewest opponents are void in; failing that, the longest suit. <code>voids</code></div>
+      <div data-t="t48"><b>Cheapest card.</b> Suit cards first, fewest points first; then the lowest tarokk; the pagát last. If a teammate announced pagát ulti, the smallest tarokk is kept and the next one up goes. <code>ulti_keep_small</code></div>
+      <div data-t="t49"><b>Hard tarokk.</b> The lowest tarokk that nothing still out can beat, else the highest. Never the pagát; the skíz only when the trick holds 5+ points.</div>
+      <div data-t="t50"><b>Opponent after me.</b> Somebody who still plays to this trick and is not a known teammate.</div>
     </div>
-    <div class="legend"><span class="k-tarokk">plays a tarokk</span><span class="k-suit">plays a suit card</span><span class="k-honour">plays skíz / XXI / pagát</span><span class="k-any">depends on the hand</span><span class="k-goto">falls through</span></div>
-    <div class="sub"><h3>The split</h3><div class="scroll" id="treeC0"></div></div>
-    <div class="sub" id="c-i-lead"><h3>Branch I · catch possible · leading</h3><div class="scroll" id="treeC1"></div></div>
-    <div class="sub" id="c-i-follow"><h3>Branch I · catch possible · following</h3><div class="scroll" id="treeC2"></div></div>
-    <div class="sub" id="c-ii-lead"><h3>Branch II · trull or catch settled · leading</h3><div class="scroll" id="treeC3"></div></div>
-    <div class="sub" id="c-ii-follow"><h3>Branch II · trull or catch settled · following</h3><div class="scroll" id="treeC4"></div></div>
+    <div class="legend"><span class="k-tarokk" data-t="t24">plays a tarokk</span><span class="k-suit" data-t="t25">plays a suit card</span><span class="k-honour" data-t="t26">plays skíz / XXI / pagát</span><span class="k-any" data-t="t27">depends on the hand</span><span class="k-goto" data-t="t28">falls through</span></div>
+    <div class="sub"><h3 data-t="t29">The split</h3><div class="scroll" id="treeC0"></div></div>
+    <div class="sub" id="c-i-lead"><h3 data-t="t30">Branch I · catch possible · leading</h3><div class="scroll" id="treeC1"></div></div>
+    <div class="sub" id="c-i-follow"><h3 data-t="t31">Branch I · catch possible · following</h3><div class="scroll" id="treeC2"></div></div>
+    <div class="sub" id="c-ii-lead"><h3 data-t="t32">Branch II · trull or catch settled · leading</h3><div class="scroll" id="treeC3"></div></div>
+    <div class="sub" id="c-ii-follow"><h3 data-t="t33">Branch II · trull or catch settled · following</h3><div class="scroll" id="treeC4"></div></div>
   </section>
 
   <section id="skart">
-    <h2>D · What the bot discards</h2>
-    <p>The fourth tree. Kings and honours can never be discarded. The bid winner's skart counts for the caller team; everybody else's skart counts for the enemy team, also the called partner's. The skart happens before the call, so a bot that did not win the bidding can only guess its team from its own cards.</p>
+    <h2 data-t="t34">D · What the bot discards</h2>
+    <p data-t="t35">The fourth tree. Kings and honours can never be discarded. The bid winner's skart counts for the caller team; everybody else's skart counts for the enemy team, also the called partner's. The skart happens before the call, so a bot that did not win the bidding can only guess its team from its own cards.</p>
     <div class="scroll" id="treeS"></div>
   </section>
 
   <section id="notes">
-    <h2>Things I noticed while mapping</h2>
+    <h2 data-t="t36">Things I noticed while mapping</h2>
     <ul class="obs">
-      <li>A bot declarer has no rule for four kings or double game at all; only the holder of the called card announces them. So the declarer never “answers” with four kings, and the holder of the called card with the pagát and eight tarokks now stays silent and never gets to announce pagát ulti, unless the declarer declares 8 or 9 tarokks.</li>
-      <li>Trull now means “our team holds both great honours”. Branch II still has two exception checks for a trull from the other team that cannot be true because I hold a great honour myself. Between bots this happens only after an invit: the declarer announces trull with one great honour, trusting the invit to show the other, but an invit can also be given with the pagát alone.</li>
-      <li>The bot always knows its own team after the call, but many card-play checks ask about a <i>known teammate</i> instead. For an enemy-team bot those checks stay silent until the partner shows.</li>
-      <li>Protecting the XXI by leading is an enemy-team rule only. On the caller team the bot just never leads the XXI while the skíz is out, and otherwise leads tarokks.</li>
-      <li>Helping a teammate's pagát ulti leads the second-lowest tarokk without checking whether that card is the XXI.</li>
-      <li>Bots never announce volát or XXI catch, never kontra the game, trull or double game, never rekontra, and never start an invit.</li>
-      <li>The enemy team announces nothing except the eight or nine tarokks declaration; an announcement from a non-declarer is read by the whole table as “I am the partner”.</li>
+      <li data-t="t37">A bot declarer has no rule for four kings or double game at all; only the holder of the called card announces them. So the declarer never “answers” with four kings, and the holder of the called card with the pagát and eight tarokks now stays silent and never gets to announce pagát ulti, unless the declarer declares 8 or 9 tarokks.</li>
+      <li data-t="t38">Trull now means “our team holds both great honours”. Branch II still has two exception checks for a trull from the other team that cannot be true because I hold a great honour myself. Between bots this happens only after an invit: the declarer announces trull with one great honour, trusting the invit to show the other, but an invit can also be given with the pagát alone.</li>
+      <li data-t="t39">The bot always knows its own team after the call, but many card-play checks ask about a <i>known teammate</i> instead. For an enemy-team bot those checks stay silent until the partner shows.</li>
+      <li data-t="t40">Protecting the XXI by leading is an enemy-team rule only. On the caller team the bot just never leads the XXI while the skíz is out, and otherwise leads tarokks.</li>
+      <li data-t="t41">Helping a teammate's pagát ulti leads the second-lowest tarokk without checking whether that card is the XXI.</li>
+      <li data-t="t42">Bots never announce volát or XXI catch, never kontra the game, trull or double game, never rekontra, and never start an invit.</li>
+      <li data-t="t43">The enemy team announces nothing except the eight or nine tarokks declaration; an announcement from a non-declarer is read by the whole table as “I am the partner”.</li>
     </ul>
   </section>
 </div>
 
 <script>
+// Hungarian for the decision tree page. HU: every text of a tree in trees.js, keyed by the English text exactly
+// as written there (for a text put together from parts, the whole text as shown). PAGE_HU: the texts of
+// page.html by their data-t key. build.py stops when a text has no Hungarian here.
+const HU={
+  "Do I hold an honour: skíz, XXI or pagát?":
+    "Van honőröm: skíz, XXI vagy pagát?",
+  "no":
+    "nem",
+  "Pass":
+    "Passz",
+  "no honour, no bid":
+    "honőr nélkül nincs licit",
+  "yes":
+    "igen",
+  "Is there any bid I may still make?":
+    "Van még licit, amit mondhatok?",
+  "Did I give an invit myself, and somebody else now holds the highest bid?":
+    "Én adtam invitet, és most másnál van a legmagasabb licit?",
+  "Only reached as a hint for a human seat: bots never start an invit.":
+    "Ide csak emberi játékosnak szóló tippként jut el: a gépek sosem kezdenek invitet.",
+  "they took my invit and will call my card":
+    "elfogadták az invitemet, és az én lapomat hívják majd",
+  "Somebody else gave an invit, I hold the skíz or the XXI, and the candidate is below solo (or I hold 6+ tarokks)?":
+    "Más adott invitet, nálam a skíz vagy a XXI, és a jelölt a szóló alatt van (vagy 6+ tarokkom van)?",
+  "Bid the candidate":
+    "A jelöltet licitálom",
+  "take the auction, then call the invited card":
+    "megszerzem a licitet, aztán az invitált lapot hívom",
+  "I hold the XIX, a great honour and 6+ tarokks, and a jump bid up to “one” is open?":
+    "Nálam a XIX, egy nagy honőr és 6+ tarokk, és nyitva van egy ugró licit legfeljebb „egy”-ig?",
+  "Jump bid to invite the XIX":
+    "Ugró licit: invit a XIX-re",
+  "switched off: lost points in testing":
+    "kikapcsolva: a teszteken pontot vesztett",
+  "Yield turn: I said three, one other said two, the rest passed, and I am allowed to pass (I hold the XX and a great honour)?":
+    "Engedő kör: én hármat mondtam, valaki más kettőt, a többiek passzoltak, és passzolhatok (nálam a XX és egy nagy honőr)?",
+  "yields the game: the other player calls my XX":
+    "engedem a játékot: a másik játékos az én XX-asomat hívja",
+  "Do I hold the XXI?":
+    "Nálam a XXI?",
+  "Would the candidate be solo?":
+    "A jelölt szóló lenne?",
+  "never solo with the XXI":
+    "XXI-gyel soha nincs szóló",
+  "always bids with the XXI, up to “one”":
+    "XXI-gyel mindig licitál, legfeljebb „egy”-ig",
+  "Do I hold the skíz?":
+    "Nálam a skíz?",
+  "4 or more tarokks beside the skíz?":
+    "A skíz mellett 4 vagy több tarokkom van?",
+  "a strong skíz stays out and waits for the XXI":
+    "az erős skíz kimarad, és a XXI-re vár",
+  "Would the candidate be above “two”?":
+    "A jelölt a „kettő” fölött lenne?",
+  "limit reached":
+    "elérte a határt",
+  "a weak skíz bids up to “two”":
+    "a gyenge skíz legfeljebb „kettő”-ig licitál",
+  "no: pagát only":
+    "nem: csak a pagát",
+  "The candidate is “two” over a “three” from the seat right before me, that is the only bidding so far, and I have not bid yet?":
+    "A jelölt „kettő” a közvetlenül előttem ülő „három”-jára, eddig ez az egyetlen licit, és én még nem licitáltam?",
+  "Bid “two”":
+    "„Kettő”-t licitálok",
+  "either a yielded game with a strong partner, or more talon cards":
+    "vagy engedett játék erős partnerrel, vagy több lap a talonból",
+  "Fewer than 8 tarokks?":
+    "8-nál kevesebb tarokkom van?",
+  "pagát with 8+ tarokks bids up to “two”":
+    "pagáttal és 8+ tarokkal legfeljebb „kettő”-ig licitál",
+  "Safety net after every decision above: is it a Pass that is not legal here? (On a yield turn a pass needs the XX and a great honour.)":
+    "Biztonsági háló minden fenti döntés után: a döntés olyan passz, amely itt nem szabályos? (Engedő körben a passzhoz XX és egy nagy honőr kell.)",
+  "Bid the candidate instead":
+    "Helyette a jelöltet licitálom",
+  "must hold":
+    "tartani kell",
+  "The decision above stands":
+    "A fenti döntés marad",
+  "Is the call fixed by the auction?":
+    "A licit már eldöntötte, mit kell hívni?",
+  "Why?":
+    "Miért?",
+  "I accepted an invit":
+    "invitet fogadtam el",
+  "Call the invited card":
+    "Az invitált lapot hívom",
+  "XIX or XVIII":
+    "XIX vagy XVIII",
+  "the game was yielded to me":
+    "nekem engedték a játékot",
+  "Call the XX":
+    "A XX-ast hívom",
+  "Do I hold the XX myself?":
+    "Nálam van a XX?",
+  "Call the highest tarokk below it that I do not hold":
+    "Az alatta lévő legnagyobb tarokkot hívom, amely nincs nálam",
+  "XIX, then XVIII … down to XII; if I hold all of them, call the XX (myself)":
+    "XIX, aztán XVIII … le a XII-ig; ha mind nálam van, a XX-ast hívom (magamat)",
+  "Which team am I on? (Certain once the card is called.)":
+    "Melyik csapatban vagyok? (A hívás után biztos.)",
+  "caller team: I am the declarer":
+    "felvevő pár: én vagyok a felvevő",
+  "I hold the pagát but neither the skíz nor the XXI (and not the called card)?":
+    "Nálam a pagát, de sem a skíz, sem a XXI (és a hívott lap sem)?",
+  "Said first. It tells the partner that I hold no great honour, so the XXI can still be caught.":
+    "Elsőként mondom. Ebből a partner tudja, hogy nincs nagy honőröm, tehát a XXI-et még el lehet fogni.",
+  "+ pagát ulti":
+    "+ pagátulti",
+  "as information":
+    "információként",
+  "then":
+    "aztán",
+  "I accepted somebody's invit and hold the skíz or the XXI?":
+    "Elfogadtam valaki invitjét, és nálam a skíz vagy a XXI?",
+  "One great honour is enough here: the invit is taken to show the other one.":
+    "Itt egy nagy honőr is elég: az invit a másikat jelzi.",
+  "+ trull":
+    "+ trull",
+  "I hold both the skíz and the XXI?":
+    "Nálam a skíz és a XXI is?",
+  "if not already on the list; pagát and tarokk count do not matter":
+    "ha még nincs a listán; a pagát és a tarokkok száma nem számít",
+  "I hold the pagát and have 9+ tarokks; or 8 with three of them XVII or higher, once my partner has announced four kings or declared 8 or 9 tarokks?":
+    "Nálam a pagát és 9+ tarokk; vagy 8, köztük három XVII-es vagy nagyobb, miután a partnerem négy királyt mondott vagy 8, illetve 9 tarokkot jelentett?",
+  "I hold 6+ tarokks and a great honour, and a non-declarer has announced something?":
+    "6+ tarokkom és egy nagy honőröm van, és egy nem felvevő játékos bemondott valamit?",
+  "+ double game":
+    "+ duplajáték",
+  "switched off: costs about a quarter point per hand":
+    "kikapcsolva: játszmánként kb. negyed pontba kerül",
+  "I hold exactly 8 or exactly 9 tarokks, have not declared them, and trull has been called (by anyone, or by me in this turn or earlier)?":
+    "Pontosan 8 vagy pontosan 9 tarokkom van, még nem jelentettem, és a trull el van mondva (bárki mondta, vagy én ebben a körben vagy korábban)?",
+  "+ eight / nine tarokks":
+    "+ nyolc / kilenc tarokk",
+  "everybody else pays":
+    "mindenki más fizet",
+  "Go to the final step":
+    "Tovább a záró lépésre",
+  "caller team: I hold the called card":
+    "felvevő pár: nálam a hívott lap",
+  "I gave an invit with the pagát as my only honour, and my card was called?":
+    "Úgy adtam invitet, hogy a pagát az egyetlen honőröm, és az én lapomat hívták?",
+  "obligatory":
+    "kötelező",
+  "6+ tarokks?":
+    "6+ tarokk?",
+  "+ four kings":
+    "+ négy király",
+  "5+ tarokks above the XIII?":
+    "5+ tarokk a XIII fölött?",
+  "Trull means: our team holds both great honours.":
+    "A trull jelentése: a csapatunknál van mindkét nagy honőr.",
+  "I hold one of them, and the declarer has not announced pagát ulti?":
+    "Az egyik nálam van, és a felvevő nem mondott pagátultit?",
+  "A declarer without a great honour says pagát ulti. No ulti from them: the other great honour is theirs.":
+    "A nagy honőr nélküli felvevő pagátultit mond. Ha nem mondott ultit: a másik nagy honőr nála van.",
+  "I hold the pagát and have 9+ tarokks; or 8 with three of them XVII or higher, once the declarer has announced four kings or declared 8 or 9 tarokks?":
+    "Nálam a pagát és 9+ tarokk; vagy 8, köztük három XVII-es vagy nagyobb, miután a felvevő négy királyt mondott vagy 8, illetve 9 tarokkot jelentett?",
+  "enemy team":
+    "ellenpár",
+  "I hold exactly 8 or exactly 9 tarokks and have not declared them?":
+    "Pontosan 8 vagy pontosan 9 tarokkom van, és még nem jelentettem?",
+  "always declared: everybody else pays":
+    "mindig jelenti: mindenki más fizet",
+  "Nothing on my list, the caller team announced four kings, no kontra on it yet, and I hold 5+ tarokks above the XIII?":
+    "Nincs semmi a listámon, a felvevő pár négy királyt mondott, még nincs rajta kontra, és 5+ tarokkom van a XIII fölött?",
+  "“Caller team” here means the declarer, or a non-declarer who announced something.":
+    "A „felvevő pár” itt a felvevőt jelenti, vagy azt a nem felvevő játékost, aki bemondott valamit.",
+  "Kontra the four kings":
+    "Kontra a négy királyra",
+  "strong hand":
+    "erős lap",
+  "the enemy team announces nothing else":
+    "az ellenpár semmi mást nem mond be",
+  "Strike from my list what may no longer be announced (already announced by anyone).":
+    "Kihúzom a listámról, amit már nem lehet bemondani (bárki bemondta már).",
+  "Am I on the caller team?":
+    "A felvevő párban vagyok?",
+  "Announcements carry information, so the partner must get a turn to answer.":
+    "A bemondás információ, ezért a partnernek is szóhoz kell jutnia, hogy válaszolhasson.",
+  "Four kings is on my list, and: double game is on it too, or I hold the pagát with 8+ tarokks, or I declare (or already declared) 8 or 9 tarokks?":
+    "A négy király a listámon van, és: a duplajáték is rajta van, vagy nálam a pagát 8+ tarokkal, vagy 8, illetve 9 tarokkot jelentek (vagy már jelentettem)?",
+  "Take four kings off my list for this turn":
+    "Erre a körre leveszem a négy királyt a listámról",
+  "double game goes first; with a pagát ulti hand I want to hear four kings from my partner; a tarokk count already says “long hand”":
+    "a duplajáték megy előbb; pagátultis lappal a partneremtől akarom hallani a négy királyt; a tarokkok száma már azt mondja: „hosszú lap”",
+  "More than two things left on my list?":
+    "Kettőnél több dolog maradt a listámon?",
+  "Keep the first two, in this order: trull, double game, tarokk count, four kings, pagát ulti":
+    "Az első kettőt tartom meg, ebben a sorrendben: trull, duplajáték, tarokkok száma, négy király, pagátulti",
+  "the rest waits for my next turn; trull is never held back, and a pagát ulti owed for an invit goes first":
+    "a többi a következő körömre vár; a trullt sosem tartom vissza, és az invitért járó pagátulti megy elsőnek",
+  "Carry on below":
+    "Folytatás lent",
+  "Is my list empty?":
+    "Üres a listám?",
+  "A known opponent announced four kings, no kontra on it yet, and I hold 6+ tarokks with two at XVII or higher?":
+    "Egy ismert ellenfél négy királyt mondott, még nincs rajta kontra, és 6+ tarokkom van, köztük kettő XVII-es vagy nagyobb?",
+  "A known opponent announced pagát ulti, no kontra on it yet, and I hold 7+ tarokks?":
+    "Egy ismert ellenfél pagátultit mondott, még nincs rajta kontra, és 7+ tarokkom van?",
+  "Kontra the pagát ulti":
+    "Kontra a pagátultira",
+  "Announce what is on the list":
+    "Bemondom, ami a listán van",
+  "Can the XXI still be caught, as far as this seat can tell?":
+    "El lehet még fogni a XXI-et, amennyire ez a játékos meg tudja ítélni?",
+  "My grouping. The code checks these facts one by one inside the rules below.":
+    "Az én csoportosításom. A kód ezeket a tényeket egyenként vizsgálja a lenti szabályokban.",
+  "Branch I. No trull announced by anyone, skíz and XXI both still unplayed, and I do not hold both.":
+    "I. ág. Senki sem mondott trullt, a skíz és a XXI is játékban van még, és nincs nálam mindkettő.",
+  "I lead":
+    "én hívok",
+  "Branch I · leading":
+    "I. ág · hívás",
+  "next tree below":
+    "a következő fa lent",
+  "I follow":
+    "én teszek rá",
+  "Branch I · following":
+    "I. ág · rátevés",
+  "Branch II. Trull is announced (the announcing team holds both great honours), or I hold both skíz and XXI, or one of the two has been played.":
+    "II. ág. Trull van bemondva (a bemondó csapatnál van mindkét nagy honőr), vagy nálam a skíz és a XXI is, vagy az egyik már lement.",
+  "Branch II · leading":
+    "II. ág · hívás",
+  "Branch II · following":
+    "II. ág · rátevés",
+  "It is the second-last trick, I hold the pagát and one more card, I did not announce pagát ulti, and more than 3 tarokks are still out?":
+    "Ez az utolsó előtti ütés, nálam a pagát és még egy lap, nem mondtam pagátultit, és 3-nál több tarokk van még kint?",
+  "Count the tarokks: three players can play at most three of them to this trick, so one is left for the last trick and beats the pagát there. That is a lost silent pagát ulti, whoever takes it.":
+    "Számold meg a tarokkokat: három játékos legfeljebb hármat tehet ebbe az ütésbe, tehát egy marad az utolsó ütésre, és ott elüti a pagátot. Ez bukott csendes pagátulti, akárki viszi el.",
+  "Lead the pagát":
+    "A pagátot hívom",
+  "better lost now than as a lost silent ulti in the last trick":
+    "jobb most elveszteni, mint bukott csendes ultiként az utolsó ütésben",
+  "Leading the XXI is never safe while the skíz can take it.":
+    "A XXI-et sosem biztonságos hívni, amíg a skíz elütheti.",
+  "Which team am I on?":
+    "Melyik csapatban vagyok?",
+  "caller team":
+    "felvevő pár",
+  "My partner has not shown yet, and I hold 3+ tarokks beside the XXI?":
+    "A partnerem még nem mutatta meg magát, és a XXI mellett 3+ tarokkom van?",
+  "Lead my lowest tarokk (not the pagát)":
+    "A legkisebb tarokkomat hívom (nem a pagátot)",
+  "my partner can take it with the called card and show who they are":
+    "a partnerem a hívott lappal elviheti, és megmutathatja, ki ő",
+  "My partner is known, and my tarokks beside the XXI and pagát number more than half of the other tarokks still out (the skíz not counted)?":
+    "A partnerem ismert, és a XXI-en és a pagáton kívüli tarokkjaim száma több, mint a még kint lévő többi tarokk fele (a skízt nem számítva)?",
+  "Lead my highest tarokk below the XXI":
+    "A XXI alatti legnagyobb tarokkomat hívom",
+  "keep leading high tarokks until the skíz has to fall":
+    "addig hívom a nagy tarokkokat, amíg a skíznek le nem kell esnie",
+  "Do I have a suit card?":
+    "Van színes lapom?",
+  "Lead the lowest card of my shortest suit whose king I do not hold; a king if I hold the king of every suit I have":
+    "A legrövidebb olyan színem legkisebb lapját hívom, amelynek a királya nincs nálam; királyt, ha minden színemben nálam a király",
+  "soon I can trump that suit; my partner can tell where the king is":
+    "hamarosan lophatom ezt a színt; a partnerem tudja, hol a király",
+  "Carry on with the checks below":
+    "Folytatás a lenti kérdésekkel",
+  "Lead the low suit card":
+    "Az alacsony színes lapot hívom",
+  "a suit, never a tarokk":
+    "színt, soha nem tarokkot",
+  "Are 3 or fewer tarokks still out (the XXI among them)?":
+    "Legfeljebb 3 tarokk van még kint (köztük a XXI)?",
+  "Lead the skíz":
+    "A skízt hívom",
+  "three players follow: the XXI has to fall under it":
+    "hárman tesznek rá: a XXI-nek alá kell esnie",
+  "Lead the cheapest card of a suit whose king I do not hold":
+    "Egy olyan szín legolcsóbb lapját hívom, amelynek a királya nincs nálam",
+  "any suit if I hold every king; the XXI's holder may have to follow":
+    "bármelyik színt, ha minden király nálam van; lehet, hogy a XXI gazdájának színt kell adnia",
+  "Do I have a tarokk other than skíz and pagát?":
+    "Van más tarokkom a skízen és a pagáton kívül?",
+  "Lead my lowest tarokk":
+    "A legkisebb tarokkomat hívom",
+  "ends up leading the skíz":
+    "a vége az, hogy a skízt hívja",
+  "A known teammate who plays last to this trick seems to wait with the skíz, I do not hold the XXI, and I have a tarokk beside the pagát?":
+    "Egy ismert partner, aki utolsónak tesz ebbe az ütésbe, a jelek szerint a skízzel vár, nincs nálam a XXI, és van tarokkom a pagáton kívül?",
+  "“Seems to wait”: they threw a XIV–XX under a higher card instead of winning.":
+    "„A jelek szerint vár”: XIV–XX közötti tarokkot dobott egy nagyobb lap alá, ahelyett hogy ütött volna.",
+  "Lead my highest tarokk":
+    "A legnagyobb tarokkomat hívom",
+  "drive the XXI out":
+    "kihajtom a XXI-et",
+  "I am on the enemy team, hold neither the skíz nor the XXI, the player who plays last to this trick is a known teammate, and I have a tarokk beside the pagát?":
+    "Az ellenpárban vagyok, nincs nálam sem a skíz, sem a XXI, az ütésbe utolsónak tevő játékos ismert partner, és van tarokkom a pagáton kívül?",
+  "the teammate's XXI can go home in last seat":
+    "a partner XXI-e utolsó helyen hazamehet",
+  "Four kings or double game is announced, I am on the enemy team, and I have a suit card?":
+    "Négy király vagy duplajáték van bemondva, az ellenpárban vagyok, és van színes lapom?",
+  "keep my own kings away from their tarokks; any suit if I hold every king":
+    "a saját királyaimat nem teszem ki a tarokkjaiknak; bármelyik színt, ha minden király nálam van",
+  "General rule once four kings or double game is announced: the caller team leads a tarokk. The checks below pick which one.":
+    "Általános szabály, ha négy király vagy duplajáték van bemondva: a felvevő pár tarokkot hív. A lenti kérdések döntik el, melyiket.",
+  "I am on the enemy team, hold neither the skíz nor the XXI, and have a suit card?":
+    "Az ellenpárban vagyok, nincs nálam sem a skíz, sem a XXI, és van színes lapom?",
+  "protect a teammate's XXI":
+    "védem a partner XXI-ét",
+  "I announced pagát ulti and still hold the pagát?":
+    "Pagátultit mondtam, és még nálam a pagát?",
+  "Tarokks are still out, and I have one to lead (not the pagát, not the XXI)?":
+    "Van még kint tarokk, és van olyanom, amit hívhatok (nem a pagát, nem a XXI)?",
+  "Lead my lowest such tarokk":
+    "A legkisebb ilyen tarokkomat hívom",
+  "draw the tarokks, keep the pagát for the end":
+    "kitarokkozok, a pagátot a végére tartom",
+  "Lead a king if I hold one, otherwise the low suit card":
+    "Királyt hívok, ha van, különben az alacsony színes lapot",
+  "a king should keep the lead; keep the pagát":
+    "a király megtartja a hívást; a pagát marad",
+  "Somebody not known as my teammate announced pagát ulti, I have exactly one tarokk beside the pagát, and a suit card?":
+    "Valaki, aki nem ismert partnerem, pagátultit mondott, a pagáton kívül pontosan egy tarokkom van, és van színes lapom?",
+  "keep the tarokk for the last trick":
+    "a tarokkot az utolsó ütésre tartom",
+  "A known teammate announced pagát ulti, I have 2+ tarokks beside the pagát, and tarokks are still out?":
+    "Egy ismert partner pagátultit mondott, a pagáton kívül 2+ tarokkom van, és van még kint tarokk?",
+  "Lead my second-lowest tarokk":
+    "A második legkisebb tarokkomat hívom",
+  "help to draw tarokks, keep the smallest for the end":
+    "segítek kitarokkozni, a legkisebbet a végére tartom",
+  "I am on the caller team, hold more than half as many tarokks as are still out, and have one to lead (not the pagát, not the XXI)?":
+    "A felvevő párban vagyok, több tarokkom van, mint a még kint lévők fele, és van olyanom, amit hívhatok (nem a pagát, nem a XXI)?",
+  "Lead my highest such tarokk":
+    "A legnagyobb ilyen tarokkomat hívom",
+  "draw the tarokks":
+    "kitarokkozok",
+  "I am on the caller team and have such a tarokk at all?":
+    "A felvevő párban vagyok, és egyáltalán van ilyen tarokkom?",
+  "the caller team leads a tarokk whenever it has one":
+    "a felvevő pár tarokkot hív, amikor csak van",
+  "caller team: from a suit whose king I do not hold, or a king if I hold the king of every suit I have":
+    "felvevő pár: olyan színből, amelynek a királya nincs nálam, vagy királyt, ha minden színemben nálam a király",
+  "Do I have a tarokk beside the pagát?":
+    "Van tarokkom a pagáton kívül?",
+  "can be the XXI when nothing else is left":
+    "lehet a XXI is, ha más már nem maradt",
+  "the only card left":
+    "az egyetlen megmaradt lap",
+  "Only one legal card?":
+    "Csak egy szabályos lapom van?",
+  "Play it":
+    "Azt teszem",
+  "Working out who must follow suit: my known teammate on the caller team led a low suit card (by our convention not from a suit whose king they hold), I do not hold that king, and all but one of the other players have shown they are out of the suit. That one player holds the king and has to follow suit. Once the trick is trumped, that player does not count as an opponent after me in the checks below.":
+    "Annak kiszámítása, kinek kell színt adnia: a felvevő párbeli ismert partnerem alacsony színes lapot hívott (megállapodásunk szerint nem olyan színből, amelynek a királya nála van), a király nincs nálam, és a többi játékos közül egy kivételével mindenki megmutatta már, hogy nincs ebből a színből. Annál az egy játékosnál van a király, és neki színt kell adnia. Ha az ütést tarokkal lopják, ez a játékos a lenti kérdésekben nem számít utánam tevő ellenfélnek.",
+  "A king cannot lie in the skart, so it must be in that hand.":
+    "Király nem lehet a skartban, tehát abban a kézben kell lennie.",
+  "I hold the XXI. I may play the XXI, and the only opponent after me is the player who must follow suit with the king?":
+    "Nálam a XXI. Tehetem a XXI-et, és utánam az egyetlen ellenfél az a játékos, akinek a királlyal színt kell adnia?",
+  "Play the XXI":
+    "A XXI-et teszem",
+  "nobody can put the skíz on it; it comes home, usually with the king":
+    "senki sem tehet rá skízt; hazajön, rendszerint a királlyal együtt",
+  "I hold the XXI. I may play the XXI, and nobody but known teammates plays after me (or I am last)?":
+    "Nálam a XXI. Tehetem a XXI-et, és utánam csak ismert partnerek tesznek (vagy én vagyok az utolsó)?",
+  "it escapes: nobody left to play can hold the skíz against me":
+    "megmenekül: az utánam tevők közül senkinél sem lehet ellenem a skíz",
+  "I can play the skíz, and the XXI of somebody not known as my teammate lies in the trick?":
+    "Tehetem a skízt, és az ütésben ott van valakinek a XXI-e, aki nem ismert partnerem?",
+  "Play the skíz":
+    "A skízt teszem",
+  "XXI caught":
+    "XXI elfogva",
+  "It is the second-last trick, I hold the pagát and one more card, both are legal, I did not announce pagát ulti, and more tarokks are still out than players still to play after me?":
+    "Ez az utolsó előtti ütés, nálam a pagát és még egy lap, mindkettő szabályos, nem mondtam pagátultit, és több tarokk van még kint, mint ahány játékos utánam tesz?",
+  "Count the tarokks: one is left for the last trick and beats the pagát there. That is a lost silent pagát ulti, whoever takes it.":
+    "Számold meg a tarokkokat: egy marad az utolsó ütésre, és ott elüti a pagátot. Ez bukott csendes pagátulti, akárki viszi el.",
+  "Play the pagát":
+    "A pagátot teszem",
+  "I hold the called card but neither the skíz nor the XXI, the declarer led a tarokk, an opponent plays after me, and my called card would take over the trick?":
+    "Nálam a hívott lap, de sem a skíz, sem a XXI, a felvevő tarokkot hívott, utánam ellenfél tesz, és a hívott lapom átvenné az ütést?",
+  "Play the called card":
+    "A hívott lapot teszem",
+  "shows the table who is with whom":
+    "megmutatja az asztalnak, ki kivel van",
+  "Set aside before choosing (if another card is legal): the XXI, while the skíz is in another hand and an opponent plays after me; the pagát, if I announced pagát ulti.":
+    "Választás előtt félreteszem (ha más lap is szabályos): a XXI-et, amíg a skíz másnál van és utánam ellenfél tesz; a pagátot, ha pagátultit mondtam.",
+  "I hold the XXI. An opponent plays after me, and I have a card (not the XXI, not the pagát) that does not win the trick?":
+    "Nálam a XXI. Utánam ellenfél tesz, és van olyan lapom (nem a XXI, nem a pagát), amely nem viszi el az ütést?",
+  "Play my cheapest card that does not win":
+    "A legolcsóbb olyan lapomat teszem, amely nem üt",
+  "stay out of the lead; if the player after me takes the trick, I play last to the next one":
+    "nem kerülök hívásra; ha az utánam ülő viszi az ütést, a következőben én teszek utolsónak",
+  "Do I hold the skíz (so I am waiting for the XXI)?":
+    "Nálam a skíz (tehát a XXI-re várok)?",
+  "A tarokk was led, and no more tarokks are still out than players still to play after me?":
+    "Tarokkot hívtak, és nincs több tarokk kint, mint ahány játékos utánam tesz?",
+  "the XXI has to come, even though it is not in the trick yet":
+    "a XXI-nek jönnie kell, még ha nincs is az ütésben",
+  "Can I stay under the trick with a card other than skíz and pagát?":
+    "Alatta tudok maradni az ütésnek a skíztől és a pagáttól különböző lappal?",
+  "Are all those losing cards tarokks?":
+    "Ezek a nem ütő lapok mind tarokkok?",
+  "Play the highest tarokk that still loses":
+    "A legnagyobb olyan tarokkot teszem, amely még nem üt",
+  "shed high tarokks, stay out of the lead":
+    "megszabadulok a nagy tarokkoktól, nem kerülök hívásra",
+  "Is a known teammate winning the trick?":
+    "Ismert partner viszi éppen az ütést?",
+  "Play my most valuable losing card":
+    "A legértékesebb nem ütő lapomat teszem",
+  "feed the teammate":
+    "etetem a partnert",
+  "Play my cheapest losing card":
+    "A legolcsóbb nem ütő lapomat teszem",
+  "Do I have any card other than skíz and pagát?":
+    "Van más lapom a skízen és a pagáton kívül?",
+  "Play the cheapest of them":
+    "A legolcsóbbat teszem közülük",
+  "forced to win":
+    "kénytelen vagyok ütni",
+  "Who is winning the trick so far?":
+    "Ki viszi eddig az ütést?",
+  "a known teammate":
+    "ismert partner",
+  "Their card is certain to hold (no opponent after me, or their tarokk beats everything still out), I have the pagát, and I did not announce pagát ulti?":
+    "A lapja biztosan megáll (nincs utánam ellenfél, vagy a tarokkja mindent üt, ami még kint van), nálam a pagát, és nem mondtam pagátultit?",
+  "bring it home":
+    "hazaviszem",
+  "Not certain, they are winning with a suit card, an opponent plays after me, all I can play are tarokks, and a king is in the trick or my teammate led the suit?":
+    "Nem biztos, színes lappal viszi, utánam ellenfél tesz, csak tarokkot tehetek, és király van az ütésben, vagy a partnerem hívta a színt?",
+  "Play a hard tarokk":
+    "Kemény tarokkot teszek",
+  "keep the trick and the lead on our side":
+    "az ütés és a hívás nálunk marad",
+  "The trick is certain and I have a suit card?":
+    "Az ütés biztos, és van színes lapom?",
+  "Play my most valuable suit card":
+    "A legértékesebb színes lapomat teszem",
+  "Play my cheapest card":
+    "A legolcsóbb lapomat teszem",
+  "an opponent, or somebody whose side I do not know":
+    "ellenfél, vagy valaki, akiről nem tudom, kivel van",
+  "I can win, an opponent plays after me, all I can play are tarokks, and a king is in the trick or a known teammate led a suit?":
+    "Tudok ütni, utánam ellenfél tesz, csak tarokkot tehetek, és király van az ütésben, vagy ismert partner hívott színt?",
+  "Kurta: I could win, but the trick holds under 5 points, it is one of the first four tricks, I hold 7+ tarokks and a known teammate plays after me?":
+    "Kurta: üthetnék, de az ütésben 5 pontnál kevesebb van, ez az első négy ütés egyike, 7+ tarokkom van, és utánam ismert partner tesz?",
+  "leave it to the shorter hand":
+    "a rövidebb kézre hagyom",
+  "Can I win the trick? (The pagát counts as a winner only when I play last.)":
+    "El tudom vinni az ütést? (A pagát csak akkor számít ütő lapnak, ha utolsónak teszek.)",
+  "Am I the last to play?":
+    "Én teszek utolsónak?",
+  "Does the pagát win it?":
+    "A pagát elviszi?",
+  "Win with my cheapest winning card":
+    "A legolcsóbb ütő lapommal ütök",
+  "Worth it: 5+ points in the trick, or a known opponent is winning it, or the known teammate seated before me seems to wait with the skíz?":
+    "Megéri: 5+ pont van az ütésben, vagy ismert ellenfél viszi éppen, vagy az előttem ülő ismert partner a jelek szerint a skízzel vár?",
+  "Exception: the other team announced trull, yet I hold the XXI myself and the skíz is still unplayed?":
+    "Kivétel: a másik csapat trullt mondott, pedig nálam van a XXI, és a skíz még nem ment le?",
+  "Exception: the other team announced trull, yet I hold the skíz myself and the XXI is still unplayed?":
+    "Kivétel: a másik csapat trullt mondott, pedig nálam van a skíz, és a XXI még nem ment le?",
+  "Their trull cannot be true, so the bot keeps waiting for the XXI.":
+    "A trulljuk nem lehet igaz, ezért a gép tovább vár a XXI-re.",
+  "Trull was called, I am on the enemy team, and I have a suit card?":
+    "El van mondva a trull, az ellenpárban vagyok, és van színes lapom?",
+  "general rule: once trull is called, the enemy team leads suits; with four kings or double game also announced, a suit whose king I do not hold":
+    "általános szabály: ha a trull el van mondva, az ellenpár színt hív; ha négy király vagy duplajáték is be van mondva, olyan színt, amelynek a királya nincs nálam",
+  "General rule once trull is called: the caller team leads a tarokk. The checks below pick which one. A suit is led only with no tarokk to lead, or in the pagát ulti cases.":
+    "Általános szabály, ha a trull el van mondva: a felvevő pár tarokkot hív. A lenti kérdések döntik el, melyiket. Színt csak akkor hív, ha nincs hívható tarokkja, vagy a pagátultis esetekben.",
+  "Skíz and XXI are both still unplayed, I hold neither, a known teammate who plays last to this trick seems to wait with the skíz, and I have a tarokk beside the pagát?":
+    "A skíz és a XXI is játékban van még, egyik sincs nálam, egy ismert partner, aki utolsónak tesz ebbe az ütésbe, a jelek szerint a skízzel vár, és van tarokkom a pagáton kívül?",
+  "Trull is announced on my side, the pagát has not been seen yet, I hold 5+ tarokks, and have one to lead (not the pagát; not the XXI while the skíz is in another hand)?":
+    "A trullt az én csapatom mondta, a pagát még nem került elő, 5+ tarokkom van, és van olyanom, amit hívhatok (nem a pagát; nem a XXI, amíg a skíz másnál van)?",
+  "draw tarokks until the pagát falls":
+    "addig tarokkozok, amíg a pagát le nem esik",
+  "I am on the enemy team, the skíz or the XXI has already been played, and I have a suit card?":
+    "Az ellenpárban vagyok, a skíz vagy a XXI már lement, és van színes lapom?",
+  "nothing left to protect":
+    "nincs már mit védeni",
+  "Tarokks are still out, and I have one to lead (not the pagát; not the XXI while the skíz is in another hand)?":
+    "Van még kint tarokk, és van olyanom, amit hívhatok (nem a pagát; nem a XXI, amíg a skíz másnál van)?",
+  "I am on the caller team, hold more than half as many tarokks as are still out, and have one to lead (not the pagát; not the XXI while the skíz is in another hand)?":
+    "A felvevő párban vagyok, több tarokkom van, mint a még kint lévők fele, és van olyanom, amit hívhatok (nem a pagát; nem a XXI, amíg a skíz másnál van)?",
+  "Exception: the other team announced trull, yet I hold the XXI myself and the skíz is still unplayed. I may play the XXI, and the only opponent after me is the player who must follow suit with the king?":
+    "Kivétel: a másik csapat trullt mondott, pedig nálam van a XXI, és a skíz még nem ment le. Tehetem a XXI-et, és utánam az egyetlen ellenfél az a játékos, akinek a királlyal színt kell adnia?",
+  "Exception: the other team announced trull, yet I hold the XXI myself and the skíz is still unplayed. I may play the XXI, and nobody but known teammates plays after me (or I am last)?":
+    "Kivétel: a másik csapat trullt mondott, pedig nálam van a XXI, és a skíz még nem ment le. Tehetem a XXI-et, és utánam csak ismert partnerek tesznek (vagy én vagyok az utolsó)?",
+  "Exception: the other team announced trull, yet I hold the XXI myself and the skíz is still unplayed. An opponent plays after me, and I have a card (not the XXI, not the pagát) that does not win the trick?":
+    "Kivétel: a másik csapat trullt mondott, pedig nálam van a XXI, és a skíz még nem ment le. Utánam ellenfél tesz, és van olyan lapom (nem a XXI, nem a pagát), amely nem viszi el az ütést?",
+  "Trull was called, I can win the trick, and my team does not already hold it for certain?":
+    "El van mondva a trull, el tudom vinni az ütést, és a csapatom még nem viszi biztosan?",
+  "General rule once trull is called: every trick is fought for. “For certain” means a known teammate is winning and no opponent can still beat their card.":
+    "Általános szabály, ha a trull el van mondva: minden ütésért harc folyik. A „biztosan” azt jelenti: ismert partner viszi, és ellenfél már nem ütheti felül a lapját.",
+  "Does an opponent still play after me?":
+    "Tesz még utánam ellenfél?",
+  "Win with my best card":
+    "A legjobb lapommal ütök",
+  "a hard tarokk, or my highest card of the suit led; also over a teammate who is winning":
+    "kemény tarokkal, vagy a hívott szín legnagyobb lapjával; a nyerésben lévő partner lapjára is",
+  "Worth it: 5+ points in the trick, or a known opponent is winning it, or (while skíz and XXI are both unplayed) the known teammate seated before me seems to wait with the skíz?":
+    "Megéri: 5+ pont van az ütésben, vagy ismert ellenfél viszi éppen, vagy (amíg a skíz és a XXI is játékban van) az előttem ülő ismert partner a jelek szerint a skízzel vár?",
+  "Did I give the invit? Then the card I invited with is never discarded.":
+    "Én adtam az invitet? Akkor azt a lapot, amellyel invitáltam, sosem teszem a skartba.",
+  "I hold the skíz without the XXI and more than 6 tarokks?":
+    "Nálam a skíz a XXI nélkül, és 6-nál több tarokkom van?",
+  "Discard my highest allowed tarokks first, until 6 tarokks are left":
+    "Előbb a legnagyobb megengedett tarokkjaimat teszem a skartba, amíg 6 tarokk nem marad",
+  "a skíz hoping to catch the XXI wants to stay out of the lead; any discards still owed follow the checks below":
+    "a XXI-fogásra váró skíz nem akar hívásra kerülni; a még hiányzó skartlapokra a lenti kérdések érvényesek",
+  "Whose team does my skart count for?":
+    "Melyik csapatnak számít a skartom?",
+  "I won the bidding":
+    "én nyertem a licitet",
+  "Suit cards: kingless suits first, shortest suit first, dearest card first. Then tarokks, lowest first.":
+    "Színes lapok: előbb a király nélküli színek, a legrövidebb szín elöl, a legdrágább lap elöl. Aztán tarokkok, a legkisebbtől.",
+  "my skart counts for my own team: put points into it":
+    "a skartom a saját csapatomnak számít: pontot teszek bele",
+  "I expect to be called: I hold the XX, or the bid winner took my invit":
+    "arra számítok, hogy engem hívnak: nálam a XX, vagy a licit nyertese elfogadta az invitemet",
+  "Suit cards: kingless suits first, shortest suit first, cheapest card first. Then tarokks, lowest first.":
+    "Színes lapok: előbb a király nélküli színek, a legrövidebb szín elöl, a legolcsóbb lap elöl. Aztán tarokkok, a legkisebbtől.",
+  "my skart counts for the enemy team: give away as little as possible":
+    "a skartom az ellenpárnak számít: minél kevesebbet adok",
+  "anybody else":
+    "bárki más",
+  "my skart counts for the enemy team, which I expect to be on: put points into it":
+    "a skartom az ellenpárnak számít, ahová várhatóan kerülök: pontot teszek bele",
+};
+const PAGE_HU={
+  title:"A tarokkgépek döntési fái",
+  back:"← Vissza a játékhoz",
+  t1:"A tarokkgépek döntési fái",
+  t2:"A gépi játékos úgy, ahogy ma a <code>server/bots/strategy.py</code> fájlban meg van írva. Minden kérdésnek és minden lépésnek saját száma van, így mondhatod azt, hogy „változtasd meg a C17-et” vagy „cseréld fel az A9-et és az A12-t”. Minden fát felülről lefelé olvass: az első teljesülő kérdés dönt. Az apró szürke szöveg a taktika nevét és a forrássort adja meg. A hibajelentés minden gépi lépéshez felsorolja, mely kérdéseken ment át, ugyanezekkel a forrássorokkal (<code>route</code>), így a jelentés végigkövethető ezeken a fákon.",
+  t3:"A · Licit",
+  t4:"B · Hívás és bemondások",
+  t5:"C · Lapjáték",
+  t6:"D · Skart",
+  t7:"Amit észrevettem",
+  t8:"A · Hogyan licitál a gép",
+  t9:"„A jelölt” a legolcsóbb módja annak, hogy a gép licitben maradjon: <i>tartom</i>, ha szabad, különben a legalacsonyabb szabályos licit. A licitek sorrendje: három → kettő → egy → szóló.",
+  t10:"licit",
+  t11:"passz",
+  t12:"kikapcsolva",
+  t13:"B · Mit hív és mit mond be a gép, és milyen sorrendben",
+  t14:"Előbb a felvevő hívása, aztán a bemondások. A hívás után minden gép biztosan tudja, melyik csapatban van, ezért a bemondások fája innen indul. A bemondások nem zárják ki egymást: a gép végigmegy a listáján, és összegyűjt mindent, ami teljesül (a „+” dobozok). A záró lépés dönti el, hogy ebből a listából mennyit mond el ebben a körben: a felvevő pár legfeljebb két dolgot mond, és hagyja, hogy a partner válaszoljon. Kontrán csak akkor gondolkodik, ha nincs mit bemondania.",
+  t15:"hívás / bemondás",
+  t16:"kontra",
+  t17:"passz",
+  t18:"kikapcsolva",
+  t19:"A partner hívása (felvevő)",
+  t20:"Bemondások (minden játékos, minden körben)",
+  t21:"Záró lépés minden játékosnak",
+  t22:"C · Melyik lapot játssza ki a gép",
+  t23:"Úgy van kettéosztva, ahogy kérted: az egyik ág arra az esetre szól, amíg a XXI-fogás még lehetséges, a másik arra, amikor a trull be van mondva, egy kézben van mindkét nagy honőr, vagy az egyik már lement. A kódban nincs ilyen egyetlen kapcsoló; az egy hosszú kérdéssor. Minden kérdést abba az ágba soroltam, ahol teljesülhet, és megtartottam a kód sorrendjét.",
+  t24:"tarokkot tesz",
+  t25:"színes lapot tesz",
+  t26:"skízt / XXI-et / pagátot tesz",
+  t27:"a laptól függ",
+  t28:"továbblép",
+  t29:"A kettéosztás",
+  t30:"I. ág · a fogás lehetséges · hívás",
+  t31:"I. ág · a fogás lehetséges · rátevés",
+  t32:"II. ág · trull, vagy a fogás eldőlt · hívás",
+  t33:"II. ág · trull, vagy a fogás eldőlt · rátevés",
+  t34:"D · Mit tesz a gép a skartba",
+  t35:"A negyedik fa. Királyt és honőrt sosem lehet skartolni. A licit nyertesének skartja a felvevő párnak számít; mindenki más skartja az ellenpárnak, a hívott partneré is. A skart a hívás előtt történik, ezért az a gép, amelyik nem nyerte meg a licitet, csak a saját lapjaiból találgathatja, melyik csapatban lesz.",
+  t36:"Amit a feltérképezés közben észrevettem",
+  t37:"A felvevő gépnek egyáltalán nincs szabálya a négy királyra és a duplajátékra; ezeket csak a hívott lap gazdája mondja be. A felvevő tehát sosem „válaszol” négy királlyal, a hívott lap gazdája pedig pagáttal és nyolc tarokkal hallgat, és sosem jut el a pagátultiig, hacsak a felvevő nem jelent 8 vagy 9 tarokkot.",
+  t38:"A trull most azt jelenti: „a csapatunknál van mindkét nagy honőr”. A II. ágban még mindig van két kivétel arra az esetre, amikor a másik csapat trullja nem lehet igaz, mert nálam van egy nagy honőr. Gépek között ez csak invit után fordul elő: a felvevő egy nagy honőrrel trullt mond, bízva abban, hogy az invit a másikat jelzi, pedig invitet a pagáttal egyedül is lehet adni.",
+  t39:"A gép a hívás után mindig tudja, melyik csapatban van, de a lapjáték sok kérdése <i>ismert partnerre</i> kérdez rá. Az ellenpár gépénél ezek a kérdések hallgatnak, amíg a partner meg nem mutatja magát.",
+  t40:"A XXI védelme hívással csak az ellenpár szabálya. A felvevő párban a gép egyszerűen sosem hívja a XXI-et, amíg a skíz kint van, egyébként pedig tarokkot hív.",
+  t41:"A partner pagátultijának segítésekor a gép a második legkisebb tarokkját hívja, és nem nézi meg, hogy az nem a XXI-e.",
+  t42:"A gépek sosem mondanak volátot vagy XXI-fogást, sosem kontrázzák a játékot, a trullt vagy a duplajátékot, sosem mondanak rekontrát, és sosem kezdenek invitet.",
+  t43:"Az ellenpár semmit sem mond be a nyolc vagy kilenc tarokk jelentésén kívül; a nem felvevő játékos bemondását az egész asztal így érti: „én vagyok a partner”.",
+  t44:"<b>A csapatom (a hívás után biztos).</b> Felvevő pár: én vagyok a felvevő, vagy nálam a hívott lap. Ellenpár: mindenki más. A lapjátékban a gép ezt mindig tudja.",
+  t45:"<b>Ismert partner / ismert ellenfél (lehet nyitott kérdés).</b> Kik a többiek. A hívott lap gazdájának ez biztos. A felvevő és az ellenpár csak akkor tudja, amikor a partner megmutatja magát: kijátsszák a hívott lapot, invit vagy engedett játék rögzíti, vagy egy nem felvevő játékos bemond valamit. Addig a felvevőnek nincs ismert partnere, az ellenpár gépének pedig nincs ismert partnere, és egy ismert ellenfele van: a felvevő.",
+  t46:"<b>Még kint lévő tarokkok.</b> Minden tarokk, amelyet a gép nem látott: nincs a kezében, nincs a saját skartjában, és még nem játszották ki.",
+  t47:"<b>Alacsony színes lap.</b> Egy olyan szín legkisebb lapja, amelyre a partner nem tud színt adni; ha nincs ilyen, olyan színé, amelyből a legkevesebb ellenfélnek van hiánya; ha ilyen sincs, a leghosszabb színé. <code>voids</code>",
+  t48:"<b>Legolcsóbb lap.</b> Előbb a színes lapok, a legkevesebb pontot érő elöl; aztán a legkisebb tarokk; a pagát utoljára. Ha egy partner pagátultit mondott, a legkisebb tarokk megmarad, és az eggyel nagyobb megy. <code>ulti_keep_small</code>",
+  t49:"<b>Kemény tarokk.</b> A legkisebb tarokk, amelyet a még kint lévők közül semmi sem üt, különben a legnagyobb. Soha nem a pagát; a skíz csak akkor, ha az ütésben 5+ pont van.",
+  t50:"<b>Utánam tevő ellenfél.</b> Valaki, aki még tesz ebbe az ütésbe, és nem ismert partner.",
+};
 const LM={"1":1,"2":2,"3":3,"4":4,"5":5,"6":6,"7":7,"8":8,"9":9,"10":10,"11":11,"12":12,"13":13,"14":15,"15":16,"16":17,"17":18,"18":19,"19":20,"20":21,"21":22,"22":23,"23":24,"24":25,"25":26,"26":27,"27":28,"28":29,"29":30,"30":31,"31":32,"32":33,"33":34,"34":35,"35":36,"36":37,"37":38,"38":39,"39":40,"40":41,"41":42,"42":43,"43":44,"44":45,"45":46,"46":47,"47":48,"48":49,"49":50,"50":51,"51":52,"52":53,"53":54,"54":55,"55":56,"56":57,"57":58,"58":59,"59":60,"60":61,"61":62,"62":63,"63":64,"64":65,"65":66,"66":67,"67":68,"68":69,"69":70,"70":71,"71":72,"72":75,"73":76,"74":77,"75":78,"76":79,"77":80,"78":81,"79":82,"80":83,"81":84,"82":85,"83":86,"84":87,"85":88,"86":89,"87":90,"88":91,"89":92,"90":93,"91":94,"92":95,"93":96,"94":97,"95":98,"96":99,"97":100,"98":101,"99":102,"100":103,"101":104,"102":105,"103":106,"104":107,"105":108,"106":109,"107":110,"108":111,"109":112,"110":113,"111":114,"112":115,"113":116,"114":117,"115":118,"116":119,"117":120,"118":121,"119":122,"120":123,"121":124,"122":125,"123":126,"124":127,"125":128,"126":129,"127":130,"128":131,"129":132,"130":133,"131":134,"132":135,"133":136,"134":137,"135":138,"136":139,"137":140,"138":141,"139":142,"140":143,"141":144,"142":145,"143":146,"144":147,"145":148,"146":149,"147":150,"148":151,"149":152,"150":153,"151":154,"152":155,"153":156,"154":157,"155":158,"156":159,"157":160,"158":161,"159":162,"160":163,"161":164,"162":165,"163":166,"164":167,"165":168,"166":169,"167":170,"168":171,"169":172,"170":173,"171":174,"172":175,"173":176,"174":177,"175":178,"176":179,"177":180,"178":184,"179":185,"180":186,"181":187,"182":188,"183":189,"184":190,"185":191,"186":192,"187":193,"188":194,"189":195,"190":196,"191":197,"192":198,"193":199,"194":200,"195":201,"196":202,"197":203,"198":204,"199":205,"200":206,"201":207,"202":208,"203":209,"204":210,"205":211,"206":212,"207":213,"208":214,"209":215,"210":216,"211":217,"212":218,"213":219,"214":220,"215":221,"216":222,"217":223,"218":224,"219":225,"220":226,"221":227,"222":228,"223":229,"224":230,"225":231,"226":232,"227":233,"228":273,"229":274,"230":275,"231":276,"232":277,"233":278,"234":279,"235":280,"236":287,"237":288,"238":289,"239":290,"240":291,"241":292,"242":293,"243":294,"244":295,"245":296,"246":297,"247":298,"248":299,"249":304,"250":307,"251":308,"252":309,"253":309,"254":309,"255":309,"256":310,"257":311,"258":312,"259":313,"260":314,"261":315,"262":319,"263":320,"264":321,"265":322,"266":323,"267":324,"268":325,"269":326,"270":327,"271":330,"272":331,"273":332,"274":335,"275":336,"276":337,"277":338,"278":339,"279":340,"280":345,"281":346,"282":347,"283":348,"284":349,"285":350,"286":351,"287":352,"288":353,"289":354,"290":355,"291":356,"292":357,"293":358,"294":359,"295":360,"296":361,"297":362,"298":363,"299":364,"300":365,"301":366,"302":367,"303":368,"304":369,"305":370,"306":371,"307":372,"308":373,"309":374,"310":375,"311":376,"312":377,"313":378,"314":379,"315":380,"316":381,"317":382,"318":383,"319":384,"320":385,"321":386,"322":387,"323":388,"324":389,"325":390,"326":391,"327":392,"328":393,"329":394,"330":395,"331":396,"332":397,"333":398,"334":399,"335":400,"336":401,"337":402,"338":403,"339":404,"340":405,"341":406,"342":407,"343":408,"344":409,"345":410,"346":411,"347":412,"348":413,"349":414,"350":415,"351":416,"352":417,"353":418,"354":419,"355":420,"356":421,"357":422,"358":423,"359":424,"360":425,"361":426,"362":427,"363":428,"364":429,"365":430,"366":431,"367":432,"368":433,"369":434,"370":503,"371":504,"372":505,"373":506,"374":507,"375":508,"376":509,"377":510,"378":511,"379":512,"380":513,"381":514,"382":515,"383":516,"384":517,"385":518,"386":519,"387":520,"388":521,"389":522,"390":523,"391":524,"392":525,"393":526,"394":527,"395":528,"396":529,"397":530,"398":531,"399":532,"400":533,"401":534,"402":535,"403":536,"404":537,"405":538,"406":539,"407":540,"408":541,"409":542,"410":543,"411":544,"412":545,"413":546,"414":547,"415":548,"416":549,"417":550,"418":551,"419":552,"420":553,"421":554,"422":555,"423":556,"424":557,"425":558,"426":559,"427":560,"428":561,"429":562,"430":563,"431":564,"432":565,"433":566,"434":567,"435":568,"436":569,"437":570,"438":571,"439":572,"440":573,"441":574,"442":575,"443":576,"444":577,"445":578,"446":579,"447":580,"448":581,"449":582,"450":583,"451":584,"452":585,"453":585,"454":585,"455":585,"456":585,"457":586,"458":587,"459":588,"460":589,"461":590,"462":591,"463":592,"464":593,"465":594,"466":603,"467":604,"468":605,"469":606,"470":611,"471":612,"472":613,"473":614,"474":615,"475":616,"476":625,"477":626,"478":627,"479":628,"480":629,"481":630,"482":631,"483":632,"484":633,"485":634,"486":635,"487":636,"488":649,"489":650,"490":651,"491":652,"492":653,"493":654,"494":655,"495":656,"496":657,"497":658,"498":659,"499":662,"500":663,"501":676,"502":677,"503":678,"504":679,"505":680,"506":681,"507":682,"508":683,"509":684,"510":685,"511":686,"512":687,"513":688,"514":689,"515":690,"516":691,"517":692,"518":693,"519":694,"520":695,"521":696,"522":697,"523":698,"524":699,"525":700,"526":701,"527":702,"528":703,"529":704,"530":705,"531":706,"532":707,"533":708,"534":708,"535":709,"536":724,"537":725,"538":726,"539":727,"540":728,"541":729,"542":734,"543":735,"544":736,"545":737,"546":738,"547":740,"548":742,"549":743,"550":744,"551":745,"552":746,"553":747,"554":748,"555":749,"556":750,"557":751,"558":752,"559":753,"560":754,"561":755,"562":756,"563":757,"564":758,"565":759,"566":760,"567":768,"568":769,"569":774,"570":775,"571":776,"572":777,"573":778,"574":779,"575":780,"576":781,"577":782,"578":783,"579":784,"580":785,"581":786,"582":787,"583":788,"584":789,"585":790,"586":791,"587":807,"588":808,"589":809,"590":810,"591":811,"592":812,"593":813,"594":814,"595":815,"596":816,"597":817,"598":818,"599":819,"600":820,"601":821,"602":822,"603":823,"604":824,"605":825,"606":826,"607":827,"608":828,"609":829,"610":830,"611":831,"612":832,"613":833,"614":834,"615":835,"616":836,"617":837,"618":838,"619":839,"620":840,"621":841,"622":842,"623":843,"624":844,"625":845,"626":846,"627":847,"628":848,"629":849,"630":850,"631":851,"632":852,"633":853,"634":854,"635":855,"636":856,"637":857,"638":858,"639":859,"640":860,"641":861,"642":862,"643":863,"644":864,"645":865,"646":866,"647":867,"648":868,"649":869,"650":870,"651":871,"652":872,"653":873,"654":874,"655":875,"656":876,"657":877,"658":878,"659":879,"660":880,"661":881,"662":882,"663":901,"664":902,"665":903,"666":904,"667":909,"668":910,"669":911};
 // ---- tiny DSL ---------------------------------------------------------------
 // q(text, opts, rightLabel, rightNode, downLabel): a check; one answer goes right, the other continues down
@@ -403,10 +981,13 @@ const CONTEXTS={
 };
 
 // ---- drawing ----------------------------------------------------------------
+// Texts are written in English above; hu.js holds the Hungarian for each of them, word for word as the key
+let LANG='en';
+const tr=s=>(LANG==='hu'&&HU[s])||s;
 function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e}
 const idTag=node=>'<span class="id">'+node.id+'</span>';
 function leafEl(node){
-  return el('div','leaf k-'+node.leaf,idTag(node)+node.text+(node.detail?'<small>'+node.detail+'</small>':''));
+  return el('div','leaf k-'+node.leaf,idTag(node)+tr(node.text)+(node.detail?'<small>'+tr(node.detail)+'</small>':''));
 }
 function render(node){
   if(node.leaf)return leafEl(node);
@@ -417,12 +998,12 @@ function render(node){
     const step=el('div','step');
     let meta='';
     if(cur.tag||cur.src)meta='<div class="meta">'+(cur.tag?'<span class="tag">'+cur.tag+'</span>':'')+(cur.src?'<span>'+cur.src+'</span>':'')+'</div>';
-    step.appendChild(el('div','node'+(cur.rule?' rule':''),idTag(cur)+cur.text+(cur.note?'<span class="note">'+cur.note+'</span>':'')+meta));
+    step.appendChild(el('div','node'+(cur.rule?' rule':''),idTag(cur)+tr(cur.text)+(cur.note?'<span class="note">'+tr(cur.note)+'</span>':'')+meta));
     if(cur.right.length){
       const bs=el('div','branches');
       for(const [label,child] of cur.right){
         const b=el('div','branch');
-        b.appendChild(el('div','edge','<span>'+label+'</span>'));
+        b.appendChild(el('div','edge','<span>'+tr(label)+'</span>'));
         b.appendChild(render(child));
         bs.appendChild(b);
       }
@@ -430,7 +1011,7 @@ function render(node){
     }
     chain.appendChild(step);
     if(!cur.down)break;
-    chain.appendChild(el('div','down',cur.down[0]+' ↓'));
+    chain.appendChild(el('div','down',tr(cur.down[0])+' ↓'));
     cur=cur.down[1];
   }
   return chain;
@@ -438,14 +1019,54 @@ function render(node){
 function mount(target,roots){
   const box=el('div','chain');box.style.gap='18px';
   roots.forEach(r=>box.appendChild(render(r)));
-  document.getElementById(target).appendChild(box);
+  const host=document.getElementById(target);
+  host.textContent='';
+  host.appendChild(box);
 }
-if(typeof document==='undefined'){
-  module.exports={CONTEXTS,TREES};
-}else{
+// Every text a tree shows, for the build to check that hu.js covers all of them
+function strings(){
+  const out=new Set();
+  const visit=node=>{
+    let cur=node;
+    while(cur){
+      out.add(cur.text);
+      for(const extra of [cur.detail,cur.note])if(extra)out.add(extra);
+      if(cur.leaf)break;
+      for(const [label,child] of cur.right){if(label)out.add(label);visit(child)}
+      if(!cur.down)break;
+      out.add(cur.down[0]);
+      cur=cur.down[1];
+    }
+  };
+  Object.values(TREES).forEach(roots=>roots.forEach(visit));
+  return [...out];
+}
+function show(lang){
+  LANG=lang==='hu'?'hu':'en';
+  document.documentElement.lang=LANG;
+  for(const e of document.querySelectorAll('[data-t]')){
+    if(e.dataset.en===undefined)e.dataset.en=e.innerHTML;
+    e.innerHTML=(LANG==='hu'&&PAGE_HU[e.dataset.t])||e.dataset.en;
+  }
+  document.title=LANG==='hu'?PAGE_HU.title:'Tarokk Bot Decision Trees';
+  for(const a of document.querySelectorAll('[data-lang]'))a.setAttribute('aria-current',a.dataset.lang===LANG?'true':'false');
   mount('treeA',TREES.A);mount('treeB1',TREES.B1);mount('treeB2',TREES.B2);mount('treeB3',TREES.B3);
   mount('treeC0',TREES.C0);mount('treeC1',TREES.CIlead);mount('treeC2',TREES.CIfollow);mount('treeC3',TREES.CIIlead);mount('treeC4',TREES.CIIfollow);
   mount('treeS',TREES.D);
+}
+if(typeof document==='undefined'){
+  module.exports={CONTEXTS,TREES,HU,PAGE_HU,STRINGS:strings()};
+}else{
+  // ?lang=hu from the app's link; otherwise what was picked here last time, then the browser's language
+  let lang=new URLSearchParams(location.search).get('lang');
+  try{lang=lang||localStorage.getItem('treeLang')}catch(e){}
+  lang=lang||(navigator.language||'en').slice(0,2);
+  for(const a of document.querySelectorAll('[data-lang]'))a.addEventListener('click',event=>{
+    event.preventDefault();
+    try{localStorage.setItem('treeLang',a.dataset.lang)}catch(e){}
+    show(a.dataset.lang);
+  });
+  show(lang);
 }
 </script>
 </body>
