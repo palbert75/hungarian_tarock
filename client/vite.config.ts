@@ -35,7 +35,11 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,svg,webp,woff2}'],
-        navigateFallbackDenylist: [/^\/socket\.io/, /^\/robots\.txt$/, /^\/sitemap\.xml$/, /^\/og\.jpg$/, /^\/bot-decision-trees\.html$/, /^\/utmutato\.html$/],
+        // Pages of their own, not the app. The patterns are tested against path AND query
+        // ("/bot-decision-trees.html?lang=hu"), so they must not end at the file name.
+        navigateFallbackDenylist: [/^\/socket\.io/, /^\/robots\.txt/, /^\/sitemap\.xml/, /^\/og\.jpg/, /^\/bot-decision-trees\.html/, /^\/utmutato\.html/],
+        // The saved copy of a page answers with any language asked for (the page reads ?lang itself)
+        ignoreURLParametersMatching: [/^utm_/, /^fbclid$/, /^lang$/],
       },
     }),
   ],
