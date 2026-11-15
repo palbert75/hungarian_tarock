@@ -317,6 +317,8 @@
     "roomGone": "Ez az asztal már nem létezik",
     "roomFull": "Ez az asztal megtelt",
     "NOT_OWNER": "Ezt csak a házigazda teheti meg",
+    "ROOMS_FULL": "A szerver megtelt, most nem nyitható új asztal. Próbáld meg kicsit később!",
+    "RATE_LIMITED": "Túl gyorsan kattintasz – várj egy pillanatot!",
     "BID_ERROR": "Ez a licit most nem lehetséges",
     "DISCARD_ERROR": "Ezek a lapok nem tehetők skartba",
     "CALL_PARTNER_ERROR": "Ez a lap nem hívható",

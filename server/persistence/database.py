@@ -1,6 +1,7 @@
 """SQLite persistence layer for game rooms and states."""
 
 import sqlite3
+from contextlib import contextmanager
 import json
 from typing import Optional, List, Dict, Any
 from pathlib import Path
@@ -26,6 +27,7 @@ class GameDatabase:
 
         self.conn = sqlite3.connect(db_path, check_same_thread=False)
         self.conn.row_factory = sqlite3.Row  # Access columns by name
+        self._in_transaction = False
         # Write-ahead log: a commit appends to the log instead of rewriting and
         # syncing the database file. With synchronous=NORMAL a crash of the
         # server loses nothing; only a power cut may lose the last few commits.
@@ -33,6 +35,23 @@ class GameDatabase:
         self.conn.execute("PRAGMA synchronous=NORMAL")
         self._init_schema()
         logger.info("database_initialized", path=db_path)
+
+    @contextmanager
+    def transaction(self):
+        """Several writes as one: all of them are stored, or none."""
+        self._in_transaction = True
+        try:
+            yield
+            self.conn.commit()
+        except Exception:
+            self.conn.rollback()
+            raise
+        finally:
+            self._in_transaction = False
+
+    def _commit(self) -> None:
+        if not self._in_transaction:
+            self.conn.commit()
 
     def _init_schema(self):
         """Create database schema if it doesn't exist."""
@@ -143,7 +162,7 @@ class GameDatabase:
             ON CONFLICT(room_id) DO UPDATE SET
                 last_activity = CURRENT_TIMESTAMP
         """, (room_id,))
-        self.conn.commit()
+        self._commit()
 
     def save_player(self, player: Dict[str, Any], room_id: str, session_id: Optional[str] = None) -> None:
         """
@@ -173,7 +192,7 @@ class GameDatabase:
             player.get('is_ready', False),
             session_id
         ))
-        self.conn.commit()
+        self._commit()
 
     def save_game_state(self, room_id: str, game_state_dict: Dict[str, Any]) -> None:
         """
@@ -225,7 +244,7 @@ class GameDatabase:
             trick_number,
             json.dumps(game_state_dict)
         ))
-        self.conn.commit()
+        self._commit()
 
     def save_hand(self, record: Dict[str, Any]) -> None:
         """Keep one finished hand (see persistence.stats.hand_record)."""
@@ -418,11 +437,15 @@ class GameDatabase:
             Number of rooms deleted
         """
         cursor = self.conn.cursor()
-        cursor.execute("""
-            DELETE FROM rooms
+        old = """
+            SELECT room_id FROM rooms
             WHERE is_active = 0
             AND last_activity < datetime('now', '-' || ? || ' days')
-        """, (days,))
+        """
+        # Everything that belonged to the table goes with it
+        for table in ("players", "game_states", "chat_messages"):
+            cursor.execute(f"DELETE FROM {table} WHERE room_id IN ({old})", (days,))
+        cursor.execute(f"DELETE FROM rooms WHERE room_id IN ({old})", (days,))
 
         deleted_count = cursor.rowcount
         self.conn.commit()

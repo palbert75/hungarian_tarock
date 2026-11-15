@@ -258,6 +258,8 @@ class SocketManager {
         this.listRooms()
         return
       }
+      // No table was opened: a pending "play against bots" must not fire at a later table
+      if (['ROOMS_FULL', 'RATE_LIMITED', 'CREATE_ROOM_ERROR'].includes(code)) store().setQuickBots(false)
       toast('error', t(`error.${code}`, { defaultValue: message || t('error.generic') }))
     })
   }

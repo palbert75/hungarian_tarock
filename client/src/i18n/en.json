@@ -317,6 +317,8 @@
     "roomGone": "That table no longer exists",
     "roomFull": "That table is full",
     "NOT_OWNER": "Only the host can do that",
+    "ROOMS_FULL": "The server is full, no new table can be opened now. Try again a little later!",
+    "RATE_LIMITED": "Too fast – wait a moment!",
     "BID_ERROR": "That bid is not possible now",
     "DISCARD_ERROR": "These cards cannot be discarded",
     "CALL_PARTNER_ERROR": "That card cannot be called",

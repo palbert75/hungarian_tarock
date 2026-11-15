@@ -49,32 +49,33 @@ class PersistenceManager:
         """
         try:
             async with self._save_lock:
-                # Save room metadata
-                self.db.save_room(room.room_id)
+                with self.db.transaction():
+                    # Save room metadata
+                    self.db.save_room(room.room_id)
 
-                # Save all players
-                for player in room.game_state.players:
-                    player_dict = {
-                        'id': player.id,
-                        'name': player.name,
-                        'position': player.position,
-                        'is_connected': player.is_connected,
-                        'is_ready': player.is_ready,
+                    # Save all players
+                    for player in room.game_state.players:
+                        player_dict = {
+                            'id': player.id,
+                            'name': player.name,
+                            'position': player.position,
+                            'is_connected': player.is_connected,
+                            'is_ready': player.is_ready,
+                        }
+                        session_id = room.player_sessions.get(player.id)
+                        self.db.save_player(player_dict, room.room_id, session_id)
+
+                    # Save game state
+                    game_state_dict = room.game_state.to_dict(include_all_hands=True)
+                    game_state_dict["room_meta"] = {
+                        "owner_id": room.owner_id,
+                        "bot_speed": room.bot_speed,
+                        # The result on the table and the bots' reasons must outlive a restart too
+                        "last_game_over": room.last_game_over,
+                        "decision_log": room.decision_log,
+                        "hand_started_at": room.hand_started_at,
                     }
-                    session_id = room.player_sessions.get(player.id)
-                    self.db.save_player(player_dict, room.room_id, session_id)
-
-                # Save game state
-                game_state_dict = room.game_state.to_dict(include_all_hands=True)
-                game_state_dict["room_meta"] = {
-                    "owner_id": room.owner_id,
-                    "bot_speed": room.bot_speed,
-                    # The result on the table and the bots' reasons must outlive a restart too
-                    "last_game_over": room.last_game_over,
-                    "decision_log": room.decision_log,
-                    "hand_started_at": room.hand_started_at,
-                }
-                self.db.save_game_state(room.room_id, game_state_dict)
+                    self.db.save_game_state(room.room_id, game_state_dict)
 
                 # Note: Chat messages are saved individually in real-time
                 # to avoid data loss, so we don't need to save them here

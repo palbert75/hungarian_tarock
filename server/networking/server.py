@@ -11,10 +11,12 @@ from typing import Any, Optional, Tuple
 import socketio
 import structlog
 
+from config import settings
 from models.bid import BidType
 from models.game_state import GamePhase
 from models.player import Player
 from networking.actions import GameService
+from networking.limits import RateLimit, Refused, client_address
 from networking.protocol import create_error_message
 from networking.reports import ReportThrottle, build_report, may_return_to_reporter, save_report
 from networking.room_manager import BOT_DELAYS, WAITING_GRACE_SECONDS, Room, RoomManager
@@ -22,9 +24,12 @@ from networking.room_manager import BOT_DELAYS, WAITING_GRACE_SECONDS, Room, Roo
 logger = structlog.get_logger()
 
 # Create Socket.IO server
+# Which web pages may connect: "*" for any, or the comma-separated list in CORS_ORIGINS
+_origins = "*" if settings.cors_origins.strip() == "*" else [o.strip() for o in settings.cors_origins.split(",") if o.strip()]
+
 sio = socketio.AsyncServer(
     async_mode='asgi',
-    cors_allowed_origins='*',  # Configure appropriately for production
+    cors_allowed_origins=_origins,
     logger=False,
     engineio_logger=False
 )
@@ -34,6 +39,14 @@ room_manager = RoomManager()
 
 # Persistence manager instance (will be initialized in init_persistence)
 persistence_manager: Optional[Any] = None
+
+# Limits per visitor: new tables per address, chat lines per player
+new_table_limit = RateLimit(count=10, seconds=60)
+chat_limit = RateLimit(count=5, seconds=5)
+addresses: dict = {}  # sid -> address of the visitor
+
+# How often abandoned tables and old database rows are swept away
+SWEEP_SECONDS = 3600
 
 # Set once the server is going down for a restart: from then on the tables stay as they were saved
 shutting_down = False
@@ -87,8 +100,45 @@ service.hint = _strategy
 # ---------------------------------------------------------------- helpers
 
 async def send_error(sid: str, code: str, error: Exception) -> None:
+    code = getattr(error, "code", code)  # a refusal names its own reason
     logger.error(code.lower(), sid=sid, error=str(error))
     await sio.emit("error", create_error_message(code, str(error)).to_dict(), room=sid)
+
+
+def open_table(sid: str, player_name: str) -> Room:
+    """A new table, unless this visitor opens too many or the server is full."""
+    new_table_limit.check(addresses.get(sid, sid))
+    if len(room_manager.rooms) >= settings.max_rooms:
+        raise Refused("ROOMS_FULL", "The server is full, no new table can be opened now")
+    return room_manager.create_room(sid, player_name)
+
+
+async def sweep() -> int:
+    """Close tables nobody sits at any more and drop old rows; returns the number of tables closed."""
+    closed = 0
+    now = time.time()
+    for room in list(room_manager.rooms.values()):
+        # People who dropped moments ago still count: their seat timer is running
+        if room_manager._delete_if_no_humans(room, now):
+            closed += 1
+            if persistence_manager:
+                await persistence_manager.delete_room(room.room_id)
+    if persistence_manager:
+        await persistence_manager.cleanup_old_rooms(settings.closed_room_keep_days)
+    new_table_limit.prune()
+    chat_limit.prune()
+    if closed:
+        logger.info("abandoned_tables_closed", count=closed)
+    return closed
+
+
+async def sweep_forever() -> None:
+    while True:
+        await asyncio.sleep(SWEEP_SECONDS)
+        try:
+            await sweep()
+        except Exception as e:
+            logger.error("sweep_error", error=str(e))
 
 
 def seat_of(sid: str) -> Tuple[Room, Player]:
@@ -129,13 +179,15 @@ async def hold_seat_then_free(room_id: str, player_id: str, grace: float = WAITI
 @sio.event
 async def connect(sid: str, environ: dict):
     """Handle client connection."""
-    logger.info("client_connected", sid=sid, address=environ.get('REMOTE_ADDR', 'unknown'))
+    addresses[sid] = client_address(environ)
+    logger.info("client_connected", sid=sid, address=addresses[sid])
 
 
 @sio.event
 async def disconnect(sid: str):
     """A socket dropped: the player keeps the seat and may come back."""
     logger.info("client_disconnected", sid=sid)
+    addresses.pop(sid, None)
     if shutting_down:
         # The server closes the connections itself; everybody keeps seat and table ownership
         return
@@ -193,7 +245,7 @@ async def create_room(sid: str, data: dict):
     """Create a table; the creator owns it."""
     try:
         player_name = (data or {}).get("player_name") or "Player"
-        room = room_manager.create_room(sid, player_name)
+        room = open_table(sid, player_name)
         player = room.get_player_by_session(sid)
         await _after_join(sid, room, player, was_away=False)
     except Exception as e:
@@ -209,7 +261,7 @@ async def join_room(sid: str, data: dict):
         player_id = data.get("player_id")
 
         if not room_id:
-            room = room_manager.create_room(sid, player_name)
+            room = open_table(sid, player_name)
             player = room.get_player_by_session(sid)
             was_away = False
         else:
@@ -437,6 +489,7 @@ async def send_chat_message(sid: str, data: dict):
     """Handle chat message from player."""
     try:
         room, player = seat_of(sid)
+        chat_limit.check(player.id)
 
         message = (data.get("message") or "").strip()
         if not message:
@@ -506,6 +559,9 @@ async def init_persistence(db_path: str = "data/tarokk_game.db"):
                     asyncio.create_task(hold_seat_then_free(room.room_id, player.id, RESTART_GRACE_SECONDS))
             # A bot may be the one to move in a restored game
             service.schedule_bot(room)
+
+        await persistence_manager.cleanup_old_rooms(settings.closed_room_keep_days)
+        asyncio.create_task(sweep_forever())
 
         return persistence_manager
 
