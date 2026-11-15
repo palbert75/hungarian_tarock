@@ -394,6 +394,14 @@ const HU={
     "Alatta tudok maradni az ütésnek a skíztől és a pagáttól különböző lappal?",
   "Are all those losing cards tarokks?":
     "Ezek a nem ütő lapok mind tarokkok?",
+  "I play last, a known teammate is winning the trick, their lead would let the XXI play behind both of us and mine would not, and I can win with a card other than skíz and pagát?":
+    "Utolsóként teszek, az ütést egy ismert partnerem viszi, az ő hívására a XXI mindkettőnk mögött tehetne, az enyémre nem, és skíz és pagát nélkül is tudok ütni?",
+  "The XXI goes home when nobody who could hold the skíz plays after it. If I hold the pagát too, the XXI is the declarer’s; otherwise it may be with either opponent.":
+    "A XXI akkor megy haza, ha utána már senki sem tesz, akinél a skíz lehet. Ha a pagát is nálam van, a XXI a felvevőé; különben bármelyik ellenfélnél lehet.",
+  "Take the trick with my cheapest card that wins":
+    "Elviszem az ütést a legolcsóbb ütő lapommal",
+  "the lead comes to me: the holder of the XXI cannot know which of us has the skíz, so it cannot go home":
+    "a hívás hozzám kerül: a XXI gazdája nem tudhatja, melyikünknél van a skíz, így nem tud hazamenni",
   "Play the highest tarokk that still loses":
     "A legnagyobb olyan tarokkot teszem, amely még nem üt",
   "shed high tarokks, stay out of the lead":

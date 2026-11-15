@@ -962,3 +962,45 @@ def test_decision_carries_the_route_through_the_tree():
     # The route stays on the server: hints sent to a client do not carry it
     assert "route" not in d.to_dict()
 
+
+
+# ------------------------------------------- the waiting skíz and who leads next
+
+def test_waiting_skiz_takes_the_lead_from_a_teammate_whose_lead_frees_the_xxi():
+    # Report 20261115-162235: declarer on seat 3, partner on 2. Bertike (seat 0) is winning with
+    # the XIII; if he leads next, the declarer plays last and the XXI goes home. From my seat
+    # (1) the declarer plays before Bertike and cannot know which of us holds the skíz.
+    view = play_view("skiz XVI XIV XII I hC sC sJ", trick=[(2, "IV"), (3, "III"), (0, "XIII")],
+                     position=1, declarer=3, partner=2,
+                     history=[[(3, "h10"), (0, "VI"), (1, "hK"), (2, "VIII")]])
+    decision = decide_card(view)
+    assert decision.reason_key == "hint.follow.skiz_take_lead"
+    assert played(decision, view) == "XIV"
+
+
+def test_waiting_skiz_keeps_ducking_when_taking_the_lead_frees_the_xxi_just_as_well():
+    # Teams sit alternately and I cannot tell which opponent holds the XXI: whoever of us
+    # leads, one of them plays last. Nothing is gained, so stay out of the lead.
+    view = play_view("skiz XVI XIV XII hC sC sJ", trick=[(3, "IV"), (0, "XIII"), (1, "III")],
+                     position=2, declarer=1, partner=3)
+    decision = decide_card(view)
+    assert decision.reason_key == "hint.follow.skiz_duck_high"
+    assert played(decision, view) == "XII"
+
+
+def test_waiting_skiz_with_the_pagat_knows_the_xxi_is_the_declarers():
+    # With skíz and pagát in my hand the bidder's honour is the XXI. Declarer on seat 3 plays
+    # last when my teammate (seat 0) leads, but not when I (seat 2) lead: take the lead.
+    taking = play_view("skiz XVI XIV XII I sC sJ", trick=[(3, "IV"), (0, "XIII"), (1, "III")],
+                       position=2, declarer=3, partner=1)
+    assert decide_card(taking).reason_key == "hint.follow.skiz_take_lead"
+    # Declarer on seat 1: my teammate's lead keeps the XXI in, mine would let it go. Duck.
+    ducking = play_view("skiz XVI XIV XII I sC sJ", trick=[(3, "IV"), (0, "XIII"), (1, "III")],
+                        position=2, declarer=1, partner=3)
+    assert decide_card(ducking).reason_key == "hint.follow.skiz_duck_high"
+
+
+def test_waiting_skiz_does_not_take_over_while_others_still_play():
+    view = play_view("skiz XVI XIV XII I hC sC sJ", trick=[(3, "III"), (0, "XIII")],
+                     position=1, declarer=3, partner=2)
+    assert decide_card(view).reason_key == "hint.follow.skiz_duck_high"

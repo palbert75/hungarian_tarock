@@ -56,6 +56,7 @@ ADOPTED = frozenset({
     "invit_accept",    # a great honour takes the auction after somebody's invit
     "invit_trull",     # the owner's rule: whoever takes an invit with a great honour announces trull
     "yield_game",      # pass a "three" to a lone "two" with the XX and a great honour
+    "skiz_take_lead",  # the waiting skíz takes the lead over from a teammate whose lead would free the XXI
 })
 TACTICS: set = set(ADOPTED)
 
@@ -432,6 +433,20 @@ def _hunting(view: SeatView) -> bool:
     )
 
 
+def _free_xxi_seats(view: SeatView, leader: int) -> set:
+    """
+    Seats from which the XXI could go home if `leader` led the next trick: seats that may
+    hold it (not me, not a teammate) with nobody of my side still to play after them.
+    I hold the skíz and the pagát: then whoever bid holds the XXI, so only the declarer counts.
+    """
+    mine = {view.position} | set(view.teammates())
+    seats = {0, 1, 2, 3} - mine
+    if view.holds("I") and view.declarer_position in seats:
+        seats = {view.declarer_position}
+    order = [(leader + i) % 4 for i in range(4)]
+    return {seat for seat in seats if not any(s in mine for s in order[order.index(seat) + 1:])}
+
+
 def _xxi_at_risk(view: SeatView) -> bool:
     """I hold the XXI and the skíz may still catch it: it is in another hand, and not a teammate's."""
     if not view.holds("XXI") or not skiz_out(view):
@@ -772,6 +787,14 @@ def _follow(view: SeatView) -> Decision:
         if skiz and lead_card.is_tarokk() and seats_after and len(out) <= len(seats_after):
             return _play(skiz, "hint.follow.skiz_force", count=len(out))
         waiting = [c for c in without_pagat if not _is(c, SKIZ)]
+        # The owner's rule: my teammate takes this trick, and from their seat any lead lets the
+        # XXI play behind both of us and go home. From my seat it cannot: take the lead over.
+        # (The XXI's holder cannot know which of us has the skíz, so it has to stay in.)
+        if ("skiz_take_lead" in TACTICS and not seats_after and view.is_teammate(winner_seat)
+                and len(_free_xxi_seats(view, view.position)) < len(_free_xxi_seats(view, winner_seat))):
+            over = [c for c in waiting if _beats(c, trick)]
+            if over:
+                return _play(min(over, key=_cheapness), "hint.follow.skiz_take_lead")
         losers = [c for c in waiting if not _beats(c, trick)]
         if losers:
             if all(c.is_tarokk() for c in losers):

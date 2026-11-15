@@ -291,6 +291,7 @@
       "teammate_wins_low": "A társad viszi ezt az ütést: ne pazarolj erős lapot, tedd ezt: {{card}}.",
       "win_cheap": "Ezt az ütést érdemes elvinni: üsd meg a legkisebb lappal, ami még üt: {{card}}.",
       "low": "Nem éri meg, vagy nem tudod elvinni: tedd a legolcsóbb lapodat, ezt: {{card}}.",
+      "skiz_take_lead": "A skízzel a XXI-re vársz. Ha az ütés a partnerednél marad, az ő hívására a XXI mindkettőtök mögött tehet, és hazamegy. Vedd át a hívást ezzel: {{card}} – a XXI gazdája nem tudhatja, melyikőtöknél van a skíz.",
       "skiz_duck_high": "A skízzel a XXI-re vársz, ezért ne kerülj hívásba: szabadulj meg egy nagy tarokktól, amely nem üt: {{card}}.",
       "skiz_duck": "A skízzel a XXI-re vársz: ezt az ütést ne vidd el, tedd ezt: {{card}}.",
       "skiz_forced": "Ezt az ütést nem tudod elkerülni. A skízt tartsd meg a XXI-re: tedd ezt: {{card}}.",

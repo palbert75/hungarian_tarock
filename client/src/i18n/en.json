@@ -291,6 +291,7 @@
       "teammate_wins_low": "Your teammate is winning this trick: do not waste a strong card, play {{card}}.",
       "win_cheap": "This trick is worth taking: win it with {{card}}, the lowest card that wins.",
       "low": "Not worth winning, or you cannot win it: play your cheapest card, {{card}}.",
+      "skiz_take_lead": "You are waiting with the skíz for the XXI. If your teammate keeps this trick, their lead lets the XXI play behind both of you and go home. Take the lead yourself with {{card}}: the holder of the XXI cannot know which of you has the skíz.",
       "skiz_duck_high": "You are waiting with the skíz for the XXI, so stay out of the lead: get rid of a high tarokk that does not win, {{card}}.",
       "skiz_duck": "You are waiting with the skíz for the XXI: do not take this trick, play {{card}}.",
       "skiz_forced": "You cannot avoid this trick. Keep the skíz for the XXI: play {{card}}.",

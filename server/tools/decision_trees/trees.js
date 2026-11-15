@@ -157,6 +157,7 @@ function followTree(two){
     X('Play my cheapest card'));
   const hunt=seq(
     q('A tarokk was led, and no more tarokks are still out than players still to play after me?',{src:LS(`if skiz and lead_card.is_tarokk() and seats_after and len(out) <= len(seats_after):`)},'yes',H('Play the skíz','the XXI has to come, even though it is not in the trick yet')),
+    q('I play last, a known teammate is winning the trick, their lead would let the XXI play behind both of us and mine would not, and I can win with a card other than skíz and pagát?',{src:LS(`if ("skiz_take_lead" in TACTICS and not seats_after and view.is_teammate(winner_seat)`),tag:'skiz_take_lead',note:'The XXI goes home when nobody who could hold the skíz plays after it. If I hold the pagát too, the XXI is the declarer’s; otherwise it may be with either opponent.'},'yes',X('Take the trick with my cheapest card that wins','the lead comes to me: the holder of the XXI cannot know which of us has the skíz, so it cannot go home')),
     q('Can I stay under the trick with a card other than skíz and pagát?',{src:LA(`waiting = [c for c in without_pagat if not _is(c, SKIZ)]`,`if losers:`)},'yes',seq(
       q('Are all those losing cards tarokks?',{src:L(572)},'yes',T('Play the highest tarokk that still loses','shed high tarokks, stay out of the lead')),
       q('Is a known teammate winning the trick?',{src:L(574)},'yes',S('Play my most valuable losing card','feed the teammate')),
