@@ -165,7 +165,9 @@ function followTree(two){
     q('Do I have any card other than skíz and pagát?',{src:L(577)},'yes',X('Play the cheapest of them','forced to win')),
     G('Carry on with the checks below'));
   const trullWin=q('Trull was called, I can win the trick, and my team does not already hold it for certain?',{src:LS(`if can_win and not team_safe:`),note:'General rule once trull is called: every trick is fought for. “For certain” means a known teammate is winning and no opponent can still beat their card.'},'yes',seq(
-    q('Does an opponent still play after me?',{src:LA(`if can_win and not team_safe:`,`if foe_after:`)},'yes',X('Win with my best card','a hard tarokk, or my highest card of the suit led; also over a teammate who is winning')),
+    q('Does an opponent still play after me?',{src:LA(`if can_win and not team_safe:`,`if foe_after:`)},'yes',seq(
+      q('The declarer led, their partner plays right after me, my teammate plays last, and my best card is a tarokk that can still be beaten?',{src:LS(`_declarer_then_me_then_partner(view, trick) and best.is_tarokk()`),tag:'trull_spare',note:'The partner is known from the called card or from having announced something. They have to play high whatever I do, because my teammate still plays after them.'},'yes',G('Carry on with the checks below','no hard tarokk is spent here')),
+      X('Win with my best card','a hard tarokk, or my highest card of the suit led; also over a teammate who is winning'))),
     q('Does the pagát win it?',{src:LS(`elif pagat in can_win:`)},'yes',H('Play the pagát','bring it home')),
     X('Win with my cheapest winning card')));
   return seq(
@@ -186,8 +188,8 @@ function followTree(two){
 // ---- D: skart ---------------------------------------------------------------
 const SK=seq(
   q('Did I give the invit? Then the card I invited with is never discarded.',{src:L(170),rule:true},null,null,'then'),
-  q('I hold the skíz without the XXI and more than 6 tarokks?',{src:L(189),tag:'skiz_weak_skart'},'yes',T('Discard my highest allowed tarokks first, until 6 tarokks are left','a skíz hoping to catch the XXI wants to stay out of the lead; any discards still owed follow the checks below')),
-  m('Whose team does my skart count for?',{src:LS(`cheap_first = (`),tag:'xx_cheap_skart'},[
+  q('I hold the skíz without the XXI and more than 6 tarokks, and I do not expect to be called (I hold no XX, and the bid winner did not take my invit)?',{src:L(189),tag:'skiz_weak_skart'},'yes',T('Discard my highest allowed tarokks first, until 6 tarokks are left','a skíz hoping to catch the XXI wants to stay out of the lead; any discards still owed follow the checks below')),
+  m('Whose team does my skart count for?',{src:LS(`cheap_first = `),tag:'xx_cheap_skart'},[
     ['I won the bidding',S('Suit cards: kingless suits first, shortest suit first, dearest card first. Then tarokks, lowest first.','my skart counts for my own team: put points into it')],
     ['I expect to be called: I hold the XX, or the bid winner took my invit',S('Suit cards: kingless suits first, shortest suit first, cheapest card first. Then tarokks, lowest first.','my skart counts for the enemy team: give away as little as possible')],
     ['anybody else',S('Suit cards: kingless suits first, shortest suit first, dearest card first. Then tarokks, lowest first.','my skart counts for the enemy team, which I expect to be on: put points into it')]]));

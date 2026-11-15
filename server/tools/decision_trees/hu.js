@@ -496,6 +496,12 @@ const HU={
     "Általános szabály, ha a trull el van mondva: minden ütésért harc folyik. A „biztosan” azt jelenti: ismert partner viszi, és ellenfél már nem ütheti felül a lapját.",
   "Does an opponent still play after me?":
     "Tesz még utánam ellenfél?",
+  "The declarer led, their partner plays right after me, my teammate plays last, and my best card is a tarokk that can still be beaten?":
+    "A felvevő hívott, a partnere közvetlenül utánam tesz, az én partnerem tesz utoljára, és a legjobb lapom olyan tarokk, amelyet még felül lehet ütni?",
+  "The partner is known from the called card or from having announced something. They have to play high whatever I do, because my teammate still plays after them.":
+    "A felvevő partnerét a hívott lapról vagy a bemondásáról ismerem. Bármit teszek, nagyot kell tennie, mert utána még az én partnerem jön.",
+  "no hard tarokk is spent here":
+    "itt nem megy el kemény tarokk",
   "Win with my best card":
     "A legjobb lapommal ütök",
   "a hard tarokk, or my highest card of the suit led; also over a teammate who is winning":
@@ -504,8 +510,8 @@ const HU={
     "Megéri: 5+ pont van az ütésben, vagy ismert ellenfél viszi éppen, vagy (amíg a skíz és a XXI is játékban van) az előttem ülő ismert partner a jelek szerint a skízzel vár?",
   "Did I give the invit? Then the card I invited with is never discarded.":
     "Én adtam az invitet? Akkor azt a lapot, amellyel invitáltam, sosem teszem a skartba.",
-  "I hold the skíz without the XXI and more than 6 tarokks?":
-    "Nálam a skíz a XXI nélkül, és 6-nál több tarokkom van?",
+  "I hold the skíz without the XXI and more than 6 tarokks, and I do not expect to be called (I hold no XX, and the bid winner did not take my invit)?":
+    "Nálam a skíz a XXI nélkül, 6-nál több tarokkom van, és nem számítok arra, hogy engem hívnak (nincs nálam a XX, és a felvevő nem az én invitemet fogadta el)?",
   "Discard my highest allowed tarokks first, until 6 tarokks are left":
     "Előbb a legnagyobb megengedett tarokkjaimat teszem a skartba, amíg 6 tarokk nem marad",
   "a skíz hoping to catch the XXI wants to stay out of the lead; any discards still owed follow the checks below":

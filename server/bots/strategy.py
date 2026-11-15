@@ -57,6 +57,8 @@ ADOPTED = frozenset({
     "invit_trull",     # the owner's rule: whoever takes an invit with a great honour announces trull
     "yield_game",      # pass a "three" to a lone "two" with the XX and a great honour
     "skiz_take_lead",  # the waiting skíz takes the lead over from a teammate whose lead would free the XXI
+    "skiz_keep_called",  # the owner's rule: a skíz that expects to be called does not weaken its hand in the skart
+    "trull_spare",     # the owner's rule: no hard tarokk between the leading declarer and their partner
 })
 TACTICS: set = set(ADOPTED)
 
@@ -180,8 +182,8 @@ def decide_discard(view: SeatView) -> Decision:
     # The declarer's skart counts for the declarer's team, everybody else's against it. Whoever
     # expects to be called (holds the XX, or gave the invit the declarer took) discards cheap cards.
     my_invit_taken = bool(view.invit and view.invit["by"] == view.position)
-    cheap_first = ("xx_cheap_skart" in TACTICS and view.position != view.declarer_position
-                   and (view.holds("XX") or my_invit_taken))
+    expects_call = view.position != view.declarer_position and (view.holds("XX") or my_invit_taken)
+    cheap_first = "xx_cheap_skart" in TACTICS and expects_call
 
     def suit_order(card: Card):
         in_suit = [c for c in view.hand if c.suit == card.suit]
@@ -192,8 +194,11 @@ def decide_discard(view: SeatView) -> Decision:
     ordered = sorted(suit_cards, key=suit_order) + tarokks
     key = None
     # The skíz hoping to catch the XXI wants to stay out of the lead: five or six
-    # small tarokks beside it are ideal, so the high ones go first
+    # small tarokks beside it are ideal, so the high ones go first.
+    # The owner's rule: not when I expect to be called. Then I play with the declarer, who is
+    # likely to hold the XXI, and a strong hand is what our side needs.
     if ("skiz_weak_skart" in TACTICS and view.holds("skiz") and not view.holds("XXI")
+            and not ("skiz_keep_called" in TACTICS and expects_call)
             and len(view.tarokks) > SKIZ_HUNT_TAROKKS):
         spare = len(view.tarokks) - SKIZ_HUNT_TAROKKS
         shed = list(reversed(tarokks))[:min(spare, count)]
@@ -582,6 +587,17 @@ def _hard_tarokk(cards: List[Card], out: List[int], trick_points: int) -> Option
     return max(tarokks, key=lambda c: c.tarokk_value())
 
 
+def _declarer_then_me_then_partner(view: SeatView, trick) -> bool:
+    """
+    The declarer led, I play second against them, and their partner (shown by the called
+    card, or by having announced something) plays right after me: my teammate plays last.
+    """
+    if len(trick) != 1 or trick[0][0] != view.declarer_position or view.on_declarer_side:
+        return False
+    partner = view.partner_position if view.partner_position is not None else _signal_seat(view)
+    return partner == (view.position + 1) % 4
+
+
 def _lead(view: SeatView) -> Decision:
     legal = view.legal_cards
     tarokks = sorted((c for c in legal if c.is_tarokk()), key=lambda c: c.tarokk_value())
@@ -822,11 +838,18 @@ def _follow(view: SeatView) -> Decision:
         if can_win and not team_safe:
             if foe_after:
                 best = _hard_tarokk(can_win, out, trick_points) or max(can_win, key=lambda c: c.suit_rank_value())
+                # The owner's rule: the declarer led, their partner plays right after me and my
+                # teammate plays last. The partner has to play high whatever I do, so a tarokk
+                # that can still be beaten is wasted here: the checks below pick a cheaper card.
+                if ("trull_spare" in TACTICS and _declarer_then_me_then_partner(view, trick) and best.is_tarokk()
+                        and any(value > best.tarokk_value() for value in out)):
+                    best = None
             elif pagat in can_win:
                 best = pagat
             else:
                 best = min(can_win, key=lambda c: (c.tarokk_value(), c.suit_rank_value()))
-            return _play(best, "hint.follow.trull_win")
+            if best:
+                return _play(best, "hint.follow.trull_win")
 
     if view.is_teammate(winner_seat):
         # Is the teammate's card certain to hold?

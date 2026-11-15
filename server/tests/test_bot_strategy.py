@@ -325,6 +325,32 @@ def test_with_trull_called_every_trick_is_fought_for():
     assert decide_card(view).reason_key != "hint.follow.trull_win"
 
 
+def test_with_trull_called_no_hard_tarokk_between_the_declarer_and_their_partner():
+    # Problem report 20261115-203056: the declarer (seat 0) leads the VII, I am seat 1, the partner
+    # (seat 2, known by the trull they announced) plays next and my fellow defender last.
+    # The partner has to play high anyway: the XVIII would only be lost to the XX.
+    trull = Announcement(player_position=2, announcement_type=AnnouncementType.TRULL)
+    view = play_view("XVIII XIV IX VIII VI sK sC", trick=[(0, "VII")], position=1, declarer=0,
+                     announcements=[trull])
+    d = decide_card(view)
+    assert played(d, view) == "VIII" and d.reason_key != "hint.follow.trull_win"
+    # The same once the partner has shown the called card
+    shown = play_view("XVIII XIV IX VIII VI sK sC", trick=[(0, "VII")], position=1, declarer=0, partner=2)
+    shown.announcements = [Announcement(player_position=0, announcement_type=AnnouncementType.TRULL)]
+    assert played(decide_card(shown), shown) == "VIII"
+    # The partner sits last instead: the rule of the best card stands
+    other = play_view("XVIII XIV IX VIII VI sK sC", trick=[(0, "VII")], position=1, declarer=0,
+                      announcements=[Announcement(player_position=3, announcement_type=AnnouncementType.TRULL)])
+    d = decide_card(other)
+    assert played(d, other) == "XVIII" and d.reason_key == "hint.follow.trull_win"
+    # A tarokk nobody can beat is still played: it holds the trick
+    out_high = [[(0, "skiz"), (1, "II"), (2, "XXI"), (3, "III")], [(0, "XX"), (1, "IV"), (2, "XIX"), (3, "V")]]
+    master = play_view("XVIII XIV IX VIII VI sK sC", trick=[(0, "VII")], position=1, declarer=0,
+                       announcements=[trull], history=out_high)
+    d = decide_card(master)
+    assert played(d, master) == "XVIII" and d.reason_key == "hint.follow.trull_win"
+
+
 def test_lead_rule_off_when_i_hold_the_xxi():
     view = play_view("XXI V hQ h10 dJ", declarer=1, partner=2)
     assert decide_card(view).reason_key == "hint.lead.xxi_suit"
@@ -816,6 +842,24 @@ def test_skiz_without_xxi_discards_high_tarokks():
     d = decide_discard(view)
     chosen = sorted(c.rank for c in view.hand if c.id in d.payload["card_ids"])
     assert chosen == ["XIX", "XVII"] and d.reason_key == "hint.discard.skiz_weaken"
+
+
+def test_skiz_expecting_to_be_called_keeps_its_tarokks():
+    # Problem report 20261115-201501: seat 3 won the bidding and I hold the XX, so I will be called
+    view = discard_view("skiz XX XIX XVI XIV IV I cQ dJ sQ s10", 2)
+    view.declarer_position = 3
+    d = decide_discard(view)
+    chosen = [c for c in view.hand if c.id in d.payload["card_ids"]]
+    assert not any(c.is_tarokk() for c in chosen) and d.reason_key == "hint.discard.suits"
+    # The giver of a taken invit is called as well
+    view = discard_view("skiz XIX XVII XII X VII V hQ dJ sQ", 1)
+    view.declarer_position = 1
+    view.invit = {"by": 0, "card": "XIX"}
+    assert decide_discard(view).reason_key == "hint.discard.suits"
+    # The declarer holding skíz and XX is not called by anybody: the hand is weakened as before
+    view = discard_view("skiz XX XIX XVI XIV IV I cQ dJ sQ s10", 2)
+    view.declarer_position = 0
+    assert decide_discard(view).reason_key == "hint.discard.skiz_weaken"
 
 
 def test_skiz_with_six_tarokks_discards_suits_as_usual():
