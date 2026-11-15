@@ -57,6 +57,18 @@ export default function ConnectionScreen() {
             </button>
           ))}
         </div>
+        {/* A static page of its own, opened beside the game */}
+        <a className="chip self-center" href="/utmutato.html" target="_blank" rel="noopener">
+          📖 {t('welcome.guide')}
+        </a>
+        <a
+          className="self-center text-xs text-slate-300 underline decoration-dotted"
+          href="https://github.com/palbert75/hungarian_tarock"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {t('welcome.source')}
+        </a>
         {(installState === 'prompt' || installState === 'ios' || DONATE_URL) && (
           <div className="flex flex-col items-center gap-2 pt-2 text-xs text-slate-300">
             {installState === 'prompt' && (

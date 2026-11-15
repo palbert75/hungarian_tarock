@@ -35,7 +35,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,svg,webp,woff2}'],
-        navigateFallbackDenylist: [/^\/socket\.io/, /^\/robots\.txt$/, /^\/sitemap\.xml$/, /^\/og\.jpg$/, /^\/bot-decision-trees\.html$/],
+        navigateFallbackDenylist: [/^\/socket\.io/, /^\/robots\.txt$/, /^\/sitemap\.xml$/, /^\/og\.jpg$/, /^\/bot-decision-trees\.html$/, /^\/utmutato\.html$/],
       },
     }),
   ],

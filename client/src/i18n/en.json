@@ -7,7 +7,9 @@
     "invited": "You are invited to a table. What should we call you?",
     "name": "Your name",
     "namePlaceholder": "e.g. Kata",
-    "go": "Let's play"
+    "go": "Let's play",
+    "guide": "How to start (guide in Hungarian)",
+    "source": "Open source on GitHub"
   },
   "connection": {
     "connecting": "Connecting…",

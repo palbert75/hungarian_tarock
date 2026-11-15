@@ -7,7 +7,9 @@
     "invited": "Meghívtak egy asztalhoz. Hogy szólítsunk?",
     "name": "Neved",
     "namePlaceholder": "pl. Kata",
-    "go": "Játsszunk!"
+    "go": "Játsszunk!",
+    "guide": "Útmutató: így kezdj játszani",
+    "source": "Nyílt forráskód a GitHubon"
   },
   "connection": {
     "connecting": "Kapcsolódás…",

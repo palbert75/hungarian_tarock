@@ -394,7 +394,7 @@ Contributions welcome! Areas for improvement:
 
 ## 📜 License
 
-[Add your license here]
+MIT – see [LICENSE](LICENSE).
 
 ## 🙏 Credits
 
