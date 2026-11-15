@@ -1,10 +1,10 @@
 #!/bin/bash
 # Played hands per day on the live server.
-#   cd server; tools/stats.sh [days]        (default 14)
+#   cd server; tools/stats.sh [days]        (default 30)
 # The token is read from the cluster, so this works for whoever may use the cluster.
 set -euo pipefail
 CONTEXT="${KUBE_CONTEXT:-do-ams3-general}"
-DAYS="${1:-14}"
+DAYS="${1:-30}"
 TOKEN=$(kubectl --context "$CONTEXT" -n tarokk get secret tarokk-stats -o jsonpath='{.data.token}' | base64 -d)
 curl -fsS -H "Authorization: Bearer $TOKEN" "https://tarokk.onbased.cloud/stats?days=$DAYS" | python3 -c '
 import json, sys
