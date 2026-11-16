@@ -161,3 +161,27 @@ async def test_your_turn_sent_only_to_people():
     await service.drive_bots(room)
     targets = {e[2] for e in recorder.events if e[0] == "your_turn"}
     assert targets <= {"s0"}
+
+
+@pytest.mark.asyncio
+async def test_solo_declarer_has_nothing_to_discard_and_is_not_waited_for():
+    # Problem report 20261116-051430: after a solo bid the whole talon goes to the other three,
+    # and the table waited for a skart from the declarer that nobody could give.
+    seed(11)
+    service, manager, _ = make_service()
+    room = table_of_four(manager)
+    await service.start_game(room)
+    gs = room.game_state
+    while gs.phase == GamePhase.BIDDING:
+        player = gs.get_player(service.turn_position(room))
+        solo = player.has_honour() and gs.get_highest_bid() is None
+        await service.act_bid(room, player, BidType.SOLO if solo else BidType.PASS)
+    declarer = gs.declarer_position
+    assert len(gs.players[declarer].hand) == 9
+    for _ in range(3):
+        assert gs.phase == GamePhase.DISCARDING
+        position = service.turn_position(room)
+        assert position != declarer
+        await service.apply_decision(room, gs.get_player(position), service.decide(gs, position))
+    assert gs.phase == GamePhase.PARTNER_CALL and gs.current_turn == declarer
+    assert sorted(gs.players_who_discarded) == [0, 1, 2, 3]

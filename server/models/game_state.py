@@ -500,11 +500,31 @@ class GameState(BaseModel):
         self.players_who_discarded.clear()
         # Start with dealer's right (or could be declarer's left - TBD)
         self.current_turn = self.dealer_right_position()
+        self.settle_discards()
 
     def can_end_discard_phase(self) -> bool:
         """Check if all players have discarded."""
         # All 4 players must discard (including declarer)
         return len(self.players_who_discarded) == 4
+
+    def settle_discards(self) -> None:
+        """
+        Give the turn to the next player who still has cards to discard; when nobody has,
+        the declarer calls. A player holding nine cards got nothing from the talon (the
+        declarer after a solo bid) and is passed over: nobody can discard zero cards by hand.
+        """
+        for _ in range(8):
+            if self.can_end_discard_phase():
+                break
+            if self.current_turn in self.players_who_discarded:
+                self.current_turn = self.next_position(self.current_turn)
+            elif self.players[self.current_turn].get_hand_size() <= 9:
+                self.players_who_discarded.append(self.current_turn)
+            else:
+                return
+        if self.can_end_discard_phase():
+            self.phase = GamePhase.PARTNER_CALL
+            self.current_turn = self.declarer_position
 
     def call_partner(self, tarokk_rank: str) -> None:
         """

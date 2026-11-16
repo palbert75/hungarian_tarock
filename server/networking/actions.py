@@ -372,11 +372,7 @@ class GameService:
             "tarokks_discarded": sum(1 for c in discarded if c.is_tarokk()),
         })
 
-        if game_state.can_end_discard_phase():
-            game_state.phase = GamePhase.PARTNER_CALL
-            game_state.current_turn = game_state.declarer_position
-        else:
-            game_state.current_turn = game_state.next_position(game_state.current_turn)
+        game_state.settle_discards()
 
         await self.after_action(room)
 
