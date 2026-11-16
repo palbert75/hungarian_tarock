@@ -582,13 +582,13 @@ def _kingless_suit_low(cards: List[Card], view: SeatView) -> Optional[Card]:
     return min(pool, key=lambda c: (c.points, c.suit.value)) if pool else None
 
 
-def _hard_tarokk(cards: List[Card], out: List[int], trick_points: int) -> Optional[Card]:
+def _hard_tarokk(cards: List[Card], out: List[int], trick_points: int, save_skiz: bool = True) -> Optional[Card]:
     """
     A tarokk that should hold the trick: the lowest one nobody can beat, else my highest.
-    The skíz is spent this way only on a trick worth a king.
+    The skíz is spent this way only on a trick worth a king, unless save_skiz is off.
     """
     tarokks = [c for c in cards if c.is_tarokk() and not _is(c, PAGAT)]
-    if trick_points < 5:
+    if save_skiz and trick_points < 5:
         tarokks = [c for c in tarokks if not _is(c, SKIZ)] or tarokks
     if not tarokks:
         return None
@@ -848,7 +848,9 @@ def _follow(view: SeatView) -> Decision:
         can_win = [c for c in candidates if _beats(c, trick) and (not seats_after or not _is(c, PAGAT))]
         if can_win and not team_safe:
             if foe_after:
-                best = _hard_tarokk(can_win, out, trick_points) or max(can_win, key=lambda c: c.suit_rank_value())
+                # The owner's rule: with trull called the skíz counts like the XXI, it is not saved
+                best = (_hard_tarokk(can_win, out, trick_points, save_skiz=False)
+                        or max(can_win, key=lambda c: c.suit_rank_value()))
                 # The owner's rule: the declarer led, their partner plays right after me and my
                 # teammate plays last. The partner has to play high whatever I do, so a tarokk
                 # that can still be beaten is wasted here: the checks below pick a cheaper card.

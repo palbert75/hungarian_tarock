@@ -325,6 +325,28 @@ def test_with_trull_called_every_trick_is_fought_for():
     assert decide_card(view).reason_key != "hint.follow.trull_win"
 
 
+def test_with_trull_called_the_skiz_is_played_like_any_high_tarokk():
+    # Problem report 20261116-215007: the declarer (seat 1) called trull, their partner (seat 0) leads
+    # the VI, and the declarer holds only the skíz and the XIII. The XIII is lost to the XIV:
+    # with trull called the skíz is not saved for a rich trick, it takes this one.
+    trull = Announcement(player_position=1, announcement_type=AnnouncementType.TRULL)
+    history = [[(3, "c10"), (0, "cK"), (1, "cJ"), (2, "I")],
+               [(2, "dJ"), (3, "dK"), (0, "II"), (1, "dQ")],
+               [(0, "V"), (1, "XXI"), (2, "VII"), (3, "IV")],
+               [(1, "III"), (2, "XVII"), (3, "VIII"), (0, "XVIII")]]
+    view = play_view("skiz XIII d10 hK hC", trick=[(0, "VI")], position=1, declarer=1, partner=0,
+                     history=history, announcements=[trull])
+    d = decide_card(view)
+    assert played(d, view) == "skiz" and d.reason_key == "hint.follow.trull_win"
+    # A tarokk nobody can beat still goes before the skíz
+    view = play_view("skiz XXI d10 hK hC", trick=[(0, "VI")], position=1, declarer=1, partner=0,
+                     announcements=[trull])
+    assert played(decide_card(view), view) == "XXI"
+    # Without trull the skíz still waits for a trick worth a king
+    calm = play_view("skiz XIII d10 hK hC", trick=[(0, "VI")], position=1, declarer=1, partner=0, history=history)
+    assert played(decide_card(calm), calm) == "XIII"
+
+
 def test_with_trull_called_no_hard_tarokk_between_the_declarer_and_their_partner():
     # Problem report 20261115-203056: the declarer (seat 0) leads the VII, I am seat 1, the partner
     # (seat 2, known by the trull they announced) plays next and my fellow defender last.
