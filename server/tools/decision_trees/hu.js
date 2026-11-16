@@ -224,10 +224,10 @@ const HU={
     "II. ág · hívás",
   "Branch II · following":
     "II. ág · rátevés",
-  "It is the second-last trick, I hold the pagát and one more card, I did not announce pagát ulti, and more than 3 tarokks are still out?":
-    "Ez az utolsó előtti ütés, nálam a pagát és még egy lap, nem mondtam pagátultit, és 3-nál több tarokk van még kint?",
-  "Count the tarokks: three players can play at most three of them to this trick, so one is left for the last trick and beats the pagát there. That is a lost silent pagát ulti, whoever takes it.":
-    "Számold meg a tarokkokat: három játékos legfeljebb hármat tehet ebbe az ütésbe, tehát egy marad az utolsó ütésre, és ott elüti a pagátot. Ez bukott csendes pagátulti, akárki viszi el.",
+  "It is the second-last trick, I hold the pagát and one more card, I did not announce pagát ulti, and the other hands hold more tarokks than can fall in this trick?":
+    "Ez az utolsó előtti ütés, nálam a pagát és még egy lap, nem mondtam pagátultit, és a többiek kezében több tarokk van, mint amennyi ebbe az ütésbe eshet?",
+  "Count the tarokks: those not seen yet, less the ones the others laid in their skart. Each player who may still hold a tarokk can play one to this trick; a player who has shown to have none cannot. One is left for the last trick and beats the pagát there. That is a lost silent pagát ulti, whoever takes it.":
+    "Számold meg a tarokkokat: a még nem látottakat, levonva azokat, amelyeket a többiek a skartba tettek. Akinél még lehet tarokk, az egyet tehet ebbe az ütésbe; aki megmutatta, hogy nincs neki, az nem tehet. Egy marad az utolsó ütésre, és ott elüti a pagátot. Ez bukott csendes pagátulti, akárki viszi el.",
   "Lead the pagát":
     "A pagátot hívom",
   "better lost now than as a lost silent ulti in the last trick":
@@ -364,10 +364,10 @@ const HU={
     "A skízt teszem",
   "XXI caught":
     "XXI elfogva",
-  "It is the second-last trick, I hold the pagát and one more card, both are legal, I did not announce pagát ulti, and more tarokks are still out than players still to play after me?":
-    "Ez az utolsó előtti ütés, nálam a pagát és még egy lap, mindkettő szabályos, nem mondtam pagátultit, és több tarokk van még kint, mint ahány játékos utánam tesz?",
-  "Count the tarokks: one is left for the last trick and beats the pagát there. That is a lost silent pagát ulti, whoever takes it.":
-    "Számold meg a tarokkokat: egy marad az utolsó ütésre, és ott elüti a pagátot. Ez bukott csendes pagátulti, akárki viszi el.",
+  "It is the second-last trick, I hold the pagát and one more card, both are legal, I did not announce pagát ulti, and the other hands hold more tarokks than the players after me can play to this trick?":
+    "Ez az utolsó előtti ütés, nálam a pagát és még egy lap, mindkettő szabályos, nem mondtam pagátultit, és a többiek kezében több tarokk van, mint amennyit az utánam jövők ebbe az ütésbe tehetnek?",
+  "Count the tarokks: those not seen yet, less the ones the others laid in their skart. A player who has shown to have none cannot play one. One is left for the last trick and beats the pagát there. That is a lost silent pagát ulti, whoever takes it.":
+    "Számold meg a tarokkokat: a még nem látottakat, levonva azokat, amelyeket a többiek a skartba tettek. Aki megmutatta, hogy nincs tarokkja, az nem tehet. Egy marad az utolsó ütésre, és ott elüti a pagátot. Ez bukott csendes pagátulti, akárki viszi el.",
   "Play the pagát":
     "A pagátot teszem",
   "I hold the called card but neither the skíz nor the XXI, the declarer led a tarokk, an opponent plays after me, and my called card would take over the trick?":

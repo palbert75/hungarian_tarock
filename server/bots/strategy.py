@@ -10,7 +10,10 @@ from typing import List, Optional
 
 import structlog
 
-from bots.counting import PAGAT, SKIZ, XXI, observed_voids, played_cards, skiz_out, tarokks_out, xxi_played
+from bots.counting import (
+    PAGAT, SKIZ, XXI, observed_voids, played_cards, skiz_out, tarokk_less_seats, tarokks_in_hands, tarokks_out,
+    xxi_played,
+)
 from bots import route
 from bots.decision import CALL_ORDER, Decision, fallback_decision
 from bots.view import Play, SeatView, build_view
@@ -59,6 +62,7 @@ ADOPTED = frozenset({
     "skiz_take_lead",  # the waiting skíz takes the lead over from a teammate whose lead would free the XXI
     "skiz_keep_called",  # the owner's rule: a skíz that expects to be called does not weaken its hand in the skart
     "trull_spare",     # the owner's rule: no hard tarokk between the leading declarer and their partner
+    "pagat_count",     # the doomed pagát: only hands that may hold a tarokk count, and not the tarokks in a skart
 })
 TACTICS: set = set(ADOPTED)
 
@@ -460,16 +464,23 @@ def _xxi_at_risk(view: SeatView) -> bool:
     return not _side_announced(view, {"trull"})
 
 
-def _pagat_must_go(view: SeatView, still_to_play: int) -> Optional[Card]:
+def _pagat_must_go(view: SeatView, seats_after: List[int]) -> Optional[Card]:
     """
     The owner's rule: count the tarokks. In the second-last trick, with the pagát and one more
-    card in hand: if more tarokks are out than players still to play to this trick, one of them
+    card in hand: if the other hands hold more tarokks than can fall in this trick, one of them
     is left for the last trick and beats the pagát there, which is a lost silent pagát ulti
     whoever takes it. Then the pagát goes now. An announced ulti is lost either way.
+    Only a player who may still hold a tarokk can play one: with the tarokks all in one hand,
+    that hand plays one now and keeps the next.
     """
     if len(view.hand) != 2 or _announced(view, "pagat_ultimo", by_me=True):
         return None
-    if len(view.legal_cards) != 2 or len(tarokks_out(view)) <= still_to_play:
+    if "pagat_count" in TACTICS:
+        can_fall = len([seat for seat in seats_after if seat not in tarokk_less_seats(view)])
+        in_hands = tarokks_in_hands(view)
+    else:
+        can_fall, in_hands = len(seats_after), len(tarokks_out(view))
+    if len(view.legal_cards) != 2 or in_hands <= can_fall:
         return None
     return next((c for c in view.legal_cards if _is(c, PAGAT)), None)
 
@@ -611,9 +622,9 @@ def _lead(view: SeatView) -> Decision:
         """Tarokks worth leading: not the pagát, and not the XXI while the skíz can catch it."""
         return [c for c in plain_tarokks if not (_is(c, XXI) and skiz_is_out)]
 
-    doomed_pagat = _pagat_must_go(view, 3)
+    doomed_pagat = _pagat_must_go(view, [(view.position + i) % 4 for i in range(1, 4)])
     if doomed_pagat:
-        return _play(doomed_pagat, "hint.lead.pagat_drop", count=len(out))
+        return _play(doomed_pagat, "hint.lead.pagat_drop", count=tarokks_in_hands(view))
 
     # The owner's rules for the XXI while the skíz can still catch it. Leading it is never safe.
     if _xxi_at_risk(view):
@@ -758,9 +769,9 @@ def _follow(view: SeatView) -> Decision:
     if skiz and any(_is(card, XXI) and not view.is_teammate(seat) for seat, card in trick):
         return _play(skiz, "hint.follow.catch_xxi")
 
-    doomed_pagat = _pagat_must_go(view, len(seats_after))
+    doomed_pagat = _pagat_must_go(view, seats_after)
     if doomed_pagat:
-        return _play(doomed_pagat, "hint.follow.pagat_drop", count=len(out))
+        return _play(doomed_pagat, "hint.follow.pagat_drop", count=tarokks_in_hands(view))
 
     # The declarer leads a tarokk: the called partner answers with the called card, so the
     # table sees who is with whom and the opponents do not get the lead for a small tarokk

@@ -559,6 +559,27 @@ def test_pagat_goes_in_the_second_last_trick_when_a_tarokk_stays_out_for_the_las
     assert played(decide_card(view), view) == "XIII"
 
 
+def test_pagat_goes_when_the_only_hand_with_tarokks_keeps_one_for_the_last_trick():
+    # Problem report 20261116-072005: I am the declarer (seat 2) with the ♦J and the pagát. Seats 3 and 0
+    # have shown they hold no tarokk, and two are still out: both sit with seat 1, who plays one now
+    # and beats the pagát with the other in the last trick.
+    history = [
+        [(3, "s10"), (0, "sJ"), (1, "II"), (2, "XXI")], [(2, "IV"), (3, "VII"), (0, "XVIII"), (1, "skiz")],
+        [(1, "c10"), (2, "cK"), (3, "cJ"), (0, "V")], [(0, "hJ"), (1, "III"), (2, "VI"), (3, "XI")],
+        [(3, "sQ"), (0, "XIV"), (1, "XVI"), (2, "XIX")], [(2, "XV"), (3, "dC"), (0, "X"), (1, "VIII")],
+        [(2, "XX"), (3, "cC"), (0, "hK"), (1, "IX")],
+    ]
+    view = play_view("dJ I", position=2, declarer=2, partner=0, history=history)
+    view.skart_tarokks = 1  # the XVII lies in seat 1's skart: XIII and XII are in the hands
+    d = decide_card(view)
+    assert played(d, view) == "I" and d.reason_key == "hint.lead.pagat_drop"
+    assert d.reason_params["count"] == 2
+    # Were two of the three in a skart, seat 1 would play its last tarokk now: the pagát waits
+    view = play_view("dJ I", position=2, declarer=2, partner=0, history=history)
+    view.skart_tarokks = 2
+    assert played(decide_card(view), view) == "dJ"
+
+
 def test_pagat_is_led_in_the_second_last_trick_when_more_than_three_tarokks_are_out():
     history = SEVEN_TRICKS[:6] + [[(1, "X"), (2, "sJ"), (3, "sC"), (0, "s9")]]  # XVII, VIII, XX stay out too
     view = play_view("XIII I", position=1, declarer=1, partner=0, history=history)

@@ -52,6 +52,7 @@ class SeatView:
     legal_cards: List[Card] = field(default_factory=list)
 
     discard_count: int = 0
+    skart_tarokks: int = 0  # tarokks the other players laid in their skart: everybody is told how many
 
     # ---- derived -----------------------------------------------------------
 
@@ -139,6 +140,9 @@ def build_view(game_state: GameState, position: int) -> SeatView:
         ],
         trick_number=game_state.trick_number,
     )
+
+    view.skart_tarokks = sum(1 for p in game_state.players if p.position != position
+                             for c in p.discard_pile if c.is_tarokk())
 
     highest = highest_bid_of(game_state.bid_history)
     view.highest_bid = highest.bid_type.value if highest else None

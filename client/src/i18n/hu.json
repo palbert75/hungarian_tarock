@@ -253,7 +253,7 @@
       "tarokks": "{{count}} tarokkod van: mondd be. Minden játékos fizet érte neked, akárhogy végződik a játék."
     },
     "lead": {
-      "pagat_drop": "Még {{count}} tarokk van kint, több, mint amennyit a három játékos ebbe az ütésbe tehet: az utolsó ütésre is marad, és ott elüti a pagátodat, ami bukott csendes pagátulti. Hívd ki most a pagátot ({{card}}).",
+      "pagat_drop": "A többiek kezében még {{count}} tarokk van, több, mint amennyi ebbe az ütésbe eshet (akinek nincs tarokkja, az nem tehet): az utolsó ütésre is marad, és ott elüti a pagátodat, ami bukott csendes pagátulti. Hívd ki most a pagátot ({{card}}).",
       "kings_suit": "A felvevők négy királyt vagy duplajátékot mondtak: olyan színt hívj, amelynek a királya nincs nálad ({{card}}), a saját királyaidat pedig ne tedd ki a tarokkjaiknak.",
       "trull_suit": "Trull van bemondva, és a felvevők ellen játszol: színt hívj ({{card}}), ne tarokkot.",
       "skiz_force": "Már csak {{count}} tarokk van kint, köztük a XXI, és hárman tesznek utánad: hívd a skízt, a XXI-nek alá kell esnie.",
@@ -280,7 +280,7 @@
     },
     "follow": {
       "xxi_escape_king": "A partnered olyan színt hívott, amelynek a királya nincs nála, az előtted ülőknek pedig nincs ebből a színből: a király az utánad jövőnél van, neki színt kell adnia. Senki sem tehet skízt a XXI-edre: tedd most, a királlyal együtt hazajön.",
-      "pagat_drop": "Még {{count}} tarokk van kint, több, mint amennyit az utánad jövők ebbe az ütésbe tehetnek: az utolsó ütésre is marad, és ott elüti a pagátodat, ami bukott csendes pagátulti. Tedd be most a pagátot ({{card}}).",
+      "pagat_drop": "A többiek kezében még {{count}} tarokk van, több, mint amennyit az utánad jövők ebbe az ütésbe tehetnek (akinek nincs tarokkja, az nem tehet): az utolsó ütésre is marad, és ott elüti a pagátodat, ami bukott csendes pagátulti. Tedd be most a pagátot ({{card}}).",
       "trull_win": "Trull van bemondva, minden ütés számít: vidd el ezt ezzel: {{card}}. Ha még ellenfél tesz utánad, olyan lappal üss, amit nem tud felülütni.",
       "skiz_force": "Tarokkot hívtak, és az utánad következőknél már csak {{count}} tarokk lehet: tedd most a skízt, a XXI-nek jönnie kell.",
       "xxi_escape": "Utánad már senki sem tehet skízt: tedd most a XXI-et, és vidd haza.",

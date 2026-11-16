@@ -31,6 +31,20 @@ def xxi_played(view: SeatView) -> bool:
     return any(c.is_tarokk() and c.tarokk_value() == XXI for c in played_cards(view))
 
 
+def tarokks_in_hands(view: SeatView) -> int:
+    """How many tarokks the other three still hold: those out, less the ones lying in their skarts."""
+    return max(len(tarokks_out(view)) - view.skart_tarokks, 0)
+
+
+def tarokk_less_seats(view: SeatView) -> set:
+    """Seats that have shown they hold no tarokk: they played neither the suit led nor a tarokk."""
+    seats = set()
+    for trick in view.trick_history + ([view.current_trick] if view.current_trick else []):
+        led = trick[0][1].suit
+        seats.update(seat for seat, card in trick[1:] if card.suit != led and not card.is_tarokk())
+    return seats
+
+
 def observed_voids(view: SeatView) -> set:
     """(seat, suit) pairs proven by a player failing to follow the suit led."""
     out = set()

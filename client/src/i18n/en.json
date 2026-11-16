@@ -253,7 +253,7 @@
       "tarokks": "You hold {{count}} tarokks: declare them. Every other player pays you for it, however the game ends."
     },
     "lead": {
-      "pagat_drop": "{{count}} tarokks are still out, more than the three players can play to this trick: one is left for the last trick and beats your pagát there, a lost silent pagát ulti. Lead the pagát ({{card}}) now.",
+      "pagat_drop": "The other hands still hold {{count}} tarokks, more than can fall in this trick (a player without tarokks cannot play one): one is left for the last trick and beats your pagát there, a lost silent pagát ulti. Lead the pagát ({{card}}) now.",
       "kings_suit": "The caller's team announced four kings or double game: lead a suit whose king you do not hold ({{card}}), and keep your own kings out of their tarokks.",
       "trull_suit": "Trull is called and you play against the caller's team: lead a suit ({{card}}), not a tarokk.",
       "skiz_force": "Only {{count}} tarokks are still out, the XXI among them, and three players follow: lead the skíz, the XXI has to fall under it.",
@@ -280,7 +280,7 @@
     },
     "follow": {
       "xxi_escape_king": "Your partner led a suit without its king, and the others before you are out of it: the player after you must hold the king and has to follow suit. Nobody can put the skíz on your XXI: play it now, it comes home with the king.",
-      "pagat_drop": "{{count}} tarokks are still out, more than the players after you can play to this trick: one is left for the last trick and beats your pagát there, a lost silent pagát ulti. Play the pagát ({{card}}) now.",
+      "pagat_drop": "The other hands still hold {{count}} tarokks, more than the players after you can play to this trick (a player without tarokks cannot play one): one is left for the last trick and beats your pagát there, a lost silent pagát ulti. Play the pagát ({{card}}) now.",
       "trull_win": "Trull is called, so every trick counts: win this one with {{card}}. With an opponent still to play, use a card they cannot beat.",
       "skiz_force": "A tarokk was led and only {{count}} tarokks are still out for the players after you: play the skíz now, the XXI has to come.",
       "xxi_escape": "Nobody who could hold the skíz plays after you: play the XXI now and bring it home.",
