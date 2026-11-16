@@ -19,7 +19,9 @@ from networking.actions import GameService
 from networking.limits import RateLimit, Refused, client_address
 from networking.protocol import create_error_message
 from networking.reports import ReportThrottle, build_report, may_return_to_reporter, save_report
-from networking.room_manager import BOT_DELAYS, WAITING_GRACE_SECONDS, Room, RoomManager
+from networking.room_manager import (
+    BOT_DELAYS, EMPTY_TABLE_GRACE_SECONDS, STAND_IN_SECONDS, WAITING_GRACE_SECONDS, Room, RoomManager,
+)
 
 logger = structlog.get_logger()
 
@@ -159,12 +161,41 @@ def owner_seat_of(sid: str) -> Tuple[Room, Player]:
     return room, player
 
 
+async def stand_in_absent(room: Room) -> None:
+    """Let a bot play for whoever has been away too long while others are waiting."""
+    if not room.stand_in_absent(time.time()):
+        return
+    await service.broadcast_room_state(room)
+    await service.broadcast_game_state(room)
+    if room.can_start_next_hand():
+        await service.start_next_hand(room)
+    else:
+        await auto_save_room(room)
+        service.schedule_bot(room)
+
+
+async def stand_in_later(room_id: str, delay: float = STAND_IN_SECONDS) -> None:
+    await asyncio.sleep(delay)
+    room = room_manager.get_room(room_id)
+    if room:
+        await stand_in_absent(room)
+
+
 async def hold_seat_then_free(room_id: str, player_id: str, grace: float = WAITING_GRACE_SECONDS) -> None:
     """A dropped player's seat is held for a while; a table left with nobody is closed."""
     await asyncio.sleep(grace)
     if not room_manager.get_room(room_id):
         return
+    await stand_in_absent(room_manager.get_room(room_id))
     room = room_manager.expire_seat(room_id, player_id, now=time.time())
+    if room and grace < EMPTY_TABLE_GRACE_SECONDS:
+        player = room.game_state.get_player_by_id(player_id)
+        if player and not player.vacant and not player.is_connected:
+            # The last person of the table: the seat and the table wait longer
+            await asyncio.sleep(EMPTY_TABLE_GRACE_SECONDS - grace)
+            if not room_manager.get_room(room_id):
+                return
+            room = room_manager.expire_seat(room_id, player_id, now=time.time())
     if room:
         await service.broadcast_room_state(room)
         if room.game_state.phase != GamePhase.WAITING:
@@ -200,6 +231,7 @@ async def disconnect(sid: str):
     if room.game_state.phase != GamePhase.WAITING:
         await service.broadcast_game_state(room)
     asyncio.create_task(hold_seat_then_free(room.room_id, player.id))
+    asyncio.create_task(stand_in_later(room.room_id))
     await auto_save_room(room)
 
 
@@ -238,6 +270,9 @@ async def _after_join(sid: str, room: Room, player: Player, was_away: bool) -> N
         await service.send_your_turn(room, only_session=sid)
 
     await auto_save_room(room)
+    if was_away:
+        # Somebody is here again to play with: others who are still away get their stand-in
+        await stand_in_absent(room)
 
 
 @sio.event
@@ -555,7 +590,7 @@ async def init_persistence(db_path: str = "data/tarokk_game.db"):
             # Nobody is connected yet: hold every seat as if its player had just dropped
             for player in room.humans():
                 if not player.is_connected:
-                    room.dropped_at[player.id] = now + RESTART_GRACE_SECONDS - WAITING_GRACE_SECONDS
+                    room.dropped_at[player.id] = now + RESTART_GRACE_SECONDS - EMPTY_TABLE_GRACE_SECONDS
                     asyncio.create_task(hold_seat_then_free(room.room_id, player.id, RESTART_GRACE_SECONDS))
             # A bot may be the one to move in a restored game
             service.schedule_bot(room)

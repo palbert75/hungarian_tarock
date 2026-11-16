@@ -1,5 +1,7 @@
 """Fixed seats, table owner, held seats (design 4.4, 4.7)."""
 
+import time
+
 import pytest
 
 from models.game_state import GamePhase
@@ -215,6 +217,100 @@ def test_last_person_dropping_mid_game_closes_the_table_after_the_grace_period()
     assert manager.expire_seat(room.room_id, owner.id, now=room.dropped_at[owner.id] + 5) is room
     assert manager.expire_seat(room.room_id, owner.id, now=room.dropped_at[owner.id] + 1000) is None
     assert room.room_id not in manager.rooms
+
+
+def test_table_of_the_last_person_stays_open_for_ten_minutes():
+    # The owner put the phone down after a hand against bots: two minutes later the table was gone
+    manager = RoomManager()
+    room = manager.create_room("s0", "Anna")
+    room.fill_bots()
+    room.game_state.phase = GamePhase.GAME_END
+    owner = room.player_at(0)
+    manager.disconnect_session("s0")
+    dropped = room.dropped_at[owner.id]
+    # The seat timer of two minutes runs out: seat and table are kept
+    assert manager.expire_seat(room.room_id, owner.id, now=dropped + 121) is room
+    assert owner in room.seated() and not owner.vacant
+    assert manager._delete_if_no_humans(room, now=dropped + 590) is False
+    # Back within ten minutes: the same seat
+    back, player, was_away = manager.join_room(room.room_id, "s0b", "Anna", owner.id)
+    assert back is room and player is owner and was_away is True
+    # Away for good: closed after ten minutes
+    manager.disconnect_session("s0b")
+    dropped = room.dropped_at[owner.id]
+    assert manager.expire_seat(room.room_id, owner.id, now=dropped + 601) is None
+    assert room.room_id not in manager.rooms
+
+
+def test_before_the_first_hand_the_seat_of_a_dropped_person_is_freed_after_two_minutes():
+    manager = RoomManager()
+    room = table_of_four(manager)
+    bela = room.player_at(1)
+    manager.disconnect_session("s1")
+    assert manager.expire_seat(room.room_id, bela.id, now=room.dropped_at[bela.id] + 121) is room
+    assert bela not in room.seated()
+
+
+def test_bot_stands_in_for_a_dropped_person_after_thirty_seconds_and_gives_the_seat_back():
+    manager = RoomManager()
+    room = table_of_four(manager)
+    room.game_state.phase = GamePhase.PLAYING
+    bela = room.player_at(1)
+    manager.disconnect_session("s1")
+    dropped = room.dropped_at[bela.id]
+    assert room.stand_in_absent(dropped + 10) == [] and not bela.bot_controlled
+    seq = room.turn_seq
+    assert room.stand_in_absent(dropped + 31) == [bela]
+    assert bela.bot_controlled and not bela.is_bot and bela in room.seated() and room.turn_seq > seq
+    # Back: the seat is Bela's again at once
+    _, player, was_away = manager.join_room(room.room_id, "s1b", "Bela", bela.id)
+    assert player is bela and was_away and not bela.bot_controlled and bela.is_connected
+
+
+def test_stand_in_lets_the_others_start_the_next_hand_and_keeps_the_seat():
+    manager = RoomManager()
+    room = table_of_four(manager)
+    room.game_state.phase = GamePhase.GAME_END
+    bela = room.player_at(1)
+    manager.disconnect_session("s1")
+    for p in room.humans():
+        if p is not bela:
+            p.ready_next = True
+    assert not room.can_start_next_hand()
+    room.stand_in_absent(room.dropped_at[bela.id] + 31)
+    assert room.can_start_next_hand()
+    # The seat is no longer given away after two minutes
+    assert manager.expire_seat(room.room_id, bela.id, now=room.dropped_at[bela.id] + 121) is room
+    assert bela in room.seated() and not bela.vacant
+
+
+def test_table_goes_to_the_next_person_while_its_creator_is_away_and_back_on_return():
+    manager = RoomManager()
+    room = table_of_four(manager)
+    room.game_state.phase = GamePhase.GAME_END
+    anna, bela = room.player_at(0), room.player_at(1)
+    assert room.is_owner(anna.id)
+    manager.disconnect_session("s0")
+    room.stand_in_absent(room.dropped_at[anna.id] + 31)
+    assert anna.bot_controlled and room.is_owner(bela.id)
+    manager.join_room(room.room_id, "s0b", "Anna", anna.id)
+    assert room.is_owner(anna.id) and not anna.bot_controlled
+
+
+def test_no_stand_in_before_the_game_or_when_nobody_else_is_here():
+    manager = RoomManager()
+    room = table_of_four(manager)
+    bela = room.player_at(1)
+    manager.disconnect_session("s1")              # still waiting for the first hand
+    assert room.stand_in_absent(room.dropped_at[bela.id] + 31) == []
+    room.game_state.phase = GamePhase.PLAYING
+    for sid in ("s0", "s2", "s3"):
+        manager.disconnect_session(sid)
+    assert room.stand_in_absent(time.time() + 31) == []
+    # The first one back gets stand-ins for the others, who have been away long enough
+    anna = room.player_at(0)
+    manager.join_room(room.room_id, "s0b", "Anna", anna.id)
+    assert len(room.stand_in_absent(time.time() + 31)) == 3
 
 
 def test_dropped_person_mid_game_keeps_the_seat_while_others_play_on():

@@ -14,6 +14,14 @@ logger = structlog.get_logger()
 # between hands (seconds).
 WAITING_GRACE_SECONDS = 120
 
+# How long a dropped player is waited for while other people sit at the table. After that a
+# bot plays the seat until the player is back.
+STAND_IN_SECONDS = 30
+
+# How long a table stays open after the last person at it dropped. Longer than the seat
+# is held: somebody who puts the phone down between hands finds the table again.
+EMPTY_TABLE_GRACE_SECONDS = 600
+
 BOT_DELAYS = {"fast": 0.3, "normal": 1.0, "slow": 2.0}
 
 # Phases in which seats may be changed (before the game and between hands).
@@ -37,6 +45,7 @@ class Room:
         self.player_sessions: Dict[str, str] = {}  # player_id -> session_id (socket ID)
         self.chat_messages: List[dict] = []  # Chat history (max 100 messages)
         self.owner_id: Optional[str] = None
+        self.creator_id: Optional[str] = None  # who opened the table: owns it whenever present
         self.bot_speed: str = "normal"
         self.turn_seq: int = 0  # Incremented by every game action (guards bot tasks)
         self.last_game_over: Optional[dict] = None  # Result of the hand just played
@@ -106,6 +115,8 @@ class Room:
         self.player_sessions[player.id] = session_id
         if self.owner_id is None:
             self.owner_id = player.id
+            if self.creator_id is None:
+                self.creator_id = player.id
         return player
 
     def swap_seats(self, from_position: int, to_position: int) -> None:
@@ -202,6 +213,30 @@ class Room:
         self.turn_seq += 1
         return player
 
+    def stand_in_absent(self, now: float, after: float = STAND_IN_SECONDS) -> List[Player]:
+        """
+        Once the game runs, a bot plays for everybody who dropped more than `after` seconds ago,
+        as long as somebody is still here to play with. The seat stays theirs: they take it back
+        when they return. A table without its owner goes to the next person present.
+
+        Returns:
+            The players a bot now plays for
+        """
+        if self.game_state.phase == GamePhase.WAITING:
+            return []
+        people = [p for p in self.humans() if not p.bot_controlled]
+        if not any(p.is_connected for p in people):
+            return []
+        absent = [p for p in people
+                  if not p.is_connected and now - self.dropped_at.get(p.id, now) >= after - 1]
+        for player in absent:
+            player.bot_controlled = True
+            if self.is_owner(player.id):
+                self.pass_ownership()
+        if absent:
+            self.turn_seq += 1
+        return absent
+
     # ------------------------------------------------------------ connections
 
     def reconnect(self, player: Player, new_session_id: str) -> None:
@@ -211,7 +246,8 @@ class Room:
         if player.bot_controlled and not player.is_bot:
             player.bot_controlled = False
             self.turn_seq += 1  # cancels a pending bot move for this seat
-        if self.owner_id is None:
+        if self.owner_id is None or player.id == self.creator_id:
+            # Whoever opened the table gets it back from the person who looked after it
             self.owner_id = player.id
 
     def reconnect_player(self, player_name: str, new_session_id: str) -> Optional[Player]:
@@ -397,7 +433,7 @@ class RoomManager:
         now = time.time() if now is None else now
         return [
             p for p in room.humans()
-            if p.is_connected or now - room.dropped_at.get(p.id, float("-inf")) < WAITING_GRACE_SECONDS - 1
+            if p.is_connected or now - room.dropped_at.get(p.id, float("-inf")) < EMPTY_TABLE_GRACE_SECONDS - 1
         ]
 
     def _delete_if_no_humans(self, room: Room, now: Optional[float] = None) -> bool:
@@ -446,8 +482,13 @@ class RoomManager:
             return room
         if now is not None and now - room.dropped_at.get(player_id, 0) < WAITING_GRACE_SECONDS - 1:
             return room  # came back and dropped again: a newer timer is running
+        if (now is not None and not any(p.is_connected for p in room.humans())
+                and now - room.dropped_at.get(player_id, 0) < EMPTY_TABLE_GRACE_SECONDS - 1):
+            return room  # nobody else is here to want the seat: it is kept as long as the table
         room.dropped_at.pop(player_id, None)
-        if room.can_change_seats() and not player.bot_controlled:
+        # Only before the first hand is the seat given away. Once the game runs it stays the
+        # player's: a bot stands in while others play, and the player takes it back on return.
+        if room.game_state.phase == GamePhase.WAITING:
             room.vacate(player_id)
         if self._delete_if_no_humans(room, now):
             return None

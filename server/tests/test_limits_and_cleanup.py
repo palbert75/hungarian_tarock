@@ -7,7 +7,7 @@ import pytest
 
 from networking import server
 from networking.limits import RateLimit, Refused, client_address
-from networking.room_manager import WAITING_GRACE_SECONDS, RoomManager
+from networking.room_manager import EMPTY_TABLE_GRACE_SECONDS, RoomManager
 from persistence.persistence_manager import PersistenceManager
 
 
@@ -92,7 +92,7 @@ async def test_sweep_closes_only_tables_nobody_sits_at(fresh_server):
 
     manager.disconnect_session("s2")                       # dropped now: the seat is still held
     manager.disconnect_session("s3")
-    abandoned.dropped_at[abandoned.humans()[0].id] = time.time() - WAITING_GRACE_SECONDS - 5
+    abandoned.dropped_at[abandoned.humans()[0].id] = time.time() - EMPTY_TABLE_GRACE_SECONDS - 5
 
     assert await fresh_server.sweep() == 1
     assert set(manager.rooms) == {lively.room_id, just_dropped.room_id}
@@ -138,3 +138,26 @@ async def test_old_closed_tables_leave_the_database_with_all_their_rows(tmp_path
     for table in ("rooms", "players", "game_states", "chat_messages"):
         left = {r[0] for r in store.db.conn.execute(f"SELECT DISTINCT room_id FROM {table}")}
         assert left == {closed_today.room_id, open_table.room_id}, table
+
+
+@pytest.mark.asyncio
+async def test_stand_in_for_a_dropped_person_starts_the_hand_the_others_wait_for(fresh_server):
+    from models.game_state import GamePhase
+
+    manager = fresh_server.room_manager
+    room = manager.create_room("s0", "Anna")
+    for i, name in enumerate(("Bela", "Csaba", "Dora"), start=1):
+        manager.join_room(room.room_id, f"s{i}", name)
+    room.game_state.phase = GamePhase.GAME_END
+    bela = room.player_at(1)
+    manager.disconnect_session("s1")
+    for p in room.humans():
+        p.ready_next = p is not bela
+
+    await fresh_server.stand_in_absent(room)               # dropped a moment ago: still waited for
+    assert room.game_state.phase == GamePhase.GAME_END and not bela.bot_controlled
+
+    room.dropped_at[bela.id] = time.time() - 31
+    await fresh_server.stand_in_absent(room)
+    assert bela.bot_controlled and room.game_state.phase == GamePhase.BIDDING
+    assert len(bela.hand) == 9

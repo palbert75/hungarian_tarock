@@ -69,6 +69,7 @@ class PersistenceManager:
                     game_state_dict = room.game_state.to_dict(include_all_hands=True)
                     game_state_dict["room_meta"] = {
                         "owner_id": room.owner_id,
+                        "creator_id": room.creator_id,
                         "bot_speed": room.bot_speed,
                         # The result on the table and the bots' reasons must outlive a restart too
                         "last_game_over": room.last_game_over,
@@ -230,6 +231,7 @@ class PersistenceManager:
             room.game_state = self._reconstruct_game_state(game_state_dict)
             meta = game_state_dict.get("room_meta") or {}
             room.owner_id = meta.get("owner_id")
+            room.creator_id = meta.get("creator_id")
             room.bot_speed = meta.get("bot_speed", "normal")
             room.last_game_over = meta.get("last_game_over")
             room.decision_log = meta.get("decision_log") or []
