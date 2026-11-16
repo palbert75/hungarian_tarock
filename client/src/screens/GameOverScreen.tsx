@@ -33,6 +33,16 @@ export default function GameOverScreen({ table }: { table: Table }) {
   }
   const iWon = result ? (result.winner === 'declarer_team') === declarerTeam.has(me) : false
   const handDelta = (position: number) => (result ? (result.player_scores[String(position)] ?? 50) - 50 : 0)
+  // The headline counts everything I was paid for this hand, not the game alone: the
+  // losers of the game may still come out ahead on the bonuses
+  const myDelta = handDelta(me)
+  const headline = myDelta > 0 ? t('over.youWon') : myDelta < 0 ? t('over.youLost') : t('over.draw')
+  const headlineColours =
+    myDelta > 0
+      ? 'bg-green-900/50 border-green-400/40'
+      : myDelta < 0
+        ? 'bg-red-950/50 border-red-400/30'
+        : 'bg-black/25 border-white/15'
   const total = (position: number) =>
     seats[position].seated?.total_score ?? result?.total_scores?.[position] ?? game.players[position]?.total_score ?? 0
 
@@ -60,8 +70,10 @@ export default function GameOverScreen({ table }: { table: Table }) {
       <div className="flex-1 min-h-0 overflow-y-auto safe-x py-3">
         <div className="max-w-xl mx-auto flex flex-col gap-3">
           {result && (
-            <div className={`rounded-2xl p-4 text-center border ${iWon ? 'bg-green-900/50 border-green-400/40' : 'bg-red-950/50 border-red-400/30'}`}>
-              <div className="text-2xl font-bold">{iWon ? t('over.youWon') : t('over.youLost')}</div>
+            <div className={`rounded-2xl p-4 text-center border ${headlineColours}`}>
+              <div className="text-2xl font-bold">
+                {headline} <span className="font-semibold">({signed(myDelta)})</span>
+              </div>
               <div className="mt-1 text-sm text-slate-200">
                 {result.winner === 'declarer_team' ? t('over.declarerWon') : t('over.defendersWon')}
               </div>

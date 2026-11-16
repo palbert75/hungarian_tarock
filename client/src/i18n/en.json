@@ -129,6 +129,7 @@
     "title": "End of hand",
     "youWon": "You won",
     "youLost": "You lost",
+    "draw": "Draw",
     "declarerWon": "The declarer's side won the game",
     "defendersWon": "The defenders won the game",
     "declarerSide": "Declarer's side",
