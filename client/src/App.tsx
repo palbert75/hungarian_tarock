@@ -9,6 +9,7 @@ import WaitingRoomScreen from '@/screens/WaitingRoomScreen'
 import GameScreen from '@/screens/GameScreen'
 import Toast from '@/components/Toast'
 import ConnectionBanner from '@/components/ConnectionBanner'
+import BackgroundMusic from '@/components/BackgroundMusic'
 
 // An invite link (?room=…) is remembered before anything else happens
 const invited = takeInviteFromUrl()
@@ -52,6 +53,7 @@ export default function App() {
   return (
     <div className="w-full h-full">
       <Screen />
+      <BackgroundMusic />
       <ConnectionBanner />
       <Toast />
     </div>

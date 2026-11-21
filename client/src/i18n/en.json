@@ -184,6 +184,7 @@
     "tutorialDetail": "Shows what to do on your turn, and why",
     "language": "Language",
     "sound": "Sounds",
+    "music": "Background music",
     "botSpeed": "Bot speed",
     "botSpeedDetail": "How long bots think",
     "ownerOnly": "Set by the host",

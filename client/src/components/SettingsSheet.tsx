@@ -101,6 +101,9 @@ export default function SettingsSheet({ open, onClose }: { open: boolean; onClos
         <Row label={t('settings.sound')}>
           <Switch on={settings.sound} onChange={settings.setSound} label={t('settings.sound')} />
         </Row>
+        <Row label={t('settings.music')}>
+          <Switch on={settings.music} onChange={settings.setMusic} label={t('settings.music')} />
+        </Row>
         {roomState && (
           <Row label={t('settings.botSpeed')} detail={isOwner ? t('settings.botSpeedDetail') : t('settings.ownerOnly')}>
             {isOwner ? (

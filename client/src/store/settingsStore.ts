@@ -9,9 +9,11 @@ interface SettingsStore {
   /** null = follow the device language */
   language: Language | null
   sound: boolean
+  music: boolean
   setTutorial: (on: boolean) => void
   setLanguage: (language: Language) => void
   setSound: (on: boolean) => void
+  setMusic: (on: boolean) => void
 }
 
 /** Per-device settings, kept in localStorage. */
@@ -21,9 +23,11 @@ export const useSettings = create<SettingsStore>()(
       tutorial: false,
       language: null,
       sound: true,
+      music: true,
       setTutorial: (tutorial) => set({ tutorial }),
       setLanguage: (language) => set({ language }),
       setSound: (sound) => set({ sound }),
+      setMusic: (music) => set({ music }),
     }),
     { name: 'tarokk-settings' }
   )
