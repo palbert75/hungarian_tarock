@@ -347,6 +347,22 @@ def test_with_trull_called_the_skiz_is_played_like_any_high_tarokk():
     assert played(decide_card(calm), calm) == "XIII"
 
 
+def test_with_own_trull_the_xxi_protects_the_pagat():
+    # Report 20261121-162958: the declarer leads the IV in trick four. The bot
+    # announced trull and holds the XXI and pagát. Both defenders still play.
+    trull = Announcement(player_position=3, announcement_type=AnnouncementType.TRULL)
+    history = [
+        [(3, "II"), (0, "XIV"), (1, "XV"), (2, "XVI")],
+        [(2, "III"), (3, "XVIII"), (0, "VIII"), (1, "V")],
+        [(3, "XII"), (0, "XVII"), (1, "IX"), (2, "XIX")],
+    ]
+    view = play_view("I XXI s10 d10 dK sJ", trick=[(2, "IV")], position=3, declarer=2, partner=3,
+                     i_am_partner=True, history=history, announcements=[trull])
+    view.called_rank = "XVIII"
+    d = decide_card(view)
+    assert played(d, view) == "XXI" and d.reason_key == "hint.follow.trull_win"
+
+
 def test_with_trull_called_no_hard_tarokk_between_the_declarer_and_their_partner():
     # Problem report 20261115-203056: the declarer (seat 0) leads the VII, I am seat 1, the partner
     # (seat 2, known by the trull they announced) plays next and my fellow defender last.

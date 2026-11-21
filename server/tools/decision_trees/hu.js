@@ -376,8 +376,8 @@ const HU={
     "A hívott lapot teszem",
   "shows the table who is with whom":
     "megmutatja az asztalnak, ki kivel van",
-  "Set aside before choosing (if another card is legal): the XXI, while the skíz is in another hand and an opponent plays after me; the pagát, if I announced pagát ulti.":
-    "Választás előtt félreteszem (ha más lap is szabályos): a XXI-et, amíg a skíz másnál van és utánam ellenfél tesz; a pagátot, ha pagátultit mondtam.",
+  "Set aside before choosing (if another card is legal): the XXI, if the skíz is still out, my side has not announced trull, and an opponent plays after me; the pagát, if I announced pagát ulti.":
+    "Választás előtt félreteszem (ha más lap is szabályos): a XXI-et, ha a skíz még kint van, a mi párunk nem mondott trullt, és utánam ellenfél tesz; a pagátot, ha pagátultit mondtam.",
   "I hold the XXI. An opponent plays after me, and I have a card (not the XXI, not the pagát) that does not win the trick?":
     "Nálam a XXI. Utánam ellenfél tesz, és van olyan lapom (nem a XXI, nem a pagát), amely nem viszi el az ütést?",
   "Play my cheapest card that does not win":

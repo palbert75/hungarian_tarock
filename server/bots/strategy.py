@@ -785,8 +785,8 @@ def _follow(view: SeatView) -> Decision:
         return _play(called, "hint.follow.show_called")
 
     candidates = list(legal)
-    # Do not walk the XXI into the skíz
-    if skiz_out(view) and foe_after:
+    # Keep the XXI back when an opponent could still catch it with the skíz.
+    if at_risk and foe_after:
         safer = [c for c in candidates if not _is(c, XXI)]
         candidates = safer or candidates
     # An announced pagát ulti needs the pagát at the very end

@@ -536,8 +536,8 @@ const HU={
     "A hívott lapot teszem",
   "shows the table who is with whom":
     "megmutatja az asztalnak, ki kivel van",
-  "Set aside before choosing (if another card is legal): the XXI, while the skíz is in another hand and an opponent plays after me; the pagát, if I announced pagát ulti.":
-    "Választás előtt félreteszem (ha más lap is szabályos): a XXI-et, amíg a skíz másnál van és utánam ellenfél tesz; a pagátot, ha pagátultit mondtam.",
+  "Set aside before choosing (if another card is legal): the XXI, if the skíz is still out, my side has not announced trull, and an opponent plays after me; the pagát, if I announced pagát ulti.":
+    "Választás előtt félreteszem (ha más lap is szabályos): a XXI-et, ha a skíz még kint van, a mi párunk nem mondott trullt, és utánam ellenfél tesz; a pagátot, ha pagátultit mondtam.",
   "I hold the XXI. An opponent plays after me, and I have a card (not the XXI, not the pagát) that does not win the trick?":
     "Nálam a XXI. Utánam ellenfél tesz, és van olyan lapom (nem a XXI, nem a pagát), amely nem viszi el az ütést?",
   "Play my cheapest card that does not win":
@@ -930,7 +930,7 @@ function followTree(two){
     q('I can play the skíz, and the XXI of somebody not known as my teammate lies in the trick?',{src:L(539)},'yes',H('Play the skíz','XXI caught')),
     q('It is the second-last trick, I hold the pagát and one more card, both are legal, I did not announce pagát ulti, and the other hands hold more tarokks than the players after me can play to this trick?',{src:'strategy.py:773',note:'Count the tarokks: those not seen yet, less the ones the others laid in their skart. A player who has shown to have none cannot play one. One is left for the last trick and beats the pagát there. That is a lost silent pagát ulti, whoever takes it.'},'yes',H('Play the pagát','better lost now than as a lost silent ulti in the last trick')),
     q('I hold the called card but neither the skíz nor the XXI, the declarer led a tarokk, an opponent plays after me, and my called card would take over the trick?',{src:L(547),tag:'show_called'},'yes',T('Play the called card','shows the table who is with whom')),
-    q('Set aside before choosing (if another card is legal): the XXI, while the skíz is in another hand and an opponent plays after me; the pagát, if I announced pagát ulti.',{src:L(553),rule:true},null,null,'then'),
+    q('Set aside before choosing (if another card is legal): the XXI, if the skíz is still out, my side has not announced trull, and an opponent plays after me; the pagát, if I announced pagát ulti.',{src:'strategy.py:789',rule:true},null,null,'then'),
     q(xxiQ+' An opponent plays after me, and I have a card (not the XXI, not the pagát) that does not win the trick?',{src:'strategy.py:805'},'yes',X('Play my cheapest card that does not win','stay out of the lead; if the player after me takes the trick, I play last to the next one')),
     q(huntQ,{src:L(568),tag:'skiz_hunt'},'yes',hunt),
     ...(two?[trullWin]:[]),
