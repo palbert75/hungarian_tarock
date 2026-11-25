@@ -493,9 +493,10 @@ class GameState(BaseModel):
         distribution[self.declarer_position] = declarer_cards
         self.players[self.declarer_position].add_cards_to_hand(declarer_cards)
 
-        # Distribute remaining cards to other 3 players
+        # The rest goes to the other three in playing order, starting with the seat after
+        # the declarer: when it does not split evenly, the first ones get the extra card
         remaining_cards = self.talon[declarer_cards_count:]
-        other_positions = [i for i in range(4) if i != self.declarer_position]
+        other_positions = [(self.declarer_position + k) % 4 for k in (1, 2, 3)]
 
         # Distribute as equally as possible
         cards_per_player = len(remaining_cards) // 3

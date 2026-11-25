@@ -96,7 +96,7 @@ Each suit contains (highest to lowest):
 - **Two:** Declarer takes 2 cards, remaining 4 cards distributed to other 3 players
 - **Three:** Declarer takes 3 cards, remaining 3 cards distributed to other 3 players (1 each)
 
-**Distribution method:** Remaining talon cards divided as equally as possible among the 3 non-declarer players
+**Distribution method:** Remaining talon cards divided as equally as possible among the 3 non-declarer players, in playing order starting with the player after the declarer (with "two" that player gets 2 cards; with "one" the first two get 2 each)
 
 ### Phase 3: Discard Phase (ALL PLAYERS)
 

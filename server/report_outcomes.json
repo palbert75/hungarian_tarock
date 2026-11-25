@@ -32,6 +32,7 @@
   "20261123-173746-28836d": {"status": "fixed", "hu": "A pagátulti partnere a legnagyobb tarokkal húz.", "en": "The pagát ulti partner draws with the highest tarokk."},
   "20261124-145402-400c42": {"status": "fixed", "hu": "Saját trullnál a biztos XXI nem megy el egy színhívásra.", "en": "With our own trull a sure XXI is not spent on a suit lead."},
   "20261125-094551-bb00a2": {"status": "wont_fix", "hu": "Licitálni csak honőrrel lehet; ha mindenki passzol, újraosztás jön.", "en": "Bidding needs an honour; when all pass the cards are dealt again."},
-  "20261125-140547-022a0d": {"status": "fixed", "hu": "A XX–XVI birtokában már a XV (és lejjebb) is hívható.", "en": "Holding XX to XVI you can now call the XV (and lower)."}
+  "20261125-140547-022a0d": {"status": "fixed", "hu": "A XX–XVI birtokában már a XV (és lejjebb) is hívható.", "en": "Holding XX to XVI you can now call the XV (and lower)."},
+  "20261125-141902-32422d": {"status": "fixed", "hu": "A maradék talon a felvevő után következőtől oszlik, nem mindig ugyanannak jut több.", "en": "The rest of the talon is shared from the player after the declarer, not always the same seat."}
  }
 }
