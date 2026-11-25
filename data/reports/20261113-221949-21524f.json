@@ -1,0 +1,1589 @@
+{
+ "id": "20261113-221949-21524f",
+ "created_at": "2026-11-13T22:19:49.477882+00:00",
+ "room_id": "f94a5df2-07f4-40a7-ae6d-19158855ad61",
+ "reporter": {
+  "position": 0,
+  "name": "Albi"
+ },
+ "text": "pafat ultit elfogtak es nem stamolta a rendszer",
+ "seats": [
+  {
+   "position": 0,
+   "name": "Albi",
+   "bot": false,
+   "vacant": false
+  },
+  {
+   "position": 1,
+   "name": "Bot Jani",
+   "bot": true,
+   "vacant": false
+  },
+  {
+   "position": 2,
+   "name": "Bot Kati",
+   "bot": true,
+   "vacant": false
+  },
+  {
+   "position": 3,
+   "name": "Bot Pista",
+   "bot": true,
+   "vacant": false
+  }
+ ],
+ "game": {
+  "game_id": "24ead435-c715-44b0-91cb-bbf2e79e7684",
+  "phase": "game_end",
+  "players": [
+   {
+    "id": "7b59a956-67ea-45a0-914d-f05080507223",
+    "name": "Albi",
+    "position": 0,
+    "hand_size": 0,
+    "is_connected": true,
+    "is_ready": true,
+    "is_declarer": true,
+    "total_points": 27,
+    "tricks_won_count": 2,
+    "is_bot": false,
+    "bot_controlled": false,
+    "vacant": false,
+    "total_score": -21,
+    "ready_next": false,
+    "tarokks_discarded": 0,
+    "hand": [],
+    "tricks_won": [
+     {
+      "id": "5ba81d18-e7f6-4001-b7fe-73412aa4713f",
+      "suit": "diamonds",
+      "rank": "J",
+      "points": 2,
+      "card_type": "suit"
+     },
+     {
+      "id": "4ab64933-8674-4058-9617-2955e5cea5da",
+      "suit": "diamonds",
+      "rank": "C",
+      "points": 3,
+      "card_type": "suit"
+     },
+     {
+      "id": "50c316d6-2fc0-4547-9d3c-23bf21ad56f9",
+      "suit": "tarokk",
+      "rank": "XIX",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "9066c59c-e6e5-43e6-a70c-a25fd5f660b4",
+      "suit": "tarokk",
+      "rank": "XIII",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "e60cce1d-8747-4f2c-8535-de4da1c88675",
+      "suit": "tarokk",
+      "rank": "V",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "666a7c5c-feb5-4e28-ac6e-9c0c2b379626",
+      "suit": "clubs",
+      "rank": "K",
+      "points": 5,
+      "card_type": "king"
+     },
+     {
+      "id": "b2246328-b165-4028-a5c8-1d6cfc3b1e25",
+      "suit": "tarokk",
+      "rank": "XII",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "214ed291-cd1f-4d2c-99b3-4c5c5836658c",
+      "suit": "spades",
+      "rank": "J",
+      "points": 2,
+      "card_type": "suit"
+     }
+    ],
+    "discard_pile": [
+     {
+      "id": "28155539-326e-4a85-9a1d-9fbe0f559a5a",
+      "suit": "diamonds",
+      "rank": "Q",
+      "points": 4,
+      "card_type": "suit"
+     },
+     {
+      "id": "6c9000c2-8689-4101-a40c-989b2e4f7b0b",
+      "suit": "clubs",
+      "rank": "C",
+      "points": 3,
+      "card_type": "suit"
+     },
+     {
+      "id": "05797af3-3e3c-4de7-9d0d-a757ab0eef0b",
+      "suit": "spades",
+      "rank": "Q",
+      "points": 4,
+      "card_type": "suit"
+     }
+    ],
+    "partner_revealed": false,
+    "talon_card_ids": [
+     "c98fa71e-ffcb-4bd9-8f96-f517668fd1d1",
+     "05797af3-3e3c-4de7-9d0d-a757ab0eef0b",
+     "bcfcaa17-3602-47bf-ae00-51b2b76eac87"
+    ]
+   },
+   {
+    "id": "15a3ff8d-f357-42ec-985e-b2ec33f7bfd7",
+    "name": "Bot Jani",
+    "position": 1,
+    "hand_size": 0,
+    "is_connected": true,
+    "is_ready": true,
+    "is_declarer": false,
+    "total_points": 17,
+    "tricks_won_count": 1,
+    "is_bot": true,
+    "bot_controlled": true,
+    "vacant": false,
+    "total_score": 51,
+    "ready_next": false,
+    "tarokks_discarded": 0,
+    "hand": [],
+    "tricks_won": [
+     {
+      "id": "61e0d02c-678e-474b-9e46-19500fb88c92",
+      "suit": "clubs",
+      "rank": "J",
+      "points": 2,
+      "card_type": "suit"
+     },
+     {
+      "id": "857615e2-92c6-4e1d-91e8-ebc8cb2b9f1b",
+      "suit": "tarokk",
+      "rank": "XXI",
+      "points": 5,
+      "card_type": "honour"
+     },
+     {
+      "id": "6d6fbfef-5df9-49fc-b4c5-c1e1878d8522",
+      "suit": "tarokk",
+      "rank": "skiz",
+      "points": 5,
+      "card_type": "honour"
+     },
+     {
+      "id": "7ca6a288-1527-4cb6-bca6-f9e08fa03f05",
+      "suit": "tarokk",
+      "rank": "II",
+      "points": 1,
+      "card_type": "tarokk"
+     }
+    ],
+    "discard_pile": [
+     {
+      "id": "28cfc601-8fc9-435c-b06c-0081a5358f5d",
+      "suit": "hearts",
+      "rank": "Q",
+      "points": 4,
+      "card_type": "suit"
+     }
+    ],
+    "partner_revealed": false,
+    "talon_card_ids": [
+     "28cfc601-8fc9-435c-b06c-0081a5358f5d"
+    ]
+   },
+   {
+    "id": "41b03bf4-c498-42ac-891f-95365cb457e8",
+    "name": "Bot Kati",
+    "position": 2,
+    "hand_size": 0,
+    "is_connected": true,
+    "is_ready": true,
+    "is_declarer": false,
+    "total_points": 37,
+    "tricks_won_count": 4,
+    "is_bot": true,
+    "bot_controlled": true,
+    "vacant": false,
+    "total_score": 27,
+    "ready_next": false,
+    "tarokks_discarded": 0,
+    "hand": [],
+    "tricks_won": [
+     {
+      "id": "3ef4cba7-c641-4b74-b9eb-84796ac9dd98",
+      "suit": "clubs",
+      "rank": "10",
+      "points": 1,
+      "card_type": "suit"
+     },
+     {
+      "id": "7a8bfc9a-412e-43d5-af16-b1e88c3abe20",
+      "suit": "tarokk",
+      "rank": "XVI",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "cef01a29-6c0f-4c06-a5a9-fef25f238354",
+      "suit": "tarokk",
+      "rank": "XIV",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "4e8799bb-dc82-4480-90d2-47e83c60ba9a",
+      "suit": "tarokk",
+      "rank": "XVIII",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "7c9b2308-9eb1-4003-b14a-914848ea50eb",
+      "suit": "diamonds",
+      "rank": "10",
+      "points": 1,
+      "card_type": "suit"
+     },
+     {
+      "id": "c98fa71e-ffcb-4bd9-8f96-f517668fd1d1",
+      "suit": "tarokk",
+      "rank": "III",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "2b2a4dfb-436e-4be5-a630-dcb1bd56b777",
+      "suit": "tarokk",
+      "rank": "X",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "86d13345-09ec-465e-a8c8-6d955251c773",
+      "suit": "tarokk",
+      "rank": "XI",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "94af3490-1de3-437f-9b83-14cb9c3bf479",
+      "suit": "hearts",
+      "rank": "C",
+      "points": 3,
+      "card_type": "suit"
+     },
+     {
+      "id": "da3a7529-309c-4d9b-88e3-1ab1f6a1bcda",
+      "suit": "tarokk",
+      "rank": "XV",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "73c4f820-20a2-48c9-95ac-288fb313ea38",
+      "suit": "hearts",
+      "rank": "J",
+      "points": 2,
+      "card_type": "suit"
+     },
+     {
+      "id": "9710af27-a1db-4012-b61e-6353a1c14987",
+      "suit": "hearts",
+      "rank": "K",
+      "points": 5,
+      "card_type": "king"
+     },
+     {
+      "id": "757acf2a-7427-403c-a8a5-d2ca672f9b33",
+      "suit": "tarokk",
+      "rank": "I",
+      "points": 5,
+      "card_type": "honour"
+     },
+     {
+      "id": "f51eb365-7706-429e-a3ca-eaf23ac24f45",
+      "suit": "spades",
+      "rank": "C",
+      "points": 3,
+      "card_type": "suit"
+     },
+     {
+      "id": "66e0e7ba-2a39-46df-86d4-d16272e2397a",
+      "suit": "tarokk",
+      "rank": "IX",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "49e7e8df-e809-4b09-9d68-a802ba31f9da",
+      "suit": "diamonds",
+      "rank": "K",
+      "points": 5,
+      "card_type": "king"
+     }
+    ],
+    "discard_pile": [
+     {
+      "id": "0c1de4e5-2a07-4fff-a7cc-0141b54979b6",
+      "suit": "clubs",
+      "rank": "Q",
+      "points": 4,
+      "card_type": "suit"
+     }
+    ],
+    "partner_revealed": false,
+    "talon_card_ids": [
+     "86d13345-09ec-465e-a8c8-6d955251c773"
+    ]
+   },
+   {
+    "id": "bb7c3f5c-e69a-4e34-bf50-45409f17f611",
+    "name": "Bot Pista",
+    "position": 3,
+    "hand_size": 0,
+    "is_connected": true,
+    "is_ready": true,
+    "is_declarer": false,
+    "total_points": 13,
+    "tricks_won_count": 2,
+    "is_bot": true,
+    "bot_controlled": true,
+    "vacant": false,
+    "total_score": -57,
+    "ready_next": false,
+    "tarokks_discarded": 0,
+    "is_partner": true,
+    "hand": [],
+    "tricks_won": [
+     {
+      "id": "3ff8e651-0691-40de-9e2a-201eb6c8df24",
+      "suit": "tarokk",
+      "rank": "VI",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "a58b1f10-c1ce-495b-83d6-e83b3a057b1f",
+      "suit": "tarokk",
+      "rank": "IV",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "60a25bad-9960-4424-8026-e2a31f9aff94",
+      "suit": "tarokk",
+      "rank": "VIII",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "ffa8d1a9-3beb-4c76-b313-853323dcfd41",
+      "suit": "tarokk",
+      "rank": "XVII",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "8d5347b9-3704-4bff-8bd9-eabe6b73261b",
+      "suit": "spades",
+      "rank": "K",
+      "points": 5,
+      "card_type": "king"
+     },
+     {
+      "id": "d634ac8b-628b-4fa5-84f1-145737547652",
+      "suit": "tarokk",
+      "rank": "XX",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "bcfcaa17-3602-47bf-ae00-51b2b76eac87",
+      "suit": "tarokk",
+      "rank": "VII",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "29af5b8c-3b15-4891-9fc4-2c308cca0a65",
+      "suit": "spades",
+      "rank": "10",
+      "points": 1,
+      "card_type": "suit"
+     }
+    ],
+    "discard_pile": [
+     {
+      "id": "c14cc693-f851-4a08-8d5e-c6c60fcc822d",
+      "suit": "hearts",
+      "rank": "10",
+      "points": 1,
+      "card_type": "suit"
+     }
+    ],
+    "partner_revealed": true,
+    "talon_card_ids": [
+     "7c9b2308-9eb1-4003-b14a-914848ea50eb"
+    ]
+   }
+  ],
+  "dealer_position": 2,
+  "current_turn": 3,
+  "bid_history": [
+   {
+    "player_position": 3,
+    "bid_type": "pass",
+    "game_value": 0,
+    "talon_cards": 0
+   },
+   {
+    "player_position": 0,
+    "bid_type": "three",
+    "game_value": 1,
+    "talon_cards": 3
+   },
+   {
+    "player_position": 1,
+    "bid_type": "pass",
+    "game_value": 0,
+    "talon_cards": 0
+   },
+   {
+    "player_position": 2,
+    "bid_type": "pass",
+    "game_value": 0,
+    "talon_cards": 0
+   }
+  ],
+  "declarer_position": 0,
+  "partner_position": 3,
+  "partner_revealed": true,
+  "called_card_rank": "XX",
+  "trick_number": 10,
+  "trick_leader": 0,
+  "previous_trick_winner": 2,
+  "current_trick": [],
+  "talon": [],
+  "announcements": [],
+  "tarokk_declarations": {
+   "0": 8
+  },
+  "trick_history": [
+   {
+    "trick_number": 2,
+    "cards": [
+     {
+      "player_position": 3,
+      "card": {
+       "id": "3ef4cba7-c641-4b74-b9eb-84796ac9dd98",
+       "suit": "clubs",
+       "rank": "10",
+       "points": 1,
+       "card_type": "suit"
+      }
+     },
+     {
+      "player_position": 0,
+      "card": {
+       "id": "7a8bfc9a-412e-43d5-af16-b1e88c3abe20",
+       "suit": "tarokk",
+       "rank": "XVI",
+       "points": 1,
+       "card_type": "tarokk"
+      }
+     },
+     {
+      "player_position": 1,
+      "card": {
+       "id": "cef01a29-6c0f-4c06-a5a9-fef25f238354",
+       "suit": "tarokk",
+       "rank": "XIV",
+       "points": 1,
+       "card_type": "tarokk"
+      }
+     },
+     {
+      "player_position": 2,
+      "card": {
+       "id": "4e8799bb-dc82-4480-90d2-47e83c60ba9a",
+       "suit": "tarokk",
+       "rank": "XVIII",
+       "points": 1,
+       "card_type": "tarokk"
+      }
+     }
+    ],
+    "winner": 2,
+    "winner_name": "Bot Kati",
+    "lead_suit": "clubs"
+   },
+   {
+    "trick_number": 3,
+    "cards": [
+     {
+      "player_position": 2,
+      "card": {
+       "id": "5ba81d18-e7f6-4001-b7fe-73412aa4713f",
+       "suit": "diamonds",
+       "rank": "J",
+       "points": 2,
+       "card_type": "suit"
+      }
+     },
+     {
+      "player_position": 3,
+      "card": {
+       "id": "4ab64933-8674-4058-9617-2955e5cea5da",
+       "suit": "diamonds",
+       "rank": "C",
+       "points": 3,
+       "card_type": "suit"
+      }
+     },
+     {
+      "player_position": 0,
+      "card": {
+       "id": "50c316d6-2fc0-4547-9d3c-23bf21ad56f9",
+       "suit": "tarokk",
+       "rank": "XIX",
+       "points": 1,
+       "card_type": "tarokk"
+      }
+     },
+     {
+      "player_position": 1,
+      "card": {
+       "id": "9066c59c-e6e5-43e6-a70c-a25fd5f660b4",
+       "suit": "tarokk",
+       "rank": "XIII",
+       "points": 1,
+       "card_type": "tarokk"
+      }
+     }
+    ],
+    "winner": 0,
+    "winner_name": "Albi",
+    "lead_suit": "diamonds"
+   },
+   {
+    "trick_number": 4,
+    "cards": [
+     {
+      "player_position": 0,
+      "card": {
+       "id": "3ff8e651-0691-40de-9e2a-201eb6c8df24",
+       "suit": "tarokk",
+       "rank": "VI",
+       "points": 1,
+       "card_type": "tarokk"
+      }
+     },
+     {
+      "player_position": 1,
+      "card": {
+       "id": "a58b1f10-c1ce-495b-83d6-e83b3a057b1f",
+       "suit": "tarokk",
+       "rank": "IV",
+       "points": 1,
+       "card_type": "tarokk"
+      }
+     },
+     {
+      "player_position": 2,
+      "card": {
+       "id": "60a25bad-9960-4424-8026-e2a31f9aff94",
+       "suit": "tarokk",
+       "rank": "VIII",
+       "points": 1,
+       "card_type": "tarokk"
+      }
+     },
+     {
+      "player_position": 3,
+      "card": {
+       "id": "ffa8d1a9-3beb-4c76-b313-853323dcfd41",
+       "suit": "tarokk",
+       "rank": "XVII",
+       "points": 1,
+       "card_type": "tarokk"
+      }
+     }
+    ],
+    "winner": 3,
+    "winner_name": "Bot Pista",
+    "lead_suit": "tarokk"
+   },
+   {
+    "trick_number": 5,
+    "cards": [
+     {
+      "player_position": 3,
+      "card": {
+       "id": "7c9b2308-9eb1-4003-b14a-914848ea50eb",
+       "suit": "diamonds",
+       "rank": "10",
+       "points": 1,
+       "card_type": "suit"
+      }
+     },
+     {
+      "player_position": 0,
+      "card": {
+       "id": "c98fa71e-ffcb-4bd9-8f96-f517668fd1d1",
+       "suit": "tarokk",
+       "rank": "III",
+       "points": 1,
+       "card_type": "tarokk"
+      }
+     },
+     {
+      "player_position": 1,
+      "card": {
+       "id": "2b2a4dfb-436e-4be5-a630-dcb1bd56b777",
+       "suit": "tarokk",
+       "rank": "X",
+       "points": 1,
+       "card_type": "tarokk"
+      }
+     },
+     {
+      "player_position": 2,
+      "card": {
+       "id": "86d13345-09ec-465e-a8c8-6d955251c773",
+       "suit": "tarokk",
+       "rank": "XI",
+       "points": 1,
+       "card_type": "tarokk"
+      }
+     }
+    ],
+    "winner": 2,
+    "winner_name": "Bot Kati",
+    "lead_suit": "diamonds"
+   },
+   {
+    "trick_number": 6,
+    "cards": [
+     {
+      "player_position": 2,
+      "card": {
+       "id": "8d5347b9-3704-4bff-8bd9-eabe6b73261b",
+       "suit": "spades",
+       "rank": "K",
+       "points": 5,
+       "card_type": "king"
+      }
+     },
+     {
+      "player_position": 3,
+      "card": {
+       "id": "d634ac8b-628b-4fa5-84f1-145737547652",
+       "suit": "tarokk",
+       "rank": "XX",
+       "points": 1,
+       "card_type": "tarokk"
+      }
+     },
+     {
+      "player_position": 0,
+      "card": {
+       "id": "bcfcaa17-3602-47bf-ae00-51b2b76eac87",
+       "suit": "tarokk",
+       "rank": "VII",
+       "points": 1,
+       "card_type": "tarokk"
+      }
+     },
+     {
+      "player_position": 1,
+      "card": {
+       "id": "29af5b8c-3b15-4891-9fc4-2c308cca0a65",
+       "suit": "spades",
+       "rank": "10",
+       "points": 1,
+       "card_type": "suit"
+      }
+     }
+    ],
+    "winner": 3,
+    "winner_name": "Bot Pista",
+    "lead_suit": "spades"
+   },
+   {
+    "trick_number": 7,
+    "cards": [
+     {
+      "player_position": 3,
+      "card": {
+       "id": "61e0d02c-678e-474b-9e46-19500fb88c92",
+       "suit": "clubs",
+       "rank": "J",
+       "points": 2,
+       "card_type": "suit"
+      }
+     },
+     {
+      "player_position": 0,
+      "card": {
+       "id": "857615e2-92c6-4e1d-91e8-ebc8cb2b9f1b",
+       "suit": "tarokk",
+       "rank": "XXI",
+       "points": 5,
+       "card_type": "honour"
+      }
+     },
+     {
+      "player_position": 1,
+      "card": {
+       "id": "6d6fbfef-5df9-49fc-b4c5-c1e1878d8522",
+       "suit": "tarokk",
+       "rank": "skiz",
+       "points": 5,
+       "card_type": "honour"
+      }
+     },
+     {
+      "player_position": 2,
+      "card": {
+       "id": "7ca6a288-1527-4cb6-bca6-f9e08fa03f05",
+       "suit": "tarokk",
+       "rank": "II",
+       "points": 1,
+       "card_type": "tarokk"
+      }
+     }
+    ],
+    "winner": 1,
+    "winner_name": "Bot Jani",
+    "lead_suit": "clubs"
+   },
+   {
+    "trick_number": 8,
+    "cards": [
+     {
+      "player_position": 1,
+      "card": {
+       "id": "94af3490-1de3-437f-9b83-14cb9c3bf479",
+       "suit": "hearts",
+       "rank": "C",
+       "points": 3,
+       "card_type": "suit"
+      }
+     },
+     {
+      "player_position": 2,
+      "card": {
+       "id": "da3a7529-309c-4d9b-88e3-1ab1f6a1bcda",
+       "suit": "tarokk",
+       "rank": "XV",
+       "points": 1,
+       "card_type": "tarokk"
+      }
+     },
+     {
+      "player_position": 3,
+      "card": {
+       "id": "73c4f820-20a2-48c9-95ac-288fb313ea38",
+       "suit": "hearts",
+       "rank": "J",
+       "points": 2,
+       "card_type": "suit"
+      }
+     },
+     {
+      "player_position": 0,
+      "card": {
+       "id": "9710af27-a1db-4012-b61e-6353a1c14987",
+       "suit": "hearts",
+       "rank": "K",
+       "points": 5,
+       "card_type": "king"
+      }
+     }
+    ],
+    "winner": 2,
+    "winner_name": "Bot Kati",
+    "lead_suit": "hearts"
+   },
+   {
+    "trick_number": 9,
+    "cards": [
+     {
+      "player_position": 2,
+      "card": {
+       "id": "e60cce1d-8747-4f2c-8535-de4da1c88675",
+       "suit": "tarokk",
+       "rank": "V",
+       "points": 1,
+       "card_type": "tarokk"
+      }
+     },
+     {
+      "player_position": 3,
+      "card": {
+       "id": "666a7c5c-feb5-4e28-ac6e-9c0c2b379626",
+       "suit": "clubs",
+       "rank": "K",
+       "points": 5,
+       "card_type": "king"
+      }
+     },
+     {
+      "player_position": 0,
+      "card": {
+       "id": "b2246328-b165-4028-a5c8-1d6cfc3b1e25",
+       "suit": "tarokk",
+       "rank": "XII",
+       "points": 1,
+       "card_type": "tarokk"
+      }
+     },
+     {
+      "player_position": 1,
+      "card": {
+       "id": "214ed291-cd1f-4d2c-99b3-4c5c5836658c",
+       "suit": "spades",
+       "rank": "J",
+       "points": 2,
+       "card_type": "suit"
+      }
+     }
+    ],
+    "winner": 0,
+    "winner_name": "Albi",
+    "lead_suit": "tarokk"
+   },
+   {
+    "trick_number": 10,
+    "cards": [
+     {
+      "player_position": 0,
+      "card": {
+       "id": "757acf2a-7427-403c-a8a5-d2ca672f9b33",
+       "suit": "tarokk",
+       "rank": "I",
+       "points": 5,
+       "card_type": "honour"
+      }
+     },
+     {
+      "player_position": 1,
+      "card": {
+       "id": "f51eb365-7706-429e-a3ca-eaf23ac24f45",
+       "suit": "spades",
+       "rank": "C",
+       "points": 3,
+       "card_type": "suit"
+      }
+     },
+     {
+      "player_position": 2,
+      "card": {
+       "id": "66e0e7ba-2a39-46df-86d4-d16272e2397a",
+       "suit": "tarokk",
+       "rank": "IX",
+       "points": 1,
+       "card_type": "tarokk"
+      }
+     },
+     {
+      "player_position": 3,
+      "card": {
+       "id": "49e7e8df-e809-4b09-9d68-a802ba31f9da",
+       "suit": "diamonds",
+       "rank": "K",
+       "points": 5,
+       "card_type": "king"
+      }
+     }
+    ],
+    "winner": 2,
+    "winner_name": "Bot Kati",
+    "lead_suit": "tarokk"
+   }
+  ],
+  "players_who_discarded": [
+   3,
+   0,
+   1,
+   2
+  ],
+  "announcement_history": [
+   null,
+   null,
+   null
+  ],
+  "announcement_turn_log": [
+   {
+    "position": 0,
+    "passed": false
+   },
+   {
+    "position": 1,
+    "passed": true
+   },
+   {
+    "position": 2,
+    "passed": true
+   },
+   {
+    "position": 3,
+    "passed": true
+   }
+  ],
+  "game_contra": false,
+  "game_contra_by": null,
+  "declarer_alone": false,
+  "hand_number": 7,
+  "invit": null,
+  "yielded_by": null,
+  "required_call": null,
+  "convention_partner": null,
+  "called_card_discarded_by": null,
+  "winning_bid": {
+   "player_position": 0,
+   "bid_type": "three",
+   "game_value": 1,
+   "talon_cards": 3
+  }
+ },
+ "bot_decisions": [
+  {
+   "hand_number": 7,
+   "phase": "bidding",
+   "trick_number": 0,
+   "position": 3,
+   "action": "bid",
+   "payload": {
+    "bid_type": "pass"
+   },
+   "reason_key": "hint.bid.no_honour",
+   "reason_params": {},
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "bidding",
+   "trick_number": 0,
+   "position": 1,
+   "action": "bid",
+   "payload": {
+    "bid_type": "pass"
+   },
+   "reason_key": "hint.bid.skiz_strong_pass",
+   "reason_params": {
+    "count": 4
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "bidding",
+   "trick_number": 0,
+   "position": 2,
+   "action": "bid",
+   "payload": {
+    "bid_type": "pass"
+   },
+   "reason_key": "hint.bid.no_honour",
+   "reason_params": {},
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "discarding",
+   "trick_number": 0,
+   "position": 3,
+   "action": "discard",
+   "payload": {
+    "card_ids": [
+     "c14cc693-f851-4a08-8d5e-c6c60fcc822d"
+    ]
+   },
+   "reason_key": "hint.discard.suits",
+   "reason_params": {
+    "cards": [
+     "c14cc693-f851-4a08-8d5e-c6c60fcc822d"
+    ]
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "discarding",
+   "trick_number": 0,
+   "position": 1,
+   "action": "discard",
+   "payload": {
+    "card_ids": [
+     "28cfc601-8fc9-435c-b06c-0081a5358f5d"
+    ]
+   },
+   "reason_key": "hint.discard.suits",
+   "reason_params": {
+    "cards": [
+     "28cfc601-8fc9-435c-b06c-0081a5358f5d"
+    ]
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "discarding",
+   "trick_number": 0,
+   "position": 2,
+   "action": "discard",
+   "payload": {
+    "card_ids": [
+     "0c1de4e5-2a07-4fff-a7cc-0141b54979b6"
+    ]
+   },
+   "reason_key": "hint.discard.suits",
+   "reason_params": {
+    "cards": [
+     "0c1de4e5-2a07-4fff-a7cc-0141b54979b6"
+    ]
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "announcements",
+   "trick_number": 0,
+   "position": 1,
+   "action": "pass_announcement",
+   "payload": {},
+   "reason_key": "hint.announce.pass",
+   "reason_params": {},
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "announcements",
+   "trick_number": 0,
+   "position": 2,
+   "action": "pass_announcement",
+   "payload": {},
+   "reason_key": "hint.announce.pass",
+   "reason_params": {},
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "announcements",
+   "trick_number": 0,
+   "position": 3,
+   "action": "pass_announcement",
+   "payload": {},
+   "reason_key": "hint.announce.pass",
+   "reason_params": {},
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "playing",
+   "trick_number": 1,
+   "position": 3,
+   "action": "play_card",
+   "payload": {
+    "card_id": "3ef4cba7-c641-4b74-b9eb-84796ac9dd98"
+   },
+   "reason_key": "hint.lead.long_suit",
+   "reason_params": {
+    "card": "3ef4cba7-c641-4b74-b9eb-84796ac9dd98"
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "playing",
+   "trick_number": 1,
+   "position": 1,
+   "action": "play_card",
+   "payload": {
+    "card_id": "cef01a29-6c0f-4c06-a5a9-fef25f238354"
+   },
+   "reason_key": "hint.follow.skiz_duck_high",
+   "reason_params": {
+    "card": "cef01a29-6c0f-4c06-a5a9-fef25f238354"
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "playing",
+   "trick_number": 1,
+   "position": 2,
+   "action": "play_card",
+   "payload": {
+    "card_id": "4e8799bb-dc82-4480-90d2-47e83c60ba9a"
+   },
+   "reason_key": "hint.follow.win_cheap",
+   "reason_params": {
+    "card": "4e8799bb-dc82-4480-90d2-47e83c60ba9a"
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "playing",
+   "trick_number": 2,
+   "position": 2,
+   "action": "play_card",
+   "payload": {
+    "card_id": "5ba81d18-e7f6-4001-b7fe-73412aa4713f"
+   },
+   "reason_key": "hint.lead.suit_protect_xxi",
+   "reason_params": {
+    "card": "5ba81d18-e7f6-4001-b7fe-73412aa4713f"
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "playing",
+   "trick_number": 2,
+   "position": 3,
+   "action": "play_card",
+   "payload": {
+    "card_id": "4ab64933-8674-4058-9617-2955e5cea5da"
+   },
+   "reason_key": "hint.follow.win_cheap",
+   "reason_params": {
+    "card": "4ab64933-8674-4058-9617-2955e5cea5da"
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "playing",
+   "trick_number": 2,
+   "position": 1,
+   "action": "play_card",
+   "payload": {
+    "card_id": "9066c59c-e6e5-43e6-a70c-a25fd5f660b4"
+   },
+   "reason_key": "hint.follow.skiz_duck_high",
+   "reason_params": {
+    "card": "9066c59c-e6e5-43e6-a70c-a25fd5f660b4"
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "playing",
+   "trick_number": 3,
+   "position": 1,
+   "action": "play_card",
+   "payload": {
+    "card_id": "a58b1f10-c1ce-495b-83d6-e83b3a057b1f"
+   },
+   "reason_key": "hint.follow.skiz_duck_high",
+   "reason_params": {
+    "card": "a58b1f10-c1ce-495b-83d6-e83b3a057b1f"
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "playing",
+   "trick_number": 3,
+   "position": 2,
+   "action": "play_card",
+   "payload": {
+    "card_id": "60a25bad-9960-4424-8026-e2a31f9aff94"
+   },
+   "reason_key": "hint.follow.win_cheap",
+   "reason_params": {
+    "card": "60a25bad-9960-4424-8026-e2a31f9aff94"
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "playing",
+   "trick_number": 3,
+   "position": 3,
+   "action": "play_card",
+   "payload": {
+    "card_id": "ffa8d1a9-3beb-4c76-b313-853323dcfd41"
+   },
+   "reason_key": "hint.follow.win_cheap",
+   "reason_params": {
+    "card": "ffa8d1a9-3beb-4c76-b313-853323dcfd41"
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "playing",
+   "trick_number": 4,
+   "position": 3,
+   "action": "play_card",
+   "payload": {
+    "card_id": "7c9b2308-9eb1-4003-b14a-914848ea50eb"
+   },
+   "reason_key": "hint.lead.long_suit",
+   "reason_params": {
+    "card": "7c9b2308-9eb1-4003-b14a-914848ea50eb"
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "playing",
+   "trick_number": 4,
+   "position": 1,
+   "action": "play_card",
+   "payload": {
+    "card_id": "2b2a4dfb-436e-4be5-a630-dcb1bd56b777"
+   },
+   "reason_key": "hint.follow.skiz_forced",
+   "reason_params": {
+    "card": "2b2a4dfb-436e-4be5-a630-dcb1bd56b777"
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "playing",
+   "trick_number": 4,
+   "position": 2,
+   "action": "play_card",
+   "payload": {
+    "card_id": "86d13345-09ec-465e-a8c8-6d955251c773"
+   },
+   "reason_key": "hint.follow.win_cheap",
+   "reason_params": {
+    "card": "86d13345-09ec-465e-a8c8-6d955251c773"
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "playing",
+   "trick_number": 5,
+   "position": 2,
+   "action": "play_card",
+   "payload": {
+    "card_id": "8d5347b9-3704-4bff-8bd9-eabe6b73261b"
+   },
+   "reason_key": "hint.lead.suit_protect_xxi",
+   "reason_params": {
+    "card": "8d5347b9-3704-4bff-8bd9-eabe6b73261b"
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "playing",
+   "trick_number": 5,
+   "position": 3,
+   "action": "play_card",
+   "payload": {
+    "card_id": "d634ac8b-628b-4fa5-84f1-145737547652"
+   },
+   "reason_key": "hint.follow.only_card",
+   "reason_params": {
+    "card": "d634ac8b-628b-4fa5-84f1-145737547652"
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "playing",
+   "trick_number": 5,
+   "position": 1,
+   "action": "play_card",
+   "payload": {
+    "card_id": "29af5b8c-3b15-4891-9fc4-2c308cca0a65"
+   },
+   "reason_key": "hint.follow.skiz_duck",
+   "reason_params": {
+    "card": "29af5b8c-3b15-4891-9fc4-2c308cca0a65"
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "playing",
+   "trick_number": 6,
+   "position": 3,
+   "action": "play_card",
+   "payload": {
+    "card_id": "61e0d02c-678e-474b-9e46-19500fb88c92"
+   },
+   "reason_key": "hint.lead.long_suit",
+   "reason_params": {
+    "card": "61e0d02c-678e-474b-9e46-19500fb88c92"
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "playing",
+   "trick_number": 6,
+   "position": 1,
+   "action": "play_card",
+   "payload": {
+    "card_id": "6d6fbfef-5df9-49fc-b4c5-c1e1878d8522"
+   },
+   "reason_key": "hint.follow.only_card",
+   "reason_params": {
+    "card": "6d6fbfef-5df9-49fc-b4c5-c1e1878d8522"
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "playing",
+   "trick_number": 6,
+   "position": 2,
+   "action": "play_card",
+   "payload": {
+    "card_id": "7ca6a288-1527-4cb6-bca6-f9e08fa03f05"
+   },
+   "reason_key": "hint.follow.teammate_wins_low",
+   "reason_params": {
+    "card": "7ca6a288-1527-4cb6-bca6-f9e08fa03f05"
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "playing",
+   "trick_number": 7,
+   "position": 1,
+   "action": "play_card",
+   "payload": {
+    "card_id": "94af3490-1de3-437f-9b83-14cb9c3bf479"
+   },
+   "reason_key": "hint.lead.defender_suit",
+   "reason_params": {
+    "card": "94af3490-1de3-437f-9b83-14cb9c3bf479"
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "playing",
+   "trick_number": 7,
+   "position": 2,
+   "action": "play_card",
+   "payload": {
+    "card_id": "da3a7529-309c-4d9b-88e3-1ab1f6a1bcda"
+   },
+   "reason_key": "hint.follow.hit_hard",
+   "reason_params": {
+    "card": "da3a7529-309c-4d9b-88e3-1ab1f6a1bcda"
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "playing",
+   "trick_number": 7,
+   "position": 3,
+   "action": "play_card",
+   "payload": {
+    "card_id": "73c4f820-20a2-48c9-95ac-288fb313ea38"
+   },
+   "reason_key": "hint.follow.only_card",
+   "reason_params": {
+    "card": "73c4f820-20a2-48c9-95ac-288fb313ea38"
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "playing",
+   "trick_number": 8,
+   "position": 2,
+   "action": "play_card",
+   "payload": {
+    "card_id": "e60cce1d-8747-4f2c-8535-de4da1c88675"
+   },
+   "reason_key": "hint.lead.low_tarokk",
+   "reason_params": {
+    "card": "e60cce1d-8747-4f2c-8535-de4da1c88675"
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "playing",
+   "trick_number": 8,
+   "position": 3,
+   "action": "play_card",
+   "payload": {
+    "card_id": "666a7c5c-feb5-4e28-ac6e-9c0c2b379626"
+   },
+   "reason_key": "hint.follow.low",
+   "reason_params": {
+    "card": "666a7c5c-feb5-4e28-ac6e-9c0c2b379626"
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "playing",
+   "trick_number": 8,
+   "position": 1,
+   "action": "play_card",
+   "payload": {
+    "card_id": "214ed291-cd1f-4d2c-99b3-4c5c5836658c"
+   },
+   "reason_key": "hint.follow.low",
+   "reason_params": {
+    "card": "214ed291-cd1f-4d2c-99b3-4c5c5836658c"
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "playing",
+   "trick_number": 9,
+   "position": 1,
+   "action": "play_card",
+   "payload": {
+    "card_id": "f51eb365-7706-429e-a3ca-eaf23ac24f45"
+   },
+   "reason_key": "hint.follow.only_card",
+   "reason_params": {
+    "card": "f51eb365-7706-429e-a3ca-eaf23ac24f45"
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "playing",
+   "trick_number": 9,
+   "position": 2,
+   "action": "play_card",
+   "payload": {
+    "card_id": "66e0e7ba-2a39-46df-86d4-d16272e2397a"
+   },
+   "reason_key": "hint.follow.only_card",
+   "reason_params": {
+    "card": "66e0e7ba-2a39-46df-86d4-d16272e2397a"
+   },
+   "fallback": false
+  },
+  {
+   "hand_number": 7,
+   "phase": "playing",
+   "trick_number": 9,
+   "position": 3,
+   "action": "play_card",
+   "payload": {
+    "card_id": "49e7e8df-e809-4b09-9d68-a802ba31f9da"
+   },
+   "reason_key": "hint.follow.only_card",
+   "reason_params": {
+    "card": "49e7e8df-e809-4b09-9d68-a802ba31f9da"
+   },
+   "fallback": false
+  }
+ ],
+ "last_game_over": {
+  "declarer": 0,
+  "partner": 3,
+  "declarer_alone": false,
+  "declarer_team_points": 39,
+  "opponent_team_points": 55,
+  "winner": "opponent_team",
+  "base_game_value": 1,
+  "game_multiplier": 1,
+  "final_game_value": 1,
+  "game_contra": false,
+  "player_scores": {
+   "0": 30,
+   "1": 72,
+   "2": 72,
+   "3": 26
+  },
+  "total_scores": [
+   -21,
+   51,
+   27,
+   -57
+  ],
+  "hand_number": 7,
+  "achieved_announcements": [
+   {
+    "player_position": 1,
+    "announcement_type": "trull",
+    "announced": false,
+    "contra": false,
+    "recontra": false,
+    "contra_by": null,
+    "recontra_by": null,
+    "points": 1,
+    "multiplier": 1
+   },
+   {
+    "player_position": 1,
+    "announcement_type": "xxi_catch",
+    "announced": false,
+    "contra": false,
+    "recontra": false,
+    "contra_by": null,
+    "recontra_by": null,
+    "points": 21,
+    "multiplier": 1
+   }
+  ],
+  "failed_announcements": [],
+  "announcement_details": [
+   {
+    "type": "trull",
+    "player_position": 1,
+    "team": "opponent_team",
+    "announced": false,
+    "points": 1,
+    "multiplier": 1,
+    "achieved": true,
+    "contra": false,
+    "recontra": false
+   },
+   {
+    "type": "xxi_catch",
+    "player_position": 1,
+    "team": "opponent_team",
+    "announced": false,
+    "points": 21,
+    "multiplier": 1,
+    "achieved": true,
+    "contra": false,
+    "recontra": false
+   }
+  ],
+  "tarokk_declarations": [
+   {
+    "player_position": 0,
+    "count": 8,
+    "points": 1
+   }
+  ]
+ },
+ "client": {
+  "language": "hu",
+  "tutorial": true,
+  "viewport": "440x474",
+  "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Mobile/15E148 Safari/604.1",
+  "phase": "game_end",
+  "hint": null
+ }
+}

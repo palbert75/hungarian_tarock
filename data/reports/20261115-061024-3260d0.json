@@ -1,0 +1,2352 @@
+{
+ "id": "20261115-061024-3260d0",
+ "created_at": "2026-11-15T06:10:24.215931+00:00",
+ "room_id": "a621c843-106c-4b62-9e4f-f8663737a6ba",
+ "reporter": {
+  "position": 0,
+  "name": "Albi"
+ },
+ "text": "huha",
+ "seats": [
+  {
+   "position": 0,
+   "name": "Albi",
+   "bot": false,
+   "vacant": false
+  },
+  {
+   "position": 1,
+   "name": "Bot Jani",
+   "bot": true,
+   "vacant": false
+  },
+  {
+   "position": 2,
+   "name": "Bot Kati",
+   "bot": true,
+   "vacant": false
+  },
+  {
+   "position": 3,
+   "name": "Bot Pista",
+   "bot": true,
+   "vacant": false
+  }
+ ],
+ "game": {
+  "game_id": "3ac17030-fafd-4f23-b3ad-206386efa07e",
+  "phase": "playing",
+  "players": [
+   {
+    "id": "552bc044-40e4-41e5-b7b2-b1d9226c7992",
+    "name": "Albi",
+    "position": 0,
+    "hand_size": 6,
+    "is_connected": true,
+    "is_ready": true,
+    "is_declarer": false,
+    "total_points": 3,
+    "tricks_won_count": 0,
+    "is_bot": false,
+    "bot_controlled": false,
+    "vacant": false,
+    "total_score": 5,
+    "ready_next": false,
+    "tarokks_discarded": 0,
+    "hand": [
+     {
+      "id": "57462816-474c-4f43-af8f-76fe328073f7",
+      "suit": "spades",
+      "rank": "J",
+      "points": 2,
+      "card_type": "suit"
+     },
+     {
+      "id": "d1e128fc-be70-4400-a676-030bda400a7d",
+      "suit": "tarokk",
+      "rank": "XIII",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "8d828608-d878-4cd4-a699-59106cabf338",
+      "suit": "spades",
+      "rank": "10",
+      "points": 1,
+      "card_type": "suit"
+     },
+     {
+      "id": "080905dc-6c66-44ae-9f1f-7a719e39d483",
+      "suit": "tarokk",
+      "rank": "X",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "fe8d8fbc-7e78-44f0-b68b-789e2b1603ee",
+      "suit": "hearts",
+      "rank": "J",
+      "points": 2,
+      "card_type": "suit"
+     },
+     {
+      "id": "259825d2-ac54-406b-8576-4d561053be07",
+      "suit": "hearts",
+      "rank": "K",
+      "points": 5,
+      "card_type": "king"
+     }
+    ],
+    "tricks_won": [],
+    "discard_pile": [
+     {
+      "id": "77e5ea8c-8cbb-4829-8e8c-dd3590e24810",
+      "suit": "spades",
+      "rank": "C",
+      "points": 3,
+      "card_type": "suit"
+     }
+    ],
+    "partner_revealed": false,
+    "talon_card_ids": [
+     "259825d2-ac54-406b-8576-4d561053be07"
+    ]
+   },
+   {
+    "id": "b34b40b1-a2b7-4939-ac5b-959eba3add42",
+    "name": "Bot Jani",
+    "position": 1,
+    "hand_size": 6,
+    "is_connected": true,
+    "is_ready": true,
+    "is_declarer": false,
+    "total_points": 2,
+    "tricks_won_count": 0,
+    "is_bot": true,
+    "bot_controlled": true,
+    "vacant": false,
+    "total_score": -5,
+    "ready_next": false,
+    "tarokks_discarded": 0,
+    "hand": [
+     {
+      "id": "7551e89f-3476-4ae8-b559-2ea59eef2f26",
+      "suit": "hearts",
+      "rank": "10",
+      "points": 1,
+      "card_type": "suit"
+     },
+     {
+      "id": "54406aa4-4b11-44b7-8ede-f74da147b629",
+      "suit": "tarokk",
+      "rank": "XIV",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "c1dbb227-a1e1-43aa-8145-1dde20b62661",
+      "suit": "hearts",
+      "rank": "Q",
+      "points": 4,
+      "card_type": "suit"
+     },
+     {
+      "id": "def27331-889f-4b8c-817b-cd6f7464b8bf",
+      "suit": "tarokk",
+      "rank": "I",
+      "points": 5,
+      "card_type": "honour"
+     },
+     {
+      "id": "61372f58-498e-4092-a800-48d1a291eaef",
+      "suit": "clubs",
+      "rank": "K",
+      "points": 5,
+      "card_type": "king"
+     },
+     {
+      "id": "1ae88dac-194e-47c1-b6e8-27b47ebaebad",
+      "suit": "tarokk",
+      "rank": "XV",
+      "points": 1,
+      "card_type": "tarokk"
+     }
+    ],
+    "tricks_won": [],
+    "discard_pile": [
+     {
+      "id": "4cb79bb5-c3a6-4429-b61e-214a77ec18c8",
+      "suit": "diamonds",
+      "rank": "J",
+      "points": 2,
+      "card_type": "suit"
+     }
+    ],
+    "partner_revealed": false,
+    "talon_card_ids": [
+     "1ae88dac-194e-47c1-b6e8-27b47ebaebad"
+    ]
+   },
+   {
+    "id": "f57e92a0-4544-48af-82e7-f97f7c858105",
+    "name": "Bot Kati",
+    "position": 2,
+    "hand_size": 6,
+    "is_connected": true,
+    "is_ready": true,
+    "is_declarer": true,
+    "total_points": 26,
+    "tricks_won_count": 2,
+    "is_bot": true,
+    "bot_controlled": true,
+    "vacant": false,
+    "total_score": 1,
+    "ready_next": false,
+    "tarokks_discarded": 0,
+    "hand": [
+     {
+      "id": "79fec0fb-16dd-4163-a918-0cd2f7ac6804",
+      "suit": "tarokk",
+      "rank": "XVII",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "63f813d0-d2f7-4740-9b51-bf1b7d66c5eb",
+      "suit": "tarokk",
+      "rank": "XII",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "d1b74932-e800-4900-a456-4c77a589b808",
+      "suit": "tarokk",
+      "rank": "XVI",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "b58f10b3-145a-4ad5-be9e-ccd993a96f33",
+      "suit": "diamonds",
+      "rank": "10",
+      "points": 1,
+      "card_type": "suit"
+     },
+     {
+      "id": "f2b97e83-5966-414e-b045-ac92a746bb81",
+      "suit": "spades",
+      "rank": "K",
+      "points": 5,
+      "card_type": "king"
+     },
+     {
+      "id": "4ac7d9b2-078a-42c1-804a-76ca477b126a",
+      "suit": "tarokk",
+      "rank": "VII",
+      "points": 1,
+      "card_type": "tarokk"
+     }
+    ],
+    "tricks_won": [
+     {
+      "id": "bcf8aab4-2b9f-4e09-be99-daf647cad270",
+      "suit": "tarokk",
+      "rank": "VI",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "453fbab1-b2b4-456b-8b3b-975a7c5480c2",
+      "suit": "tarokk",
+      "rank": "XIX",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "9d7827a0-36e5-4905-bfba-c1bf126d4a68",
+      "suit": "tarokk",
+      "rank": "III",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "3cb75a94-69b6-4173-83bf-62dcf88d9171",
+      "suit": "tarokk",
+      "rank": "XXI",
+      "points": 5,
+      "card_type": "honour"
+     },
+     {
+      "id": "2f0369ee-4fc4-4ec5-9b1d-e5ad9e8f24b5",
+      "suit": "tarokk",
+      "rank": "skiz",
+      "points": 5,
+      "card_type": "honour"
+     },
+     {
+      "id": "74e5c1f6-09b6-4281-8abf-3fe58130cf0b",
+      "suit": "tarokk",
+      "rank": "VIII",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "6db3d345-42dd-4220-8299-fc634b7eb346",
+      "suit": "tarokk",
+      "rank": "II",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "79c6cc7e-969d-4727-af93-9bf5922062fe",
+      "suit": "tarokk",
+      "rank": "IV",
+      "points": 1,
+      "card_type": "tarokk"
+     }
+    ],
+    "discard_pile": [
+     {
+      "id": "ba20461f-bf15-4aff-9f84-a4ebc2648275",
+      "suit": "clubs",
+      "rank": "C",
+      "points": 3,
+      "card_type": "suit"
+     },
+     {
+      "id": "7950947c-2f3b-4d65-9131-c75e5d8c0097",
+      "suit": "hearts",
+      "rank": "C",
+      "points": 3,
+      "card_type": "suit"
+     },
+     {
+      "id": "5d1aa18e-a033-4699-825a-d87440cdb4ae",
+      "suit": "diamonds",
+      "rank": "Q",
+      "points": 4,
+      "card_type": "suit"
+     }
+    ],
+    "partner_revealed": false,
+    "talon_card_ids": [
+     "2cb22da1-fca7-4f1b-a096-590b2f570392",
+     "5d1aa18e-a033-4699-825a-d87440cdb4ae",
+     "ba20461f-bf15-4aff-9f84-a4ebc2648275"
+    ]
+   },
+   {
+    "id": "90d7d231-44a0-46d9-8bde-98becd4da3f6",
+    "name": "Bot Pista",
+    "position": 3,
+    "hand_size": 5,
+    "is_connected": true,
+    "is_ready": true,
+    "is_declarer": false,
+    "total_points": 8,
+    "tricks_won_count": 1,
+    "is_bot": true,
+    "bot_controlled": true,
+    "vacant": false,
+    "total_score": -1,
+    "ready_next": false,
+    "tarokks_discarded": 0,
+    "is_partner": true,
+    "hand": [
+     {
+      "id": "8fee5a71-791a-4ae8-b1df-b34f41cfc31d",
+      "suit": "clubs",
+      "rank": "Q",
+      "points": 4,
+      "card_type": "suit"
+     },
+     {
+      "id": "7bf426fc-11fd-411f-a78b-dccf6d55ec1d",
+      "suit": "diamonds",
+      "rank": "K",
+      "points": 5,
+      "card_type": "king"
+     },
+     {
+      "id": "b1af9fe7-f619-4ab2-873a-8b7a60a93dd1",
+      "suit": "clubs",
+      "rank": "10",
+      "points": 1,
+      "card_type": "suit"
+     },
+     {
+      "id": "262b3a9a-850f-43c2-9d3b-7d77068b051b",
+      "suit": "clubs",
+      "rank": "J",
+      "points": 2,
+      "card_type": "suit"
+     },
+     {
+      "id": "45b4423c-29fc-41da-aca7-e0125848935e",
+      "suit": "diamonds",
+      "rank": "C",
+      "points": 3,
+      "card_type": "suit"
+     }
+    ],
+    "tricks_won": [
+     {
+      "id": "2cb22da1-fca7-4f1b-a096-590b2f570392",
+      "suit": "tarokk",
+      "rank": "XVIII",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "b1fca841-5341-4be5-8bde-627aec2a965a",
+      "suit": "tarokk",
+      "rank": "XX",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "24db40e7-2352-4125-88d2-7a843115b8fa",
+      "suit": "tarokk",
+      "rank": "V",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "63da3e7f-61b6-4fcb-82b0-f12e6f4cce2c",
+      "suit": "tarokk",
+      "rank": "XI",
+      "points": 1,
+      "card_type": "tarokk"
+     }
+    ],
+    "discard_pile": [
+     {
+      "id": "752283f3-6aa8-4122-9234-7b1b105c4cbc",
+      "suit": "spades",
+      "rank": "Q",
+      "points": 4,
+      "card_type": "suit"
+     }
+    ],
+    "partner_revealed": true,
+    "talon_card_ids": [
+     "45b4423c-29fc-41da-aca7-e0125848935e"
+    ]
+   }
+  ],
+  "dealer_position": 2,
+  "current_turn": 0,
+  "bid_history": [
+   {
+    "player_position": 3,
+    "bid_type": "pass",
+    "game_value": 0,
+    "talon_cards": 0
+   },
+   {
+    "player_position": 0,
+    "bid_type": "pass",
+    "game_value": 0,
+    "talon_cards": 0
+   },
+   {
+    "player_position": 1,
+    "bid_type": "pass",
+    "game_value": 0,
+    "talon_cards": 0
+   },
+   {
+    "player_position": 2,
+    "bid_type": "three",
+    "game_value": 1,
+    "talon_cards": 3
+   }
+  ],
+  "declarer_position": 2,
+  "partner_position": 3,
+  "partner_revealed": true,
+  "called_card_rank": "XX",
+  "trick_number": 4,
+  "trick_leader": 3,
+  "previous_trick_winner": 3,
+  "current_trick": [
+   {
+    "player_position": 3,
+    "card": {
+     "id": "f67210b0-72d3-4cf7-b501-c6ef796d87d0",
+     "suit": "tarokk",
+     "rank": "IX",
+     "points": 1,
+     "card_type": "tarokk"
+    }
+   }
+  ],
+  "talon": [],
+  "announcements": [
+   {
+    "player_position": 2,
+    "announcement_type": "trull",
+    "announced": true,
+    "contra": false,
+    "recontra": false,
+    "contra_by": null,
+    "recontra_by": null,
+    "points": 2,
+    "multiplier": 1
+   }
+  ],
+  "tarokk_declarations": {},
+  "trick_history": [
+   {
+    "trick_number": 2,
+    "cards": [
+     {
+      "player_position": 3,
+      "card": {
+       "id": "bcf8aab4-2b9f-4e09-be99-daf647cad270",
+       "suit": "tarokk",
+       "rank": "VI",
+       "points": 1,
+       "card_type": "tarokk"
+      }
+     },
+     {
+      "player_position": 0,
+      "card": {
+       "id": "453fbab1-b2b4-456b-8b3b-975a7c5480c2",
+       "suit": "tarokk",
+       "rank": "XIX",
+       "points": 1,
+       "card_type": "tarokk"
+      }
+     },
+     {
+      "player_position": 1,
+      "card": {
+       "id": "9d7827a0-36e5-4905-bfba-c1bf126d4a68",
+       "suit": "tarokk",
+       "rank": "III",
+       "points": 1,
+       "card_type": "tarokk"
+      }
+     },
+     {
+      "player_position": 2,
+      "card": {
+       "id": "3cb75a94-69b6-4173-83bf-62dcf88d9171",
+       "suit": "tarokk",
+       "rank": "XXI",
+       "points": 5,
+       "card_type": "honour"
+      }
+     }
+    ],
+    "winner": 2,
+    "winner_name": "Bot Kati",
+    "lead_suit": "tarokk"
+   },
+   {
+    "trick_number": 3,
+    "cards": [
+     {
+      "player_position": 2,
+      "card": {
+       "id": "2f0369ee-4fc4-4ec5-9b1d-e5ad9e8f24b5",
+       "suit": "tarokk",
+       "rank": "skiz",
+       "points": 5,
+       "card_type": "honour"
+      }
+     },
+     {
+      "player_position": 3,
+      "card": {
+       "id": "74e5c1f6-09b6-4281-8abf-3fe58130cf0b",
+       "suit": "tarokk",
+       "rank": "VIII",
+       "points": 1,
+       "card_type": "tarokk"
+      }
+     },
+     {
+      "player_position": 0,
+      "card": {
+       "id": "6db3d345-42dd-4220-8299-fc634b7eb346",
+       "suit": "tarokk",
+       "rank": "II",
+       "points": 1,
+       "card_type": "tarokk"
+      }
+     },
+     {
+      "player_position": 1,
+      "card": {
+       "id": "79c6cc7e-969d-4727-af93-9bf5922062fe",
+       "suit": "tarokk",
+       "rank": "IV",
+       "points": 1,
+       "card_type": "tarokk"
+      }
+     }
+    ],
+    "winner": 2,
+    "winner_name": "Bot Kati",
+    "lead_suit": "tarokk"
+   },
+   {
+    "trick_number": 4,
+    "cards": [
+     {
+      "player_position": 2,
+      "card": {
+       "id": "2cb22da1-fca7-4f1b-a096-590b2f570392",
+       "suit": "tarokk",
+       "rank": "XVIII",
+       "points": 1,
+       "card_type": "tarokk"
+      }
+     },
+     {
+      "player_position": 3,
+      "card": {
+       "id": "b1fca841-5341-4be5-8bde-627aec2a965a",
+       "suit": "tarokk",
+       "rank": "XX",
+       "points": 1,
+       "card_type": "tarokk"
+      }
+     },
+     {
+      "player_position": 0,
+      "card": {
+       "id": "24db40e7-2352-4125-88d2-7a843115b8fa",
+       "suit": "tarokk",
+       "rank": "V",
+       "points": 1,
+       "card_type": "tarokk"
+      }
+     },
+     {
+      "player_position": 1,
+      "card": {
+       "id": "63da3e7f-61b6-4fcb-82b0-f12e6f4cce2c",
+       "suit": "tarokk",
+       "rank": "XI",
+       "points": 1,
+       "card_type": "tarokk"
+      }
+     }
+    ],
+    "winner": 3,
+    "winner_name": "Bot Pista",
+    "lead_suit": "tarokk"
+   }
+  ],
+  "players_who_discarded": [
+   3,
+   0,
+   1,
+   2
+  ],
+  "announcement_history": [
+   {
+    "player_position": 2,
+    "announcement_type": "trull",
+    "announced": true,
+    "contra": false,
+    "recontra": false,
+    "contra_by": null,
+    "recontra_by": null,
+    "points": 2,
+    "multiplier": 1
+   },
+   null,
+   null,
+   null
+  ],
+  "announcement_turn_log": [
+   {
+    "position": 2,
+    "passed": false
+   },
+   {
+    "position": 3,
+    "passed": true
+   },
+   {
+    "position": 0,
+    "passed": true
+   },
+   {
+    "position": 1,
+    "passed": true
+   }
+  ],
+  "game_contra": false,
+  "game_contra_by": null,
+  "declarer_alone": false,
+  "hand_number": 3,
+  "invit": null,
+  "yielded_by": null,
+  "required_call": null,
+  "convention_partner": null,
+  "called_card_discarded_by": null,
+  "winning_bid": {
+   "player_position": 2,
+   "bid_type": "three",
+   "game_value": 1,
+   "talon_cards": 3
+  }
+ },
+ "bot_decisions": [
+  {
+   "hand_number": 3,
+   "phase": "bidding",
+   "trick_number": 0,
+   "position": 3,
+   "action": "bid",
+   "payload": {
+    "bid_type": "pass"
+   },
+   "reason_key": "hint.bid.no_honour",
+   "reason_params": {},
+   "tree_route": "A1 → A2 → A30 → A32",
+   "route": [
+    {
+     "line": 113,
+     "check": "if not (has_skiz or has_xxi or has_pagat):",
+     "matched": true,
+     "box": "A1"
+    },
+    {
+     "line": 99,
+     "check": "if decision.payload[\"bid_type\"] == \"pass\" and \"pass\" not in view.valid_bids:",
+     "matched": false,
+     "box": "A30"
+    }
+   ],
+   "fallback": false
+  },
+  {
+   "hand_number": 3,
+   "phase": "bidding",
+   "trick_number": 0,
+   "position": 1,
+   "action": "bid",
+   "payload": {
+    "bid_type": "pass"
+   },
+   "reason_key": "hint.bid.pagat_few_tarokks",
+   "reason_params": {
+    "count": 5
+   },
+   "tree_route": "A1 → A3 → A9 → A11 → A13 → A17 → A23 → A25 → A26 → A30 → A32",
+   "route": [
+    {
+     "line": 113,
+     "check": "if not (has_skiz or has_xxi or has_pagat):",
+     "matched": false,
+     "box": "A1"
+    },
+    {
+     "line": 117,
+     "check": "if bid is None:",
+     "matched": false,
+     "box": "A3"
+    },
+    {
+     "line": 123,
+     "check": "if invit and invit[\"by\"] == view.position:",
+     "matched": false
+    },
+    {
+     "line": 127,
+     "check": "elif invit and \"invit_accept\" in TACTICS and big:",
+     "matched": false
+    },
+    {
+     "line": 131,
+     "check": "if \"invit_give\" in TACTICS and big and tarokk_count >= INVIT_MIN_TAROKKS:",
+     "matched": false,
+     "box": "A9"
+    },
+    {
+     "line": 135,
+     "check": "if \"yield_game\" in TACTICS and view.yield_turn and \"pass\" in view.valid_bids:",
+     "matched": false,
+     "box": "A11"
+    },
+    {
+     "line": 139,
+     "check": "if has_xxi:",
+     "matched": false,
+     "box": "A13"
+    },
+    {
+     "line": 145,
+     "check": "if has_skiz:",
+     "matched": false,
+     "box": "A17"
+    },
+    {
+     "line": 154,
+     "check": "if \"bid_over_three\" in TACTICS and bid == \"two\" and view.highest_bid == \"three\":",
+     "matched": false,
+     "box": "A23"
+    },
+    {
+     "line": 161,
+     "check": "if tarokk_count < 8:",
+     "matched": true,
+     "box": "A25"
+    },
+    {
+     "line": 99,
+     "check": "if decision.payload[\"bid_type\"] == \"pass\" and \"pass\" not in view.valid_bids:",
+     "matched": false,
+     "box": "A30"
+    }
+   ],
+   "fallback": false
+  },
+  {
+   "hand_number": 3,
+   "phase": "bidding",
+   "trick_number": 0,
+   "position": 2,
+   "action": "bid",
+   "payload": {
+    "bid_type": "three"
+   },
+   "reason_key": "hint.bid.xxi_always",
+   "reason_params": {
+    "bid": "three"
+   },
+   "tree_route": "A1 → A3 → A9 → A11 → A13 → A14 → A16 → A30 → A32",
+   "route": [
+    {
+     "line": 113,
+     "check": "if not (has_skiz or has_xxi or has_pagat):",
+     "matched": false,
+     "box": "A1"
+    },
+    {
+     "line": 117,
+     "check": "if bid is None:",
+     "matched": false,
+     "box": "A3"
+    },
+    {
+     "line": 123,
+     "check": "if invit and invit[\"by\"] == view.position:",
+     "matched": false
+    },
+    {
+     "line": 127,
+     "check": "elif invit and \"invit_accept\" in TACTICS and big:",
+     "matched": false
+    },
+    {
+     "line": 131,
+     "check": "if \"invit_give\" in TACTICS and big and tarokk_count >= INVIT_MIN_TAROKKS:",
+     "matched": false,
+     "box": "A9"
+    },
+    {
+     "line": 135,
+     "check": "if \"yield_game\" in TACTICS and view.yield_turn and \"pass\" in view.valid_bids:",
+     "matched": false,
+     "box": "A11"
+    },
+    {
+     "line": 139,
+     "check": "if has_xxi:",
+     "matched": true,
+     "box": "A13"
+    },
+    {
+     "line": 141,
+     "check": "if level > BID_LEVEL[\"one\"]:",
+     "matched": false,
+     "box": "A14"
+    },
+    {
+     "line": 99,
+     "check": "if decision.payload[\"bid_type\"] == \"pass\" and \"pass\" not in view.valid_bids:",
+     "matched": false,
+     "box": "A30"
+    }
+   ],
+   "fallback": false
+  },
+  {
+   "hand_number": 3,
+   "phase": "discarding",
+   "trick_number": 0,
+   "position": 3,
+   "action": "discard",
+   "payload": {
+    "card_ids": [
+     "752283f3-6aa8-4122-9234-7b1b105c4cbc"
+    ]
+   },
+   "reason_key": "hint.discard.suits",
+   "reason_params": {
+    "cards": [
+     "752283f3-6aa8-4122-9234-7b1b105c4cbc"
+    ]
+   },
+   "tree_route": "D1 → D2",
+   "route": [
+    {
+     "line": 173,
+     "check": "if view.invit and view.invit[\"by\"] == view.position:",
+     "matched": false,
+     "box": "D1"
+    },
+    {
+     "line": 195,
+     "check": "if (\"skiz_weak_skart\" in TACTICS and view.holds(\"skiz\") and not view.holds(\"XXI\") and len(view.tarokks) > SKIZ_HUNT_TAROKKS):",
+     "matched": false,
+     "box": "D2"
+    },
+    {
+     "line": 203,
+     "check": "if key is None:",
+     "matched": true
+    }
+   ],
+   "fallback": false
+  },
+  {
+   "hand_number": 3,
+   "phase": "discarding",
+   "trick_number": 0,
+   "position": 1,
+   "action": "discard",
+   "payload": {
+    "card_ids": [
+     "4cb79bb5-c3a6-4429-b61e-214a77ec18c8"
+    ]
+   },
+   "reason_key": "hint.discard.suits",
+   "reason_params": {
+    "cards": [
+     "4cb79bb5-c3a6-4429-b61e-214a77ec18c8"
+    ]
+   },
+   "tree_route": "D1 → D2",
+   "route": [
+    {
+     "line": 173,
+     "check": "if view.invit and view.invit[\"by\"] == view.position:",
+     "matched": false,
+     "box": "D1"
+    },
+    {
+     "line": 195,
+     "check": "if (\"skiz_weak_skart\" in TACTICS and view.holds(\"skiz\") and not view.holds(\"XXI\") and len(view.tarokks) > SKIZ_HUNT_TAROKKS):",
+     "matched": false,
+     "box": "D2"
+    },
+    {
+     "line": 203,
+     "check": "if key is None:",
+     "matched": true
+    }
+   ],
+   "fallback": false
+  },
+  {
+   "hand_number": 3,
+   "phase": "discarding",
+   "trick_number": 0,
+   "position": 2,
+   "action": "discard",
+   "payload": {
+    "card_ids": [
+     "ba20461f-bf15-4aff-9f84-a4ebc2648275",
+     "7950947c-2f3b-4d65-9131-c75e5d8c0097",
+     "5d1aa18e-a033-4699-825a-d87440cdb4ae"
+    ]
+   },
+   "reason_key": "hint.discard.suits",
+   "reason_params": {
+    "cards": [
+     "ba20461f-bf15-4aff-9f84-a4ebc2648275",
+     "7950947c-2f3b-4d65-9131-c75e5d8c0097",
+     "5d1aa18e-a033-4699-825a-d87440cdb4ae"
+    ]
+   },
+   "tree_route": "D1 → D2",
+   "route": [
+    {
+     "line": 173,
+     "check": "if view.invit and view.invit[\"by\"] == view.position:",
+     "matched": false,
+     "box": "D1"
+    },
+    {
+     "line": 195,
+     "check": "if (\"skiz_weak_skart\" in TACTICS and view.holds(\"skiz\") and not view.holds(\"XXI\") and len(view.tarokks) > SKIZ_HUNT_TAROKKS):",
+     "matched": false,
+     "box": "D2"
+    },
+    {
+     "line": 203,
+     "check": "if key is None:",
+     "matched": true
+    }
+   ],
+   "fallback": false
+  },
+  {
+   "hand_number": 3,
+   "phase": "partner_call",
+   "trick_number": 0,
+   "position": 2,
+   "action": "call_partner",
+   "payload": {
+    "tarokk_rank": "XX"
+   },
+   "reason_key": "hint.call.xx",
+   "reason_params": {
+    "rank": "XX"
+   },
+   "tree_route": "B1",
+   "route": [
+    {
+     "line": 211,
+     "check": "if view.required_call:",
+     "matched": false,
+     "box": "B1"
+    }
+   ],
+   "fallback": false
+  },
+  {
+   "hand_number": 3,
+   "phase": "announcements",
+   "trick_number": 0,
+   "position": 2,
+   "action": "announce",
+   "payload": {
+    "announcement_types": [
+     "trull"
+    ]
+   },
+   "reason_key": "hint.announce.trull_two",
+   "reason_params": {},
+   "tree_route": "B9 → B11 → B12 → B13 → B15 → B17 → B39 → B40 → B45 → B51",
+   "route": [
+    {
+     "line": 279,
+     "check": "if view.must_ulti:",
+     "matched": false
+    },
+    {
+     "line": 283,
+     "check": "if \"invit_trull\" in TACTICS and accepted_invit and (view.holds(\"skiz\") or view.holds(\"XXI\")):",
+     "matched": false,
+     "box": "B9"
+    },
+    {
+     "line": 287,
+     "check": "if view.i_am_partner:",
+     "matched": false
+    },
+    {
+     "line": 298,
+     "check": "if (not any(w[0] == \"trull\" for w in wanted) and view.holds(\"skiz\") and view.holds(\"XXI\") and view.position == view.declarer_position):",
+     "matched": true,
+     "box": "B11"
+    },
+    {
+     "line": 307,
+     "check": "if my_side_declares and view.holds(\"I\") and ulti_hand and not view.must_ulti:",
+     "matched": false,
+     "box": "B13"
+    },
+    {
+     "line": 310,
+     "check": "if (\"signal_double\" in TACTICS and view.position == view.declarer_position and tarokk_count >= 6 and (view.holds(\"skiz\") or view.holds(\"XXI\")) and _signal_seat(view) is not None):",
+     "matched": false,
+     "box": "B15"
+    },
+    {
+     "line": 318,
+     "check": "if declaration and (not my_side_declares or trull_called):",
+     "matched": false,
+     "box": "B17"
+    },
+    {
+     "line": 322,
+     "check": "if my_side_declares:",
+     "matched": true,
+     "box": "B39"
+    },
+    {
+     "line": 265,
+     "check": "if \"double_game\" in kinds or counted or ulti_chance:",
+     "matched": false,
+     "box": "B40"
+    },
+    {
+     "line": 324,
+     "check": "if not wanted and \"kontra\" in TACTICS:",
+     "matched": false,
+     "box": "B45"
+    },
+    {
+     "line": 340,
+     "check": "if not wanted:",
+     "matched": false
+    },
+    {
+     "line": 343,
+     "check": "if len(wanted) == 1:",
+     "matched": true
+    }
+   ],
+   "fallback": false
+  },
+  {
+   "hand_number": 3,
+   "phase": "announcements",
+   "trick_number": 0,
+   "position": 3,
+   "action": "pass_announcement",
+   "payload": {},
+   "reason_key": "hint.announce.pass",
+   "reason_params": {},
+   "tree_route": "B20 → B22 → B24 → B26 → B28 → B30 → B39 → B40 → B45",
+   "route": [
+    {
+     "line": 279,
+     "check": "if view.must_ulti:",
+     "matched": false,
+     "box": "B20"
+    },
+    {
+     "line": 283,
+     "check": "if \"invit_trull\" in TACTICS and accepted_invit and (view.holds(\"skiz\") or view.holds(\"XXI\")):",
+     "matched": false
+    },
+    {
+     "line": 287,
+     "check": "if view.i_am_partner:",
+     "matched": true
+    },
+    {
+     "line": 288,
+     "check": "if tarokk_count >= 6:",
+     "matched": false,
+     "box": "B22"
+    },
+    {
+     "line": 290,
+     "check": "if \"partner_double\" in TACTICS and high >= 5:",
+     "matched": false,
+     "box": "B24"
+    },
+    {
+     "line": 294,
+     "check": "if view.holds(\"skiz\") and view.holds(\"XXI\"):",
+     "matched": false,
+     "box": "B26"
+    },
+    {
+     "line": 298,
+     "check": "if (not any(w[0] == \"trull\" for w in wanted) and view.holds(\"skiz\") and view.holds(\"XXI\") and view.position == view.declarer_position):",
+     "matched": false
+    },
+    {
+     "line": 307,
+     "check": "if my_side_declares and view.holds(\"I\") and ulti_hand and not view.must_ulti:",
+     "matched": false,
+     "box": "B28"
+    },
+    {
+     "line": 310,
+     "check": "if (\"signal_double\" in TACTICS and view.position == view.declarer_position and tarokk_count >= 6 and (view.holds(\"skiz\") or view.holds(\"XXI\")) and _signal_seat(view) is not None):",
+     "matched": false
+    },
+    {
+     "line": 318,
+     "check": "if declaration and (not my_side_declares or trull_called):",
+     "matched": false,
+     "box": "B30"
+    },
+    {
+     "line": 322,
+     "check": "if my_side_declares:",
+     "matched": true,
+     "box": "B39"
+    },
+    {
+     "line": 265,
+     "check": "if \"double_game\" in kinds or counted or ulti_chance:",
+     "matched": false,
+     "box": "B40"
+    },
+    {
+     "line": 324,
+     "check": "if not wanted and \"kontra\" in TACTICS:",
+     "matched": true,
+     "box": "B45"
+    },
+    {
+     "line": 327,
+     "check": "if a.contra or a.player_position not in foes:",
+     "matched": true
+    },
+    {
+     "line": 340,
+     "check": "if not wanted:",
+     "matched": true
+    }
+   ],
+   "fallback": false
+  },
+  {
+   "hand_number": 3,
+   "phase": "announcements",
+   "trick_number": 0,
+   "position": 1,
+   "action": "pass_announcement",
+   "payload": {},
+   "reason_key": "hint.announce.pass",
+   "reason_params": {},
+   "tree_route": "B33 → B39 → B45 → B35 → B46 → B48 → B50",
+   "route": [
+    {
+     "line": 279,
+     "check": "if view.must_ulti:",
+     "matched": false
+    },
+    {
+     "line": 283,
+     "check": "if \"invit_trull\" in TACTICS and accepted_invit and (view.holds(\"skiz\") or view.holds(\"XXI\")):",
+     "matched": false
+    },
+    {
+     "line": 287,
+     "check": "if view.i_am_partner:",
+     "matched": false
+    },
+    {
+     "line": 298,
+     "check": "if (not any(w[0] == \"trull\" for w in wanted) and view.holds(\"skiz\") and view.holds(\"XXI\") and view.position == view.declarer_position):",
+     "matched": false
+    },
+    {
+     "line": 307,
+     "check": "if my_side_declares and view.holds(\"I\") and ulti_hand and not view.must_ulti:",
+     "matched": false
+    },
+    {
+     "line": 310,
+     "check": "if (\"signal_double\" in TACTICS and view.position == view.declarer_position and tarokk_count >= 6 and (view.holds(\"skiz\") or view.holds(\"XXI\")) and _signal_seat(view) is not None):",
+     "matched": false
+    },
+    {
+     "line": 318,
+     "check": "if declaration and (not my_side_declares or trull_called):",
+     "matched": false,
+     "box": "B33"
+    },
+    {
+     "line": 322,
+     "check": "if my_side_declares:",
+     "matched": false,
+     "box": "B39"
+    },
+    {
+     "line": 324,
+     "check": "if not wanted and \"kontra\" in TACTICS:",
+     "matched": true,
+     "box": "B45"
+    },
+    {
+     "line": 327,
+     "check": "if a.contra or a.player_position not in foes:",
+     "matched": false
+    },
+    {
+     "line": 330,
+     "check": "if kind == \"four_kings\" and not my_side_declares and high >= KONTRA_KINGS_HIGH:",
+     "matched": false,
+     "box": "B35"
+    },
+    {
+     "line": 334,
+     "check": "if kind == \"four_kings\" and tarokk_count >= KONTRA_KINGS_TAROKKS and top >= 2:",
+     "matched": false,
+     "box": "B46"
+    },
+    {
+     "line": 337,
+     "check": "if kind == \"pagat_ultimo\" and tarokk_count >= KONTRA_ULTI_TAROKKS:",
+     "matched": false,
+     "box": "B48"
+    },
+    {
+     "line": 340,
+     "check": "if not wanted:",
+     "matched": true
+    }
+   ],
+   "fallback": false
+  },
+  {
+   "hand_number": 3,
+   "phase": "playing",
+   "trick_number": 1,
+   "position": 3,
+   "action": "play_card",
+   "payload": {
+    "card_id": "bcf8aab4-2b9f-4e09-be99-daf647cad270"
+   },
+   "reason_key": "hint.lead.declarer_tarokk",
+   "reason_params": {
+    "card": "bcf8aab4-2b9f-4e09-be99-daf647cad270"
+   },
+   "tree_route": "C107 → C109 → C121 → C129 → C132 → C134 → C136 → C139 → C141 → C147 → C149 → C151 → C153 → C154",
+   "route": [
+    {
+     "line": 846,
+     "check": "if not view.current_trick:",
+     "matched": true
+    },
+    {
+     "line": 573,
+     "check": "if doomed_pagat:",
+     "matched": false,
+     "box": "C107"
+    },
+    {
+     "line": 577,
+     "check": "if _xxi_at_risk(view):",
+     "matched": false,
+     "box": "C109"
+    },
+    {
+     "line": 595,
+     "check": "if _hunting(view):",
+     "matched": false,
+     "box": "C121"
+    },
+    {
+     "line": 612,
+     "check": "if _announced(view, \"trull\") and view.declarer_position is not None and not view.on_declarer_side and low_suit:",
+     "matched": false,
+     "box": "C129"
+    },
+    {
+     "line": 617,
+     "check": "if waiting_seat == (view.position + 3) % 4 and strong_tarokks():",
+     "matched": false,
+     "box": "C132"
+    },
+    {
+     "line": 621,
+     "check": "if (\"pagat_catch\" in TACTICS and _side_announced(view, {\"trull\"}) and PAGAT in out and len(plain_tarokks) >= 5 and strong_tarokks()):",
+     "matched": false,
+     "box": "C134"
+    },
+    {
+     "line": 630,
+     "check": "if protecting and view.is_teammate((view.position + 3) % 4) and plain_tarokks:",
+     "matched": false
+    },
+    {
+     "line": 635,
+     "check": "if kings_bid and defender and enemy_suit:",
+     "matched": false,
+     "box": "C136"
+    },
+    {
+     "line": 639,
+     "check": "if defender and (xxi_played(view) or _skiz_played(view)) and low_suit:",
+     "matched": false,
+     "box": "C139"
+    },
+    {
+     "line": 642,
+     "check": "if protecting and low_suit:",
+     "matched": false
+    },
+    {
+     "line": 647,
+     "check": "if _announced(view, \"pagat_ultimo\", by_me=True) and view.holds(\"I\"):",
+     "matched": false,
+     "box": "C141"
+    },
+    {
+     "line": 663,
+     "check": "if ulti_against and len(plain_tarokks) == 1 and low_suit:",
+     "matched": false,
+     "box": "C147"
+    },
+    {
+     "line": 668,
+     "check": "if (\"ulti_support\" in TACTICS and len(plain_tarokks) >= 2 and out and any( a.announcement_type.value == \"pagat_ultimo\" and a.player_position in mates for a in view.announcements)):",
+     "matched": false,
+     "box": "C149"
+    },
+    {
+     "line": 675,
+     "check": "if view.on_declarer_side and out and len(tarokks) > len(out) / 2 and strong_tarokks():",
+     "matched": false,
+     "box": "C151"
+    },
+    {
+     "line": 680,
+     "check": "if \"declarer_tarokk\" in TACTICS and view.on_declarer_side and strong_tarokks():",
+     "matched": true,
+     "box": "C153"
+    }
+   ],
+   "fallback": false
+  },
+  {
+   "hand_number": 3,
+   "phase": "playing",
+   "trick_number": 1,
+   "position": 1,
+   "action": "play_card",
+   "payload": {
+    "card_id": "9d7827a0-36e5-4905-bfba-c1bf126d4a68"
+   },
+   "reason_key": "hint.follow.low",
+   "reason_params": {
+    "card": "9d7827a0-36e5-4905-bfba-c1bf126d4a68"
+   },
+   "tree_route": "C160 → C163 → C165 → C167 → C169 → C171 → C173 → C174 → C176 → C188 → C194 → C202 → C204 → C208",
+   "route": [
+    {
+     "line": 846,
+     "check": "if not view.current_trick:",
+     "matched": false
+    },
+    {
+     "line": 693,
+     "check": "if len(legal) == 1:",
+     "matched": false,
+     "box": "C160"
+    },
+    {
+     "line": 702,
+     "check": "if bound not in seats_after or not (winner_card.is_tarokk() or all(c.is_tarokk() for c in legal)):",
+     "matched": true
+    },
+    {
+     "line": 709,
+     "check": "if at_risk and xxi and bound is not None and not foe_after:",
+     "matched": false,
+     "box": "C163"
+    },
+    {
+     "line": 711,
+     "check": "if at_risk and xxi and not foe_after:",
+     "matched": false,
+     "box": "C165"
+    },
+    {
+     "line": 716,
+     "check": "if skiz and any(_is(card, XXI) and not view.is_teammate(seat) for seat, card in trick):",
+     "matched": false,
+     "box": "C167"
+    },
+    {
+     "line": 720,
+     "check": "if doomed_pagat:",
+     "matched": false,
+     "box": "C169"
+    },
+    {
+     "line": 729,
+     "check": "if (\"show_called\" in TACTICS and called and view.i_am_partner and foe_after and not view.holds(\"skiz\") and not view.holds(\"XXI\") and lead_seat == view.declarer_position and lead_card.is_tarokk() and _",
+     "matched": false,
+     "box": "C171"
+    },
+    {
+     "line": 736,
+     "check": "if skiz_out(view) and foe_after:",
+     "matched": true,
+     "box": "C173"
+    },
+    {
+     "line": 740,
+     "check": "if _announced(view, \"pagat_ultimo\", by_me=True):",
+     "matched": false
+    },
+    {
+     "line": 752,
+     "check": "if at_risk and foe_after:",
+     "matched": false,
+     "box": "C174"
+    },
+    {
+     "line": 758,
+     "check": "if _hunting(view):",
+     "matched": false,
+     "box": "C176"
+    },
+    {
+     "line": 784,
+     "check": "if _announced(view, \"trull\"):",
+     "matched": true
+    },
+    {
+     "line": 788,
+     "check": "if can_win and not team_safe:",
+     "matched": false,
+     "box": "C188"
+    },
+    {
+     "line": 797,
+     "check": "if view.is_teammate(winner_seat):",
+     "matched": false,
+     "box": "C194"
+    },
+    {
+     "line": 816,
+     "check": "if not seats_after:",
+     "matched": false
+    },
+    {
+     "line": 820,
+     "check": "if hit_hard and last_winners:",
+     "matched": false,
+     "box": "C202"
+    },
+    {
+     "line": 828,
+     "check": "if (\"kurta\" in TACTICS and last_winners and trick_points < 5 and len(view.trick_history) < 4 and len(view.tarokks) >= 7 and any(view.is_teammate(seat) for seat in seats_after)):",
+     "matched": false,
+     "box": "C204"
+    },
+    {
+     "line": 832,
+     "check": "if last_winners and seats_after and not worth_it:",
+     "matched": false
+    },
+    {
+     "line": 836,
+     "check": "if last_winners and (not seats_after or worth_it):",
+     "matched": false,
+     "box": "C208"
+    }
+   ],
+   "fallback": false
+  },
+  {
+   "hand_number": 3,
+   "phase": "playing",
+   "trick_number": 1,
+   "position": 2,
+   "action": "play_card",
+   "payload": {
+    "card_id": "3cb75a94-69b6-4173-83bf-62dcf88d9171"
+   },
+   "reason_key": "hint.follow.trull_win",
+   "reason_params": {
+    "card": "3cb75a94-69b6-4173-83bf-62dcf88d9171"
+   },
+   "tree_route": "C160 → C163 → C165 → C167 → C169 → C171 → C173 → C174 → C176 → C188 → C189 → C191 → C193",
+   "route": [
+    {
+     "line": 846,
+     "check": "if not view.current_trick:",
+     "matched": false
+    },
+    {
+     "line": 693,
+     "check": "if len(legal) == 1:",
+     "matched": false,
+     "box": "C160"
+    },
+    {
+     "line": 702,
+     "check": "if bound not in seats_after or not (winner_card.is_tarokk() or all(c.is_tarokk() for c in legal)):",
+     "matched": true
+    },
+    {
+     "line": 709,
+     "check": "if at_risk and xxi and bound is not None and not foe_after:",
+     "matched": false,
+     "box": "C163"
+    },
+    {
+     "line": 711,
+     "check": "if at_risk and xxi and not foe_after:",
+     "matched": false,
+     "box": "C165"
+    },
+    {
+     "line": 716,
+     "check": "if skiz and any(_is(card, XXI) and not view.is_teammate(seat) for seat, card in trick):",
+     "matched": false,
+     "box": "C167"
+    },
+    {
+     "line": 720,
+     "check": "if doomed_pagat:",
+     "matched": false,
+     "box": "C169"
+    },
+    {
+     "line": 729,
+     "check": "if (\"show_called\" in TACTICS and called and view.i_am_partner and foe_after and not view.holds(\"skiz\") and not view.holds(\"XXI\") and lead_seat == view.declarer_position and lead_card.is_tarokk() and _",
+     "matched": false,
+     "box": "C171"
+    },
+    {
+     "line": 736,
+     "check": "if skiz_out(view) and foe_after:",
+     "matched": false,
+     "box": "C173"
+    },
+    {
+     "line": 740,
+     "check": "if _announced(view, \"pagat_ultimo\", by_me=True):",
+     "matched": false
+    },
+    {
+     "line": 752,
+     "check": "if at_risk and foe_after:",
+     "matched": false,
+     "box": "C174"
+    },
+    {
+     "line": 758,
+     "check": "if _hunting(view):",
+     "matched": false,
+     "box": "C176"
+    },
+    {
+     "line": 784,
+     "check": "if _announced(view, \"trull\"):",
+     "matched": true
+    },
+    {
+     "line": 788,
+     "check": "if can_win and not team_safe:",
+     "matched": true,
+     "box": "C188"
+    },
+    {
+     "line": 789,
+     "check": "if foe_after:",
+     "matched": false,
+     "box": "C189"
+    },
+    {
+     "line": 791,
+     "check": "elif pagat in can_win:",
+     "matched": false,
+     "box": "C191"
+    }
+   ],
+   "fallback": false
+  },
+  {
+   "hand_number": 3,
+   "phase": "playing",
+   "trick_number": 2,
+   "position": 2,
+   "action": "play_card",
+   "payload": {
+    "card_id": "2f0369ee-4fc4-4ec5-9b1d-e5ad9e8f24b5"
+   },
+   "reason_key": "hint.lead.catch_pagat",
+   "reason_params": {
+    "card": "2f0369ee-4fc4-4ec5-9b1d-e5ad9e8f24b5"
+   },
+   "tree_route": "C107 → C109 → C121 → C129 → C132 → C134 → C135",
+   "route": [
+    {
+     "line": 846,
+     "check": "if not view.current_trick:",
+     "matched": true
+    },
+    {
+     "line": 573,
+     "check": "if doomed_pagat:",
+     "matched": false,
+     "box": "C107"
+    },
+    {
+     "line": 577,
+     "check": "if _xxi_at_risk(view):",
+     "matched": false,
+     "box": "C109"
+    },
+    {
+     "line": 595,
+     "check": "if _hunting(view):",
+     "matched": false,
+     "box": "C121"
+    },
+    {
+     "line": 612,
+     "check": "if _announced(view, \"trull\") and view.declarer_position is not None and not view.on_declarer_side and low_suit:",
+     "matched": false,
+     "box": "C129"
+    },
+    {
+     "line": 617,
+     "check": "if waiting_seat == (view.position + 3) % 4 and strong_tarokks():",
+     "matched": false,
+     "box": "C132"
+    },
+    {
+     "line": 621,
+     "check": "if (\"pagat_catch\" in TACTICS and _side_announced(view, {\"trull\"}) and PAGAT in out and len(plain_tarokks) >= 5 and strong_tarokks()):",
+     "matched": true,
+     "box": "C134"
+    }
+   ],
+   "fallback": false
+  },
+  {
+   "hand_number": 3,
+   "phase": "playing",
+   "trick_number": 2,
+   "position": 3,
+   "action": "play_card",
+   "payload": {
+    "card_id": "74e5c1f6-09b6-4281-8abf-3fe58130cf0b"
+   },
+   "reason_key": "hint.follow.teammate_wins_low",
+   "reason_params": {
+    "card": "74e5c1f6-09b6-4281-8abf-3fe58130cf0b"
+   },
+   "tree_route": "C160 → C163 → C165 → C167 → C169 → C171 → C173 → C174 → C176 → C188 → C194 → C195 → C197 → C199 → C201",
+   "route": [
+    {
+     "line": 846,
+     "check": "if not view.current_trick:",
+     "matched": false
+    },
+    {
+     "line": 693,
+     "check": "if len(legal) == 1:",
+     "matched": false,
+     "box": "C160"
+    },
+    {
+     "line": 702,
+     "check": "if bound not in seats_after or not (winner_card.is_tarokk() or all(c.is_tarokk() for c in legal)):",
+     "matched": true
+    },
+    {
+     "line": 709,
+     "check": "if at_risk and xxi and bound is not None and not foe_after:",
+     "matched": false,
+     "box": "C163"
+    },
+    {
+     "line": 711,
+     "check": "if at_risk and xxi and not foe_after:",
+     "matched": false,
+     "box": "C165"
+    },
+    {
+     "line": 716,
+     "check": "if skiz and any(_is(card, XXI) and not view.is_teammate(seat) for seat, card in trick):",
+     "matched": false,
+     "box": "C167"
+    },
+    {
+     "line": 720,
+     "check": "if doomed_pagat:",
+     "matched": false,
+     "box": "C169"
+    },
+    {
+     "line": 729,
+     "check": "if (\"show_called\" in TACTICS and called and view.i_am_partner and foe_after and not view.holds(\"skiz\") and not view.holds(\"XXI\") and lead_seat == view.declarer_position and lead_card.is_tarokk() and _",
+     "matched": false,
+     "box": "C171"
+    },
+    {
+     "line": 736,
+     "check": "if skiz_out(view) and foe_after:",
+     "matched": false,
+     "box": "C173"
+    },
+    {
+     "line": 740,
+     "check": "if _announced(view, \"pagat_ultimo\", by_me=True):",
+     "matched": false
+    },
+    {
+     "line": 752,
+     "check": "if at_risk and foe_after:",
+     "matched": false,
+     "box": "C174"
+    },
+    {
+     "line": 758,
+     "check": "if _hunting(view):",
+     "matched": false,
+     "box": "C176"
+    },
+    {
+     "line": 784,
+     "check": "if _announced(view, \"trull\"):",
+     "matched": true
+    },
+    {
+     "line": 788,
+     "check": "if can_win and not team_safe:",
+     "matched": false,
+     "box": "C188"
+    },
+    {
+     "line": 797,
+     "check": "if view.is_teammate(winner_seat):",
+     "matched": true,
+     "box": "C194"
+    },
+    {
+     "line": 802,
+     "check": "if pagat and certain and not _announced(view, \"pagat_ultimo\", by_me=True):",
+     "matched": false,
+     "box": "C195"
+    },
+    {
+     "line": 804,
+     "check": "if hit_hard and not certain and not winner_card.is_tarokk():",
+     "matched": false,
+     "box": "C197"
+    },
+    {
+     "line": 809,
+     "check": "if suit_cards and (certain or \"safe_feed\" not in TACTICS):",
+     "matched": false,
+     "box": "C199"
+    }
+   ],
+   "fallback": false
+  },
+  {
+   "hand_number": 3,
+   "phase": "playing",
+   "trick_number": 2,
+   "position": 1,
+   "action": "play_card",
+   "payload": {
+    "card_id": "79c6cc7e-969d-4727-af93-9bf5922062fe"
+   },
+   "reason_key": "hint.follow.low",
+   "reason_params": {
+    "card": "79c6cc7e-969d-4727-af93-9bf5922062fe"
+   },
+   "tree_route": "C160 → C163 → C165 → C167 → C169 → C171 → C173 → C174 → C176 → C188 → C194 → C202 → C204 → C208",
+   "route": [
+    {
+     "line": 846,
+     "check": "if not view.current_trick:",
+     "matched": false
+    },
+    {
+     "line": 693,
+     "check": "if len(legal) == 1:",
+     "matched": false,
+     "box": "C160"
+    },
+    {
+     "line": 702,
+     "check": "if bound not in seats_after or not (winner_card.is_tarokk() or all(c.is_tarokk() for c in legal)):",
+     "matched": true
+    },
+    {
+     "line": 709,
+     "check": "if at_risk and xxi and bound is not None and not foe_after:",
+     "matched": false,
+     "box": "C163"
+    },
+    {
+     "line": 711,
+     "check": "if at_risk and xxi and not foe_after:",
+     "matched": false,
+     "box": "C165"
+    },
+    {
+     "line": 716,
+     "check": "if skiz and any(_is(card, XXI) and not view.is_teammate(seat) for seat, card in trick):",
+     "matched": false,
+     "box": "C167"
+    },
+    {
+     "line": 720,
+     "check": "if doomed_pagat:",
+     "matched": false,
+     "box": "C169"
+    },
+    {
+     "line": 729,
+     "check": "if (\"show_called\" in TACTICS and called and view.i_am_partner and foe_after and not view.holds(\"skiz\") and not view.holds(\"XXI\") and lead_seat == view.declarer_position and lead_card.is_tarokk() and _",
+     "matched": false,
+     "box": "C171"
+    },
+    {
+     "line": 736,
+     "check": "if skiz_out(view) and foe_after:",
+     "matched": false,
+     "box": "C173"
+    },
+    {
+     "line": 740,
+     "check": "if _announced(view, \"pagat_ultimo\", by_me=True):",
+     "matched": false
+    },
+    {
+     "line": 752,
+     "check": "if at_risk and foe_after:",
+     "matched": false,
+     "box": "C174"
+    },
+    {
+     "line": 758,
+     "check": "if _hunting(view):",
+     "matched": false,
+     "box": "C176"
+    },
+    {
+     "line": 784,
+     "check": "if _announced(view, \"trull\"):",
+     "matched": true
+    },
+    {
+     "line": 788,
+     "check": "if can_win and not team_safe:",
+     "matched": false,
+     "box": "C188"
+    },
+    {
+     "line": 797,
+     "check": "if view.is_teammate(winner_seat):",
+     "matched": false,
+     "box": "C194"
+    },
+    {
+     "line": 816,
+     "check": "if not seats_after:",
+     "matched": true
+    },
+    {
+     "line": 820,
+     "check": "if hit_hard and last_winners:",
+     "matched": false,
+     "box": "C202"
+    },
+    {
+     "line": 828,
+     "check": "if (\"kurta\" in TACTICS and last_winners and trick_points < 5 and len(view.trick_history) < 4 and len(view.tarokks) >= 7 and any(view.is_teammate(seat) for seat in seats_after)):",
+     "matched": false,
+     "box": "C204"
+    },
+    {
+     "line": 832,
+     "check": "if last_winners and seats_after and not worth_it:",
+     "matched": false
+    },
+    {
+     "line": 836,
+     "check": "if last_winners and (not seats_after or worth_it):",
+     "matched": false,
+     "box": "C208"
+    }
+   ],
+   "fallback": false
+  },
+  {
+   "hand_number": 3,
+   "phase": "playing",
+   "trick_number": 3,
+   "position": 2,
+   "action": "play_card",
+   "payload": {
+    "card_id": "2cb22da1-fca7-4f1b-a096-590b2f570392"
+   },
+   "reason_key": "hint.lead.catch_pagat",
+   "reason_params": {
+    "card": "2cb22da1-fca7-4f1b-a096-590b2f570392"
+   },
+   "tree_route": "C107 → C109 → C121 → C129 → C132 → C134 → C135",
+   "route": [
+    {
+     "line": 846,
+     "check": "if not view.current_trick:",
+     "matched": true
+    },
+    {
+     "line": 573,
+     "check": "if doomed_pagat:",
+     "matched": false,
+     "box": "C107"
+    },
+    {
+     "line": 577,
+     "check": "if _xxi_at_risk(view):",
+     "matched": false,
+     "box": "C109"
+    },
+    {
+     "line": 595,
+     "check": "if _hunting(view):",
+     "matched": false,
+     "box": "C121"
+    },
+    {
+     "line": 612,
+     "check": "if _announced(view, \"trull\") and view.declarer_position is not None and not view.on_declarer_side and low_suit:",
+     "matched": false,
+     "box": "C129"
+    },
+    {
+     "line": 617,
+     "check": "if waiting_seat == (view.position + 3) % 4 and strong_tarokks():",
+     "matched": false,
+     "box": "C132"
+    },
+    {
+     "line": 621,
+     "check": "if (\"pagat_catch\" in TACTICS and _side_announced(view, {\"trull\"}) and PAGAT in out and len(plain_tarokks) >= 5 and strong_tarokks()):",
+     "matched": true,
+     "box": "C134"
+    }
+   ],
+   "fallback": false
+  },
+  {
+   "hand_number": 3,
+   "phase": "playing",
+   "trick_number": 3,
+   "position": 3,
+   "action": "play_card",
+   "payload": {
+    "card_id": "b1fca841-5341-4be5-8bde-627aec2a965a"
+   },
+   "reason_key": "hint.follow.show_called",
+   "reason_params": {
+    "card": "b1fca841-5341-4be5-8bde-627aec2a965a"
+   },
+   "tree_route": "C160 → C163 → C165 → C167 → C169 → C171 → C172",
+   "route": [
+    {
+     "line": 846,
+     "check": "if not view.current_trick:",
+     "matched": false
+    },
+    {
+     "line": 693,
+     "check": "if len(legal) == 1:",
+     "matched": false,
+     "box": "C160"
+    },
+    {
+     "line": 702,
+     "check": "if bound not in seats_after or not (winner_card.is_tarokk() or all(c.is_tarokk() for c in legal)):",
+     "matched": true
+    },
+    {
+     "line": 709,
+     "check": "if at_risk and xxi and bound is not None and not foe_after:",
+     "matched": false,
+     "box": "C163"
+    },
+    {
+     "line": 711,
+     "check": "if at_risk and xxi and not foe_after:",
+     "matched": false,
+     "box": "C165"
+    },
+    {
+     "line": 716,
+     "check": "if skiz and any(_is(card, XXI) and not view.is_teammate(seat) for seat, card in trick):",
+     "matched": false,
+     "box": "C167"
+    },
+    {
+     "line": 720,
+     "check": "if doomed_pagat:",
+     "matched": false,
+     "box": "C169"
+    },
+    {
+     "line": 729,
+     "check": "if (\"show_called\" in TACTICS and called and view.i_am_partner and foe_after and not view.holds(\"skiz\") and not view.holds(\"XXI\") and lead_seat == view.declarer_position and lead_card.is_tarokk() and _",
+     "matched": true,
+     "box": "C171"
+    }
+   ],
+   "fallback": false
+  },
+  {
+   "hand_number": 3,
+   "phase": "playing",
+   "trick_number": 3,
+   "position": 1,
+   "action": "play_card",
+   "payload": {
+    "card_id": "63da3e7f-61b6-4fcb-82b0-f12e6f4cce2c"
+   },
+   "reason_key": "hint.follow.low",
+   "reason_params": {
+    "card": "63da3e7f-61b6-4fcb-82b0-f12e6f4cce2c"
+   },
+   "tree_route": "C160 → C163 → C165 → C167 → C169 → C171 → C173 → C174 → C176 → C188 → C194 → C202 → C204 → C208",
+   "route": [
+    {
+     "line": 846,
+     "check": "if not view.current_trick:",
+     "matched": false
+    },
+    {
+     "line": 693,
+     "check": "if len(legal) == 1:",
+     "matched": false,
+     "box": "C160"
+    },
+    {
+     "line": 702,
+     "check": "if bound not in seats_after or not (winner_card.is_tarokk() or all(c.is_tarokk() for c in legal)):",
+     "matched": true
+    },
+    {
+     "line": 709,
+     "check": "if at_risk and xxi and bound is not None and not foe_after:",
+     "matched": false,
+     "box": "C163"
+    },
+    {
+     "line": 711,
+     "check": "if at_risk and xxi and not foe_after:",
+     "matched": false,
+     "box": "C165"
+    },
+    {
+     "line": 716,
+     "check": "if skiz and any(_is(card, XXI) and not view.is_teammate(seat) for seat, card in trick):",
+     "matched": false,
+     "box": "C167"
+    },
+    {
+     "line": 720,
+     "check": "if doomed_pagat:",
+     "matched": false,
+     "box": "C169"
+    },
+    {
+     "line": 729,
+     "check": "if (\"show_called\" in TACTICS and called and view.i_am_partner and foe_after and not view.holds(\"skiz\") and not view.holds(\"XXI\") and lead_seat == view.declarer_position and lead_card.is_tarokk() and _",
+     "matched": false,
+     "box": "C171"
+    },
+    {
+     "line": 736,
+     "check": "if skiz_out(view) and foe_after:",
+     "matched": false,
+     "box": "C173"
+    },
+    {
+     "line": 740,
+     "check": "if _announced(view, \"pagat_ultimo\", by_me=True):",
+     "matched": false
+    },
+    {
+     "line": 752,
+     "check": "if at_risk and foe_after:",
+     "matched": false,
+     "box": "C174"
+    },
+    {
+     "line": 758,
+     "check": "if _hunting(view):",
+     "matched": false,
+     "box": "C176"
+    },
+    {
+     "line": 784,
+     "check": "if _announced(view, \"trull\"):",
+     "matched": true
+    },
+    {
+     "line": 788,
+     "check": "if can_win and not team_safe:",
+     "matched": false,
+     "box": "C188"
+    },
+    {
+     "line": 797,
+     "check": "if view.is_teammate(winner_seat):",
+     "matched": false,
+     "box": "C194"
+    },
+    {
+     "line": 816,
+     "check": "if not seats_after:",
+     "matched": true
+    },
+    {
+     "line": 820,
+     "check": "if hit_hard and last_winners:",
+     "matched": false,
+     "box": "C202"
+    },
+    {
+     "line": 828,
+     "check": "if (\"kurta\" in TACTICS and last_winners and trick_points < 5 and len(view.trick_history) < 4 and len(view.tarokks) >= 7 and any(view.is_teammate(seat) for seat in seats_after)):",
+     "matched": false,
+     "box": "C204"
+    },
+    {
+     "line": 832,
+     "check": "if last_winners and seats_after and not worth_it:",
+     "matched": false
+    },
+    {
+     "line": 836,
+     "check": "if last_winners and (not seats_after or worth_it):",
+     "matched": false,
+     "box": "C208"
+    }
+   ],
+   "fallback": false
+  },
+  {
+   "hand_number": 3,
+   "phase": "playing",
+   "trick_number": 4,
+   "position": 3,
+   "action": "play_card",
+   "payload": {
+    "card_id": "f67210b0-72d3-4cf7-b501-c6ef796d87d0"
+   },
+   "reason_key": "hint.lead.declarer_tarokk",
+   "reason_params": {
+    "card": "f67210b0-72d3-4cf7-b501-c6ef796d87d0"
+   },
+   "tree_route": "C107 → C109 → C121 → C129 → C132 → C134 → C136 → C139 → C141 → C147 → C149 → C151 → C153 → C154",
+   "route": [
+    {
+     "line": 846,
+     "check": "if not view.current_trick:",
+     "matched": true
+    },
+    {
+     "line": 573,
+     "check": "if doomed_pagat:",
+     "matched": false,
+     "box": "C107"
+    },
+    {
+     "line": 577,
+     "check": "if _xxi_at_risk(view):",
+     "matched": false,
+     "box": "C109"
+    },
+    {
+     "line": 595,
+     "check": "if _hunting(view):",
+     "matched": false,
+     "box": "C121"
+    },
+    {
+     "line": 612,
+     "check": "if _announced(view, \"trull\") and view.declarer_position is not None and not view.on_declarer_side and low_suit:",
+     "matched": false,
+     "box": "C129"
+    },
+    {
+     "line": 617,
+     "check": "if waiting_seat == (view.position + 3) % 4 and strong_tarokks():",
+     "matched": false,
+     "box": "C132"
+    },
+    {
+     "line": 621,
+     "check": "if (\"pagat_catch\" in TACTICS and _side_announced(view, {\"trull\"}) and PAGAT in out and len(plain_tarokks) >= 5 and strong_tarokks()):",
+     "matched": false,
+     "box": "C134"
+    },
+    {
+     "line": 630,
+     "check": "if protecting and view.is_teammate((view.position + 3) % 4) and plain_tarokks:",
+     "matched": false
+    },
+    {
+     "line": 635,
+     "check": "if kings_bid and defender and enemy_suit:",
+     "matched": false,
+     "box": "C136"
+    },
+    {
+     "line": 639,
+     "check": "if defender and (xxi_played(view) or _skiz_played(view)) and low_suit:",
+     "matched": false,
+     "box": "C139"
+    },
+    {
+     "line": 642,
+     "check": "if protecting and low_suit:",
+     "matched": false
+    },
+    {
+     "line": 647,
+     "check": "if _announced(view, \"pagat_ultimo\", by_me=True) and view.holds(\"I\"):",
+     "matched": false,
+     "box": "C141"
+    },
+    {
+     "line": 663,
+     "check": "if ulti_against and len(plain_tarokks) == 1 and low_suit:",
+     "matched": false,
+     "box": "C147"
+    },
+    {
+     "line": 668,
+     "check": "if (\"ulti_support\" in TACTICS and len(plain_tarokks) >= 2 and out and any( a.announcement_type.value == \"pagat_ultimo\" and a.player_position in mates for a in view.announcements)):",
+     "matched": false,
+     "box": "C149"
+    },
+    {
+     "line": 675,
+     "check": "if view.on_declarer_side and out and len(tarokks) > len(out) / 2 and strong_tarokks():",
+     "matched": false,
+     "box": "C151"
+    },
+    {
+     "line": 680,
+     "check": "if \"declarer_tarokk\" in TACTICS and view.on_declarer_side and strong_tarokks():",
+     "matched": true,
+     "box": "C153"
+    }
+   ],
+   "fallback": false
+  }
+ ],
+ "last_game_over": null,
+ "client": {
+  "language": "hu",
+  "tutorial": false,
+  "viewport": "440x474",
+  "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Mobile/15E148 Safari/604.1",
+  "phase": "playing",
+  "hint": {
+   "action": "play_card",
+   "payload": {
+    "card_id": "d1e128fc-be70-4400-a676-030bda400a7d"
+   },
+   "reason_key": "hint.follow.trull_win",
+   "reason_params": {
+    "card": "d1e128fc-be70-4400-a676-030bda400a7d"
+   }
+  }
+ }
+}

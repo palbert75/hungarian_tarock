@@ -1,0 +1,856 @@
+{
+ "id": "20261115-201501-a17fa4",
+ "created_at": "2026-11-15T20:15:01.046852+00:00",
+ "room_id": "611ed158-760c-45f0-9bef-af0f86887738",
+ "reporter": {
+  "position": 0,
+  "name": "Albi"
+ },
+ "text": "this tip makes no sense because i have the XX so the caller will be my partner and he must have a big honour becsuse the pagat is in my hand",
+ "seats": [
+  {
+   "position": 0,
+   "name": "Albi",
+   "bot": false,
+   "vacant": false
+  },
+  {
+   "position": 1,
+   "name": "Bot Jani",
+   "bot": true,
+   "vacant": false
+  },
+  {
+   "position": 2,
+   "name": "Bot Kati",
+   "bot": true,
+   "vacant": false
+  },
+  {
+   "position": 3,
+   "name": "Bot Pista",
+   "bot": true,
+   "vacant": false
+  }
+ ],
+ "game": {
+  "game_id": "d50eb678-373c-45f3-a31d-b597675be692",
+  "phase": "discarding",
+  "players": [
+   {
+    "id": "01f93737-27f3-4876-a11d-6abcad48649b",
+    "name": "Albi",
+    "position": 0,
+    "hand_size": 11,
+    "is_connected": true,
+    "is_ready": true,
+    "is_declarer": false,
+    "total_points": 0,
+    "tricks_won_count": 0,
+    "is_bot": false,
+    "bot_controlled": false,
+    "vacant": false,
+    "total_score": -8,
+    "ready_next": false,
+    "tarokks_discarded": 0,
+    "hand": [
+     {
+      "id": "ffeb6c83-2dd7-492e-a110-197b2f9b6351",
+      "suit": "spades",
+      "rank": "10",
+      "points": 1,
+      "card_type": "suit"
+     },
+     {
+      "id": "92cdef5a-2097-4852-aaef-924237714092",
+      "suit": "tarokk",
+      "rank": "XVI",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "35571eb1-d1ba-44b2-aa3c-ca9520b6d701",
+      "suit": "tarokk",
+      "rank": "skiz",
+      "points": 5,
+      "card_type": "honour"
+     },
+     {
+      "id": "03b1bf72-3e11-4d98-872e-70e729255a39",
+      "suit": "tarokk",
+      "rank": "I",
+      "points": 5,
+      "card_type": "honour"
+     },
+     {
+      "id": "4de1e586-0564-49df-ae10-4e0e675e256c",
+      "suit": "spades",
+      "rank": "Q",
+      "points": 4,
+      "card_type": "suit"
+     },
+     {
+      "id": "ccd8db08-ea8c-46b0-b896-c0b29c16a369",
+      "suit": "diamonds",
+      "rank": "10",
+      "points": 1,
+      "card_type": "suit"
+     },
+     {
+      "id": "bd783786-8a02-4e15-a9f4-4f6f114e1fe1",
+      "suit": "tarokk",
+      "rank": "XIV",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "2fb0acf2-1f7c-4cb9-bdf2-e648569d67c4",
+      "suit": "tarokk",
+      "rank": "XIX",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "d63d274b-d12a-4d72-acff-ebfe8de38aa9",
+      "suit": "tarokk",
+      "rank": "IV",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "d33a9be1-d54d-4141-848d-abc3df46c64a",
+      "suit": "clubs",
+      "rank": "Q",
+      "points": 4,
+      "card_type": "suit"
+     },
+     {
+      "id": "9b01992e-a1ac-4f04-a34a-8a786fb44d99",
+      "suit": "tarokk",
+      "rank": "XX",
+      "points": 1,
+      "card_type": "tarokk"
+     }
+    ],
+    "tricks_won": [],
+    "discard_pile": [],
+    "partner_revealed": false,
+    "talon_card_ids": [
+     "d33a9be1-d54d-4141-848d-abc3df46c64a",
+     "9b01992e-a1ac-4f04-a34a-8a786fb44d99"
+    ]
+   },
+   {
+    "id": "9eafadc8-ade6-4cf1-ad71-926415d6c317",
+    "name": "Bot Jani",
+    "position": 1,
+    "hand_size": 9,
+    "is_connected": true,
+    "is_ready": true,
+    "is_declarer": false,
+    "total_points": 1,
+    "tricks_won_count": 0,
+    "is_bot": true,
+    "bot_controlled": true,
+    "vacant": false,
+    "total_score": -8,
+    "ready_next": false,
+    "tarokks_discarded": 0,
+    "hand": [
+     {
+      "id": "04ffcdcf-2a3b-45ed-8b2b-356aa26ece36",
+      "suit": "tarokk",
+      "rank": "III",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "1256ce71-8284-4435-ba67-624bab475856",
+      "suit": "tarokk",
+      "rank": "XII",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "a8e86095-14b3-4f48-af74-13b766df29f1",
+      "suit": "hearts",
+      "rank": "C",
+      "points": 3,
+      "card_type": "suit"
+     },
+     {
+      "id": "d34e92ee-6100-43e7-9dca-e44a8139e874",
+      "suit": "diamonds",
+      "rank": "Q",
+      "points": 4,
+      "card_type": "suit"
+     },
+     {
+      "id": "d2e6f4aa-4a80-49f4-975c-f13e3783fe5e",
+      "suit": "tarokk",
+      "rank": "VIII",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "cb17563a-0e1f-4010-be66-5f3699ffd3dd",
+      "suit": "tarokk",
+      "rank": "IX",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "d0812169-ff55-49aa-a61b-36c4cc497ad4",
+      "suit": "tarokk",
+      "rank": "XV",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "b97e69f5-c575-448f-ad3a-292399672661",
+      "suit": "diamonds",
+      "rank": "K",
+      "points": 5,
+      "card_type": "king"
+     },
+     {
+      "id": "c3200c8a-dd2c-4d39-b917-abff12bed34b",
+      "suit": "tarokk",
+      "rank": "VII",
+      "points": 1,
+      "card_type": "tarokk"
+     }
+    ],
+    "tricks_won": [],
+    "discard_pile": [
+     {
+      "id": "00c3212f-d4e3-4670-8fe5-9c29b7f4d874",
+      "suit": "clubs",
+      "rank": "10",
+      "points": 1,
+      "card_type": "suit"
+     }
+    ],
+    "partner_revealed": false,
+    "talon_card_ids": [
+     "c3200c8a-dd2c-4d39-b917-abff12bed34b"
+    ]
+   },
+   {
+    "id": "930408ad-b6f6-40d9-befd-30ff2086f2ed",
+    "name": "Bot Kati",
+    "position": 2,
+    "hand_size": 9,
+    "is_connected": true,
+    "is_ready": true,
+    "is_declarer": false,
+    "total_points": 2,
+    "tricks_won_count": 0,
+    "is_bot": true,
+    "bot_controlled": true,
+    "vacant": false,
+    "total_score": -28,
+    "ready_next": false,
+    "tarokks_discarded": 0,
+    "hand": [
+     {
+      "id": "b9b8d298-60a3-4134-b818-5ba7469c9234",
+      "suit": "tarokk",
+      "rank": "XIII",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "9e46c908-3cc1-44a2-bcec-aace92fd149f",
+      "suit": "tarokk",
+      "rank": "V",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "a85c7fe0-d3d4-44a0-be72-03deb9366b7c",
+      "suit": "hearts",
+      "rank": "K",
+      "points": 5,
+      "card_type": "king"
+     },
+     {
+      "id": "4439e72f-4e6a-48dd-98c1-ec62d9688584",
+      "suit": "clubs",
+      "rank": "J",
+      "points": 2,
+      "card_type": "suit"
+     },
+     {
+      "id": "54e06d2b-0782-4544-87bd-e8a70a096d95",
+      "suit": "tarokk",
+      "rank": "XI",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "6c806bfc-97a3-4bbe-b7b0-cd1122934298",
+      "suit": "clubs",
+      "rank": "C",
+      "points": 3,
+      "card_type": "suit"
+     },
+     {
+      "id": "4de03692-d5b5-4e28-9d77-9ecebbc97422",
+      "suit": "tarokk",
+      "rank": "VI",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "7e71acfb-0d5a-4948-8845-97ddf574d96a",
+      "suit": "tarokk",
+      "rank": "XVII",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "3ab4dbc2-bede-439c-8a97-f7ab7e8c8300",
+      "suit": "clubs",
+      "rank": "K",
+      "points": 5,
+      "card_type": "king"
+     }
+    ],
+    "tricks_won": [],
+    "discard_pile": [
+     {
+      "id": "3f9c76b0-26f8-4048-bfeb-60e5d9ec9d0d",
+      "suit": "diamonds",
+      "rank": "J",
+      "points": 2,
+      "card_type": "suit"
+     }
+    ],
+    "partner_revealed": false,
+    "talon_card_ids": [
+     "3ab4dbc2-bede-439c-8a97-f7ab7e8c8300"
+    ]
+   },
+   {
+    "id": "90fb92c5-49b3-4aec-bd27-aa6b53aa2735",
+    "name": "Bot Pista",
+    "position": 3,
+    "hand_size": 9,
+    "is_connected": true,
+    "is_ready": true,
+    "is_declarer": true,
+    "total_points": 7,
+    "tricks_won_count": 0,
+    "is_bot": true,
+    "bot_controlled": true,
+    "vacant": false,
+    "total_score": 44,
+    "ready_next": false,
+    "tarokks_discarded": 0,
+    "hand": [
+     {
+      "id": "d7049d4b-fd2a-4411-8cb0-2d08e84e9d34",
+      "suit": "tarokk",
+      "rank": "XVIII",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "21c94bac-8e38-4897-9c02-1ad196b2c960",
+      "suit": "spades",
+      "rank": "K",
+      "points": 5,
+      "card_type": "king"
+     },
+     {
+      "id": "4aa03fc4-3f71-4a98-bcd6-b0ffd221f28f",
+      "suit": "spades",
+      "rank": "C",
+      "points": 3,
+      "card_type": "suit"
+     },
+     {
+      "id": "2ce2dbe0-2f71-4dfc-a3a8-aa6ad6d87b45",
+      "suit": "tarokk",
+      "rank": "XXI",
+      "points": 5,
+      "card_type": "honour"
+     },
+     {
+      "id": "4e9d81e6-e78a-4be1-88fb-93aacff2f85c",
+      "suit": "hearts",
+      "rank": "10",
+      "points": 1,
+      "card_type": "suit"
+     },
+     {
+      "id": "66f9571d-3d98-4379-a677-a8710533bf3c",
+      "suit": "hearts",
+      "rank": "J",
+      "points": 2,
+      "card_type": "suit"
+     },
+     {
+      "id": "8a86b694-04fe-4b71-bb72-834613af7b34",
+      "suit": "spades",
+      "rank": "J",
+      "points": 2,
+      "card_type": "suit"
+     },
+     {
+      "id": "2dd7dd74-84c5-4120-a65d-650ae688a0eb",
+      "suit": "tarokk",
+      "rank": "II",
+      "points": 1,
+      "card_type": "tarokk"
+     },
+     {
+      "id": "d8a3a289-2797-4cbb-9d49-da313c53ad0c",
+      "suit": "tarokk",
+      "rank": "X",
+      "points": 1,
+      "card_type": "tarokk"
+     }
+    ],
+    "tricks_won": [],
+    "discard_pile": [
+     {
+      "id": "946a3ce2-25f7-4b43-a1a0-964fd7a06c1a",
+      "suit": "diamonds",
+      "rank": "C",
+      "points": 3,
+      "card_type": "suit"
+     },
+     {
+      "id": "a38e8b55-4e16-4783-950f-ddf0b3f7065e",
+      "suit": "hearts",
+      "rank": "Q",
+      "points": 4,
+      "card_type": "suit"
+     }
+    ],
+    "partner_revealed": false,
+    "talon_card_ids": [
+     "2dd7dd74-84c5-4120-a65d-650ae688a0eb",
+     "d8a3a289-2797-4cbb-9d49-da313c53ad0c"
+    ]
+   }
+  ],
+  "dealer_position": 0,
+  "current_turn": 0,
+  "bid_history": [
+   {
+    "player_position": 1,
+    "bid_type": "pass",
+    "game_value": 0,
+    "talon_cards": 0
+   },
+   {
+    "player_position": 2,
+    "bid_type": "pass",
+    "game_value": 0,
+    "talon_cards": 0
+   },
+   {
+    "player_position": 3,
+    "bid_type": "three",
+    "game_value": 1,
+    "talon_cards": 3
+   },
+   {
+    "player_position": 0,
+    "bid_type": "two",
+    "game_value": 2,
+    "talon_cards": 2
+   },
+   {
+    "player_position": 3,
+    "bid_type": "hold",
+    "game_value": 2,
+    "talon_cards": 2
+   },
+   {
+    "player_position": 0,
+    "bid_type": "pass",
+    "game_value": 0,
+    "talon_cards": 0
+   }
+  ],
+  "declarer_position": 3,
+  "partner_position": null,
+  "partner_revealed": false,
+  "called_card_rank": null,
+  "trick_number": 0,
+  "trick_leader": null,
+  "previous_trick_winner": null,
+  "current_trick": [],
+  "talon": [],
+  "announcements": [],
+  "tarokk_declarations": {},
+  "trick_history": [],
+  "players_who_discarded": [
+   1,
+   2,
+   3
+  ],
+  "announcement_history": [],
+  "announcement_turn_log": [],
+  "game_contra": false,
+  "game_contra_by": null,
+  "declarer_alone": false,
+  "hand_number": 13,
+  "invit": null,
+  "yielded_by": null,
+  "required_call": null,
+  "convention_partner": null,
+  "called_card_discarded_by": null,
+  "winning_bid": {
+   "player_position": 3,
+   "bid_type": "two",
+   "game_value": 2,
+   "talon_cards": 2
+  }
+ },
+ "bot_decisions": [
+  {
+   "hand_number": 13,
+   "phase": "bidding",
+   "trick_number": 0,
+   "position": 1,
+   "action": "bid",
+   "payload": {
+    "bid_type": "pass"
+   },
+   "reason_key": "hint.bid.no_honour",
+   "reason_params": {},
+   "tree_route": "A1 → A2 → A30 → A32",
+   "route": [
+    {
+     "line": 114,
+     "check": "if not (has_skiz or has_xxi or has_pagat):",
+     "matched": true,
+     "box": "A1"
+    },
+    {
+     "line": 100,
+     "check": "if decision.payload[\"bid_type\"] == \"pass\" and \"pass\" not in view.valid_bids:",
+     "matched": false,
+     "box": "A30"
+    }
+   ],
+   "fallback": false
+  },
+  {
+   "hand_number": 13,
+   "phase": "bidding",
+   "trick_number": 0,
+   "position": 2,
+   "action": "bid",
+   "payload": {
+    "bid_type": "pass"
+   },
+   "reason_key": "hint.bid.no_honour",
+   "reason_params": {},
+   "tree_route": "A1 → A2 → A30 → A32",
+   "route": [
+    {
+     "line": 114,
+     "check": "if not (has_skiz or has_xxi or has_pagat):",
+     "matched": true,
+     "box": "A1"
+    },
+    {
+     "line": 100,
+     "check": "if decision.payload[\"bid_type\"] == \"pass\" and \"pass\" not in view.valid_bids:",
+     "matched": false,
+     "box": "A30"
+    }
+   ],
+   "fallback": false
+  },
+  {
+   "hand_number": 13,
+   "phase": "bidding",
+   "trick_number": 0,
+   "position": 3,
+   "action": "bid",
+   "payload": {
+    "bid_type": "three"
+   },
+   "reason_key": "hint.bid.xxi_always",
+   "reason_params": {
+    "bid": "three"
+   },
+   "tree_route": "A1 → A3 → A9 → A11 → A13 → A14 → A16 → A30 → A32",
+   "route": [
+    {
+     "line": 114,
+     "check": "if not (has_skiz or has_xxi or has_pagat):",
+     "matched": false,
+     "box": "A1"
+    },
+    {
+     "line": 118,
+     "check": "if bid is None:",
+     "matched": false,
+     "box": "A3"
+    },
+    {
+     "line": 124,
+     "check": "if invit and invit[\"by\"] == view.position:",
+     "matched": false
+    },
+    {
+     "line": 128,
+     "check": "elif invit and \"invit_accept\" in TACTICS and big:",
+     "matched": false
+    },
+    {
+     "line": 132,
+     "check": "if \"invit_give\" in TACTICS and big and tarokk_count >= INVIT_MIN_TAROKKS:",
+     "matched": false,
+     "box": "A9"
+    },
+    {
+     "line": 136,
+     "check": "if \"yield_game\" in TACTICS and view.yield_turn and \"pass\" in view.valid_bids:",
+     "matched": false,
+     "box": "A11"
+    },
+    {
+     "line": 140,
+     "check": "if has_xxi:",
+     "matched": true,
+     "box": "A13"
+    },
+    {
+     "line": 142,
+     "check": "if level > BID_LEVEL[\"one\"]:",
+     "matched": false,
+     "box": "A14"
+    },
+    {
+     "line": 100,
+     "check": "if decision.payload[\"bid_type\"] == \"pass\" and \"pass\" not in view.valid_bids:",
+     "matched": false,
+     "box": "A30"
+    }
+   ],
+   "fallback": false
+  },
+  {
+   "hand_number": 13,
+   "phase": "bidding",
+   "trick_number": 0,
+   "position": 3,
+   "action": "bid",
+   "payload": {
+    "bid_type": "hold"
+   },
+   "reason_key": "hint.bid.xxi_always",
+   "reason_params": {
+    "bid": "hold"
+   },
+   "tree_route": "A1 → A3 → A9 → A11 → A13 → A14 → A16 → A30 → A32",
+   "route": [
+    {
+     "line": 114,
+     "check": "if not (has_skiz or has_xxi or has_pagat):",
+     "matched": false,
+     "box": "A1"
+    },
+    {
+     "line": 118,
+     "check": "if bid is None:",
+     "matched": false,
+     "box": "A3"
+    },
+    {
+     "line": 124,
+     "check": "if invit and invit[\"by\"] == view.position:",
+     "matched": false
+    },
+    {
+     "line": 128,
+     "check": "elif invit and \"invit_accept\" in TACTICS and big:",
+     "matched": false
+    },
+    {
+     "line": 132,
+     "check": "if \"invit_give\" in TACTICS and big and tarokk_count >= INVIT_MIN_TAROKKS:",
+     "matched": false,
+     "box": "A9"
+    },
+    {
+     "line": 136,
+     "check": "if \"yield_game\" in TACTICS and view.yield_turn and \"pass\" in view.valid_bids:",
+     "matched": false,
+     "box": "A11"
+    },
+    {
+     "line": 140,
+     "check": "if has_xxi:",
+     "matched": true,
+     "box": "A13"
+    },
+    {
+     "line": 142,
+     "check": "if level > BID_LEVEL[\"one\"]:",
+     "matched": false,
+     "box": "A14"
+    },
+    {
+     "line": 100,
+     "check": "if decision.payload[\"bid_type\"] == \"pass\" and \"pass\" not in view.valid_bids:",
+     "matched": false,
+     "box": "A30"
+    }
+   ],
+   "fallback": false
+  },
+  {
+   "hand_number": 13,
+   "phase": "discarding",
+   "trick_number": 0,
+   "position": 1,
+   "action": "discard",
+   "payload": {
+    "card_ids": [
+     "00c3212f-d4e3-4670-8fe5-9c29b7f4d874"
+    ]
+   },
+   "reason_key": "hint.discard.suits",
+   "reason_params": {
+    "cards": [
+     "00c3212f-d4e3-4670-8fe5-9c29b7f4d874"
+    ]
+   },
+   "tree_route": "D1 → D2",
+   "route": [
+    {
+     "line": 174,
+     "check": "if view.invit and view.invit[\"by\"] == view.position:",
+     "matched": false,
+     "box": "D1"
+    },
+    {
+     "line": 196,
+     "check": "if (\"skiz_weak_skart\" in TACTICS and view.holds(\"skiz\") and not view.holds(\"XXI\") and len(view.tarokks) > SKIZ_HUNT_TAROKKS):",
+     "matched": false,
+     "box": "D2"
+    },
+    {
+     "line": 204,
+     "check": "if key is None:",
+     "matched": true
+    }
+   ],
+   "fallback": false
+  },
+  {
+   "hand_number": 13,
+   "phase": "discarding",
+   "trick_number": 0,
+   "position": 2,
+   "action": "discard",
+   "payload": {
+    "card_ids": [
+     "3f9c76b0-26f8-4048-bfeb-60e5d9ec9d0d"
+    ]
+   },
+   "reason_key": "hint.discard.suits",
+   "reason_params": {
+    "cards": [
+     "3f9c76b0-26f8-4048-bfeb-60e5d9ec9d0d"
+    ]
+   },
+   "tree_route": "D1 → D2",
+   "route": [
+    {
+     "line": 174,
+     "check": "if view.invit and view.invit[\"by\"] == view.position:",
+     "matched": false,
+     "box": "D1"
+    },
+    {
+     "line": 196,
+     "check": "if (\"skiz_weak_skart\" in TACTICS and view.holds(\"skiz\") and not view.holds(\"XXI\") and len(view.tarokks) > SKIZ_HUNT_TAROKKS):",
+     "matched": false,
+     "box": "D2"
+    },
+    {
+     "line": 204,
+     "check": "if key is None:",
+     "matched": true
+    }
+   ],
+   "fallback": false
+  },
+  {
+   "hand_number": 13,
+   "phase": "discarding",
+   "trick_number": 0,
+   "position": 3,
+   "action": "discard",
+   "payload": {
+    "card_ids": [
+     "946a3ce2-25f7-4b43-a1a0-964fd7a06c1a",
+     "a38e8b55-4e16-4783-950f-ddf0b3f7065e"
+    ]
+   },
+   "reason_key": "hint.discard.suits",
+   "reason_params": {
+    "cards": [
+     "946a3ce2-25f7-4b43-a1a0-964fd7a06c1a",
+     "a38e8b55-4e16-4783-950f-ddf0b3f7065e"
+    ]
+   },
+   "tree_route": "D1 → D2",
+   "route": [
+    {
+     "line": 174,
+     "check": "if view.invit and view.invit[\"by\"] == view.position:",
+     "matched": false,
+     "box": "D1"
+    },
+    {
+     "line": 196,
+     "check": "if (\"skiz_weak_skart\" in TACTICS and view.holds(\"skiz\") and not view.holds(\"XXI\") and len(view.tarokks) > SKIZ_HUNT_TAROKKS):",
+     "matched": false,
+     "box": "D2"
+    },
+    {
+     "line": 204,
+     "check": "if key is None:",
+     "matched": true
+    }
+   ],
+   "fallback": false
+  }
+ ],
+ "last_game_over": null,
+ "client": {
+  "language": "hu",
+  "tutorial": true,
+  "viewport": "440x474",
+  "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Mobile/15E148 Safari/604.1",
+  "phase": "discarding",
+  "hint": {
+   "action": "discard",
+   "payload": {
+    "card_ids": [
+     "2fb0acf2-1f7c-4cb9-bdf2-e648569d67c4",
+     "d33a9be1-d54d-4141-848d-abc3df46c64a"
+    ]
+   },
+   "reason_key": "hint.discard.skiz_weaken",
+   "reason_params": {
+    "cards": [
+     "2fb0acf2-1f7c-4cb9-bdf2-e648569d67c4",
+     "d33a9be1-d54d-4141-848d-abc3df46c64a"
+    ]
+   }
+  }
+ }
+}
