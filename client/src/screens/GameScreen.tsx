@@ -90,6 +90,30 @@ function DroppedBar({ table }: { table: Table }) {
   )
 }
 
+/** Four kings in hand: throw the hand in (asks once more before it does). */
+function ThrowInBar({ table }: { table: Table }) {
+  const { t } = useTranslation()
+  const [sure, setSure] = useState(false)
+  if (!table.game.can_throw_in) return null
+  return (
+    <div className="safe-x pt-2 flex-none flex items-center gap-2 text-xs text-slate-200">
+      <span className="flex-1">{t('throwIn.offer')}</span>
+      {sure && (
+        <button type="button" className="chip" onClick={() => setSure(false)}>
+          {t('throwIn.keep')}
+        </button>
+      )}
+      <button
+        type="button"
+        className={`chip ${sure ? 'chip-on' : ''}`}
+        onClick={() => (sure ? socketManager.throwIn() : setSure(true))}
+      >
+        {sure ? t('throwIn.confirm') : t('throwIn.button')}
+      </button>
+    </div>
+  )
+}
+
 function Phase({ table }: { table: Table }) {
   const { t } = useTranslation()
   switch (table.game.phase) {
@@ -133,6 +157,7 @@ export default function GameScreen() {
         <>
           {!over && <ContractLine table={table} />}
           <DroppedBar table={table} />
+          <ThrowInBar table={table} />
           <Phase table={table} />
         </>
       ) : (

@@ -134,6 +134,8 @@ export interface GameState {
   required_call?: string | null
   /** The partner everybody knows from the bidding, once the required card was called */
   convention_partner?: number | null
+  /** I hold all four kings and may still throw the hand in (only ever true for my own seat) */
+  can_throw_in?: boolean
 }
 
 export interface RoomPlayer {

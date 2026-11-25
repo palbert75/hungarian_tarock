@@ -287,6 +287,26 @@ class GameState(BaseModel):
         for player in self.players:
             player.ready_next = False
 
+    def can_throw_in(self, position: int) -> bool:
+        """
+        A player holding all four kings may throw the hand in: once the talon is
+        shared out and their own skart is made, until they play their first card.
+        """
+        phase_ok = self.phase in (GamePhase.PARTNER_CALL, GamePhase.ANNOUNCEMENTS, GamePhase.PLAYING) or (
+            self.phase == GamePhase.DISCARDING and position in self.players_who_discarded)
+        if not phase_ok or self.trick_history or any(pos == position for pos, _ in self.current_trick):
+            return False
+        player = self.get_player(position)
+        return player is not None and sum(1 for c in player.hand if c.is_king()) == 4
+
+    def throw_in(self) -> None:
+        """Throw the hand in: the same dealer deals again, the hand number stays."""
+        dealer, hand_number = self.dealer_position, self.hand_number
+        self.reset_for_next_hand()
+        self.dealer_position, self.hand_number = dealer, hand_number
+        self.start_dealing()
+        self.start_bidding()
+
     def start_bidding(self) -> None:
         """Start the bidding phase."""
         self.phase = GamePhase.BIDDING
@@ -856,6 +876,8 @@ class GameState(BaseModel):
             "yielded_by": yielded_by(self.bid_history),
             "required_call": self.required_call(),
             "convention_partner": self.convention_partner(),
+            # Only the seat asking learns whether it may throw in: it shows that seat holds four kings
+            "can_throw_in": player_pos is not None and self.can_throw_in(player_pos),
         }
         if include_all_hands:
             result["called_card_discarded_by"] = self.called_card_discarded_by

@@ -320,7 +320,8 @@
     "partnerRevealed": "{{name}} a partner",
     "contraGame": "{{name}} skartolta a hívott lapot: kontra a játékra, a felvevő egyedül játszik",
     "contra": "{{name}}: kontra {{what}}",
-    "recontra": "{{name}}: rekontra {{what}}"
+    "recontra": "{{name}}: rekontra {{what}}",
+    "thrownIn": "{{name}} bedobta a lapot négy királlyal – új osztás"
   },
   "error": {
     "generic": "Valami hiba történt",
@@ -382,5 +383,11 @@
   "speech": {
     "call": "Hívom: {{card}}",
     "tarokkLies": "{{count}} tarokk fekszik"
+  },
+  "throwIn": {
+    "offer": "Nálad van mind a négy király: bedobhatod a leosztást.",
+    "button": "Bedobom",
+    "confirm": "Igen, új osztás",
+    "keep": "Játszom"
   }
 }

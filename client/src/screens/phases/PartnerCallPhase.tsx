@@ -8,10 +8,7 @@ import GameLayout from '@/components/GameLayout'
 import Seats from '@/components/Seats'
 import { HandGrid } from '@/components/Hand'
 import HintBox, { useHint } from '@/components/HintBox'
-import { tarokkName } from '@/utils/cardNames'
-
-/** Tarokks that can be called, from the XX downwards. */
-const CALLABLE = ['XX', 'XIX', 'XVIII', 'XVII', 'XVI']
+import { CALLABLE, tarokkName, usualCall } from '@/utils/cardNames'
 
 export default function PartnerCallPhase({ table }: { table: Table }) {
   const { t } = useTranslation()
@@ -26,7 +23,7 @@ export default function PartnerCallPhase({ table }: { table: Table }) {
   // After an invit or a yielded game the bidding has already chosen the card
   const required = game.required_call || null
   const requiredFrom = game.invit && game.invit.by !== game.declarer_position ? game.invit.by : game.yielded_by
-  const usual = required ?? CALLABLE.find((rank) => !held.has(rank)) ?? 'XX'
+  const usual = required ?? usualCall(held)
   const [choice, setChoice] = useState(usual)
   useEffect(() => setChoice(usual), [usual])
 

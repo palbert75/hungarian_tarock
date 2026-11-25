@@ -114,7 +114,7 @@ Each suit contains (highest to lowest):
 
 **Hand Annulment (Optional):**
 Players may annul the hand if holding:
-- All four Kings
+- All four Kings (implemented: once the talon is shared out and the player has made their skart, until they play their first card; the same dealer deals again, bots always play on)
 - Singleton XXI (only one tarokk, and it's XXI)
 - Singleton pagát (only one tarokk, and it's pagát)
 - No tarokks at all

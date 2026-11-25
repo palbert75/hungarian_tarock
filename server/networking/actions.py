@@ -554,6 +554,21 @@ class GameService:
 
         await self.after_action(room)
 
+    async def act_throw_in(self, room: Room, player: Player) -> None:
+        """A player with all four kings throws the hand in; the same dealer deals again."""
+        game_state = room.game_state
+        if not game_state.can_throw_in(player.position):
+            raise ValueError("Only a player holding all four kings may throw in, before playing a card")
+        logger.info("thrown_in", room_id=room.room_id, position=player.position)
+        await self.emit("game_state", {"message": f"{player.name} threw the hand in with four kings. Dealing again...",
+                                       "code": "THROWN_IN", "player_position": player.position,
+                                       "player_name": player.name}, room=room.room_id)
+        room.decision_log.clear()
+        room.hand_started_at = time.time()
+        game_state.throw_in()
+        await self.broadcast_room_state(room)
+        await self.after_action(room)
+
     async def _game_over(self, room: Room) -> None:
         """Score the hand, add it to the running totals and tell the table."""
         game_state = room.game_state

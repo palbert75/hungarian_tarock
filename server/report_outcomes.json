@@ -30,6 +30,8 @@
   "20261122-234956-d03e13": {"status": "fixed", "hu": "Saját trullnál a felvevő a hívott XX alá hívja a pagátot.", "en": "With its own trull the declarer leads the pagát under the called XX."},
   "20261123-161317-60c306": {"status": "fixed", "hu": "Sok tarokkal a gép nem menekíti a XXI-et az első ütésekben.", "en": "A long tarokk hand no longer rushes the XXI out in the first tricks."},
   "20261123-173746-28836d": {"status": "fixed", "hu": "A pagátulti partnere a legnagyobb tarokkal húz.", "en": "The pagát ulti partner draws with the highest tarokk."},
-  "20261124-145402-400c42": {"status": "fixed", "hu": "Saját trullnál a biztos XXI nem megy el egy színhívásra.", "en": "With our own trull a sure XXI is not spent on a suit lead."}
+  "20261124-145402-400c42": {"status": "fixed", "hu": "Saját trullnál a biztos XXI nem megy el egy színhívásra.", "en": "With our own trull a sure XXI is not spent on a suit lead."},
+  "20261125-094551-bb00a2": {"status": "wont_fix", "hu": "Licitálni csak honőrrel lehet; ha mindenki passzol, újraosztás jön.", "en": "Bidding needs an honour; when all pass the cards are dealt again."},
+  "20261125-140547-022a0d": {"status": "fixed", "hu": "A XX–XVI birtokában már a XV (és lejjebb) is hívható.", "en": "Holding XX to XVI you can now call the XV (and lower)."}
  }
 }

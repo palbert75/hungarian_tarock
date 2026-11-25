@@ -116,9 +116,13 @@ class SocketManager {
 
     // ---- game -------------------------------------------------------------
 
-    socket.on('game_state', (data: GameState | { message: string; code?: string }) => {
+    socket.on('game_state', (data: GameState | { message: string; code?: string; player_name?: string }) => {
       if (!('phase' in data)) {
         if (data.code === 'ALL_PASSED') toast('warning', t('toast.allPassed'), 3500)
+        if (data.code === 'THROWN_IN') {
+          const name = 'player_name' in data ? String(data.player_name) : ''
+          toast('warning', t('toast.thrownIn', { name }), 4000)
+        }
         store().clearSelectedCards()
         return
       }
@@ -394,6 +398,10 @@ class SocketManager {
   discardCards(cardIds: string[]) {
     store().clearSelectedCards()
     this.emit('discard_cards', { card_ids: cardIds })
+  }
+
+  throwIn() {
+    this.emit('throw_in', {})
   }
 
   callPartner(tarokkRank: string) {

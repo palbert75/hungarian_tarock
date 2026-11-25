@@ -43,3 +43,11 @@ export function canDiscard(card: Card): boolean {
   }
   return card.rank !== 'K'
 }
+
+/** Tarokks the declarer may call, from the XX downwards (as far as the bots go). */
+export const CALLABLE = ['XX', 'XIX', 'XVIII', 'XVII', 'XVI', 'XV', 'XIV', 'XIII', 'XII']
+
+/** The usual call: the highest callable tarokk the declarer does not hold. */
+export function usualCall(held: Set<string>): string {
+  return CALLABLE.find((rank) => !held.has(rank)) ?? 'XX'
+}

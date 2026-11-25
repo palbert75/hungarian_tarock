@@ -517,6 +517,15 @@ async def play_card(sid: str, data: dict):
         await send_error(sid, "PLAY_CARD_ERROR", e)
 
 
+@sio.event
+async def throw_in(sid: str, data: dict = None):
+    try:
+        room, player = seat_of(sid)
+        await service.act_throw_in(room, player)
+    except Exception as e:
+        await send_error(sid, "THROW_IN_ERROR", e)
+
+
 # -------------------------------------------------------------------- chat
 
 @sio.event

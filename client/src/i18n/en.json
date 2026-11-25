@@ -320,7 +320,8 @@
     "partnerRevealed": "{{name}} is the partner",
     "contraGame": "{{name}} discarded the called card: kontra on the game, the declarer plays alone",
     "contra": "{{name}}: kontra {{what}}",
-    "recontra": "{{name}}: rekontra {{what}}"
+    "recontra": "{{name}}: rekontra {{what}}",
+    "thrownIn": "{{name}} threw the hand in with four kings – new deal"
   },
   "error": {
     "generic": "Something went wrong",
@@ -382,5 +383,11 @@
   "speech": {
     "call": "I call: {{card}}",
     "tarokkLies": "Tarokks in the skart: {{count}}"
+  },
+  "throwIn": {
+    "offer": "You hold all four kings: you may throw the hand in.",
+    "button": "Throw in",
+    "confirm": "Yes, deal again",
+    "keep": "Play on"
   }
 }
