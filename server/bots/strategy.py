@@ -17,7 +17,7 @@ from bots.counting import (
 from bots import route
 from bots.decision import CALL_ORDER, Decision, fallback_decision
 from bots.view import Play, SeatView, build_view
-from models.card import Card, Suit
+from models.card import Card, CardType, Suit
 from models.game_state import GameState, GamePhase
 
 logger = structlog.get_logger()
@@ -63,6 +63,7 @@ ADOPTED = frozenset({
     "skiz_keep_called",  # the owner's rule: a skíz that expects to be called does not weaken its hand in the skart
     "trull_spare",     # the owner's rule: no hard tarokk between the leading declarer and their partner
     "pagat_count",     # the doomed pagát: only hands that may hold a tarokk count, and not the tarokks in a skart
+    "pagat_home",      # the declarer with all three honours leads the pagát under the partner's called card
 })
 TACTICS: set = set(ADOPTED)
 
@@ -83,6 +84,9 @@ KONTRA_KINGS_HIGH = 5
 INVIT_MIN_TAROKKS = 6
 # Tarokks needed to accept an invit at solo level
 INVIT_SOLO_TAROKKS = 6
+# A hand dealt this many tarokks keeps the XXI through the first tricks instead of letting it escape
+XXI_HOLD_TAROKKS = 8
+XXI_HOLD_TRICKS = 3
 
 
 # ------------------------------------------------------------------ bidding
@@ -456,6 +460,47 @@ def _free_xxi_seats(view: SeatView, leader: int) -> set:
     return {seat for seat in seats if not any(s in mine for s in order[order.index(seat) + 1:])}
 
 
+def _tarokks_dealt_to_me(view: SeatView) -> int:
+    """The tarokks I played with: those still in hand and those I already played."""
+    mine = [card for trick in view.trick_history for seat, card in trick if seat == view.position]
+    return len([c for c in view.hand + mine if c.is_tarokk()])
+
+
+def _foe_tarokks(view: SeatView, out: List[int]) -> List[int]:
+    """The tarokks out that an opponent may hold: trull on my side puts the three honours with us."""
+    if _side_announced(view, {"trull"}):
+        return [value for value in out if value not in (SKIZ, XXI, PAGAT)]
+    return out
+
+
+def _sure_honours(view: SeatView) -> set:
+    """Honours of mine that win whenever they are played: the skíz, and the XXI once no foe can hold the skíz."""
+    sure = {SKIZ}
+    if not skiz_out(view) or _side_announced(view, {"trull"}):
+        sure.add(XXI)
+    return sure
+
+
+def _called_value(view: SeatView) -> int:
+    """The tarokk value of the called card, 0 when there is none."""
+    if not view.called_rank:
+        return 0
+    return Card(suit=Suit.TAROKK, rank=view.called_rank, points=1, card_type=CardType.TAROKK).tarokk_value()
+
+
+def _pagat_home_under_called(view: SeatView, out: List[int]) -> bool:
+    """
+    Problem report 20261122-234956: I am the declarer and hold the pagát, my side called trull, and
+    the called card is still in my partner's hand and beats every tarokk the opponents may hold.
+    Led now, the partner answers with the called card and the pagát comes home under it.
+    """
+    called = _called_value(view)
+    return ("pagat_home" in TACTICS and view.position == view.declarer_position and not view.declarer_alone
+            and view.holds("I") and _side_announced(view, {"trull"})
+            and not _announced(view, "pagat_ultimo", by_me=True)
+            and called in out and all(value <= called for value in _foe_tarokks(view, out)))
+
+
 def _xxi_at_risk(view: SeatView) -> bool:
     """I hold the XXI and the skíz may still catch it: it is in another hand, and not a teammate's."""
     if not view.holds("XXI") or not skiz_out(view):
@@ -626,6 +671,10 @@ def _lead(view: SeatView) -> Decision:
     if doomed_pagat:
         return _play(doomed_pagat, "hint.lead.pagat_drop", count=tarokks_in_hands(view))
 
+    pagat_card = next((c for c in legal if _is(c, PAGAT)), None)
+    if pagat_card and _pagat_home_under_called(view, out):
+        return _play(pagat_card, "hint.lead.pagat_home")
+
     # The owner's rules for the XXI while the skíz can still catch it. Leading it is never safe.
     if _xxi_at_risk(view):
         others = [c for c in plain_tarokks if not _is(c, XXI)]
@@ -721,7 +770,9 @@ def _lead(view: SeatView) -> Decision:
     if ("ulti_support" in TACTICS and len(plain_tarokks) >= 2 and out and any(
             a.announcement_type.value == "pagat_ultimo" and a.player_position in mates
             for a in view.announcements)):
-        pick = plain_tarokks[1] if "ulti_keep_small" in TACTICS else plain_tarokks[0]
+        # Problem report 20261123-173746: draw with the highest, so a foe cannot win the trick
+        # cheaply and force out my teammate's great tarokk. The smallest stays for the end.
+        pick = (strong_tarokks() or plain_tarokks)[-1]
         return _play(pick, "hint.lead.ulti_support")
 
     # Declarer's side with the upper hand in tarokks: draw them
@@ -759,9 +810,13 @@ def _follow(view: SeatView) -> Decision:
     # The owner's rule: nobody who could hold the skíz plays after me, so the XXI escapes now
     at_risk = _xxi_at_risk(view)
     xxi = next((c for c in legal if _is(c, XXI)), None)
-    if at_risk and xxi and bound is not None and not foe_after:
+    # The owner's rule: a long tarokk hand is never forced to give the XXI up early,
+    # so it does not spend it in the first tricks just because it could
+    early_long = (len(view.trick_history) < XXI_HOLD_TRICKS
+                  and _tarokks_dealt_to_me(view) >= XXI_HOLD_TAROKKS)
+    if at_risk and xxi and bound is not None and not foe_after and not early_long:
         return _play(xxi, "hint.follow.xxi_escape_king")
-    if at_risk and xxi and not foe_after:
+    if at_risk and xxi and not foe_after and not early_long:
         return _play(xxi, "hint.follow.xxi_escape")
 
     # Catch an opponent's XXI with the skíz
@@ -843,13 +898,22 @@ def _follow(view: SeatView) -> Decision:
     # The owner's rule: once trull is called, every trick counts. Win it whenever I can, unless my
     # team already holds it for certain; with an opponent still to play, win it with my best card.
     if _announced(view, "trull"):
+        foe_out = _foe_tarokks(view, out)
         team_safe = view.is_teammate(winner_seat) and (not foe_after or (
-            winner_card.is_tarokk() and all(value < winner_card.tarokk_value() for value in out)))
+            winner_card.is_tarokk() and all(value < winner_card.tarokk_value() for value in foe_out)))
         can_win = [c for c in candidates if _beats(c, trick) and (not seats_after or not _is(c, PAGAT))]
         if can_win and not team_safe:
             if foe_after:
+                # Problem report 20261124-145402: on a suit lead the foes after me can only trump if
+                # they are void in it. An honour that wins whenever it comes is not spent then.
+                if (not lead_card.is_tarokk() and winner_card.suit == lead_card.suit
+                        and not any((seat, lead_card.suit) in observed_voids(view) for seat in seats_after)):
+                    sure = _sure_honours(view)
+                    spare = [c for c in can_win if not (c.is_tarokk() and c.tarokk_value() in sure)]
+                    if any(c.is_tarokk() for c in spare):
+                        can_win = spare
                 # The owner's rule: with trull called the skíz counts like the XXI, it is not saved
-                best = (_hard_tarokk(can_win, out, trick_points, save_skiz=False)
+                best = (_hard_tarokk(can_win, foe_out, trick_points, save_skiz=False)
                         or max(can_win, key=lambda c: c.suit_rank_value()))
                 # The owner's rule: the declarer led, their partner plays right after me and my
                 # teammate plays last. The partner has to play high whatever I do, so a tarokk

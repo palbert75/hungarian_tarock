@@ -2,6 +2,20 @@
 // as written there (for a text put together from parts, the whole text as shown). PAGE_HU: the texts of
 // page.html by their data-t key. build.py stops when a text has no Hungarian here.
 const HU={
+  "I am the declarer and hold the pagát, my side announced trull, I did not announce pagát ulti, and the called card is still unplayed and beats every tarokk the opponents may hold?":
+    "Én vagyok a felvevő, nálam a pagát, az oldalunk trullt mondott, én nem mondtam pagátultit, és a hívott lap még nem ment ki, és mindent üt, ami az ellenfélnél lehet?",
+  "With skíz and XXI on my side, the called XX is the highest tarokk outside my hand: the partner answers my tarokk lead with it.":
+    "Ha a skíz és a XXI nálunk van, a hívott XX a legnagyobb tarokk a kezemen kívül: a partner azzal válaszol a tarokkhívásomra.",
+  "the partner takes it home with the called card":
+    "a partner a hívott lappal hazaviszi",
+  "Not in the first three tricks of a hand dealt 8+ tarokks: such a hand is never forced to give the XXI up early.":
+    "Nem az első három ütésben, ha 8+ tarokkot kaptam: egy ilyen kéz sosem kényszerül korán kiadni a XXI-et.",
+  "Lead my highest tarokk (not the XXI while the skíz is out)":
+    "A legnagyobb tarokkomat hívom (a XXI-et nem, amíg kint van a skíz)",
+  "draw the tarokks so no opponent wins cheaply; the smallest stays for the end":
+    "kitarokkozok, hogy az ellenfél ne üssön olcsón; a legkisebb a végére marad",
+  "a hard tarokk, or my highest card of the suit led; also over a teammate who is winning. On a suit lead that nobody after me is known to be void in, a skíz or XXI that wins whenever it comes is kept back":
+    "kemény tarokk, vagy a hívott szín legnagyobb lapom; akkor is, ha a partnerem viszi. Színhívásnál, ha senkiről nem tudni, hogy utánam nincs abból a színből, a mindig ütő skíz vagy XXI megmarad",
   "Do I hold an honour: skíz, XXI or pagát?":
     "Van honőröm: skíz, XXI vagy pagát?",
   "no":
@@ -318,10 +332,6 @@ const HU={
     "a tarokkot az utolsó ütésre tartom",
   "A known teammate announced pagát ulti, I have 2+ tarokks beside the pagát, and tarokks are still out?":
     "Egy ismert partner pagátultit mondott, a pagáton kívül 2+ tarokkom van, és van még kint tarokk?",
-  "Lead my second-lowest tarokk":
-    "A második legkisebb tarokkomat hívom",
-  "help to draw tarokks, keep the smallest for the end":
-    "segítek kitarokkozni, a legkisebbet a végére tartom",
   "I am on the caller team, hold more than half as many tarokks as are still out, and have one to lead (not the pagát, not the XXI)?":
     "A felvevő párban vagyok, több tarokkom van, mint a még kint lévők fele, és van olyanom, amit hívhatok (nem a pagát, nem a XXI)?",
   "Lead my highest such tarokk":
@@ -504,8 +514,6 @@ const HU={
     "itt nem megy el kemény tarokk",
   "Win with my best card":
     "A legjobb lapommal ütök",
-  "a hard tarokk, or my highest card of the suit led; also over a teammate who is winning":
-    "kemény tarokkal, vagy a hívott szín legnagyobb lapjával; a nyerésben lévő partner lapjára is",
   "Worth it: 5+ points in the trick, or a known opponent is winning it, or (while skíz and XXI are both unplayed) the known teammate seated before me seems to wait with the skíz?":
     "Megéri: 5+ pont van az ütésben, vagy ismert ellenfél viszi éppen, vagy (amíg a skíz és a XXI is játékban van) az előttem ülő ismert partner a jelek szerint a skízzel vár?",
   "Did I give the invit? Then the card I invited with is never discarded.":

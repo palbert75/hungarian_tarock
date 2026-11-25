@@ -3,7 +3,7 @@ import i18n from '@/i18n'
 import { useGameStore } from '@/store/gameStore'
 import { playSound } from '@/utils/sound'
 import { tarokkName } from '@/utils/cardNames'
-import type { BotSpeed, GameOverData, GameState, RoomState, TrickCard, YourTurnData } from '@/types'
+import type { BotSpeed, GameOverData, GameState, RecentReport, RoomState, TrickCard, YourTurnData } from '@/types'
 
 /** Server messages come either bare or wrapped as { type, data }. */
 const unwrap = <T = any>(payload: any): T =>
@@ -98,6 +98,10 @@ class SocketManager {
 
     socket.on('rooms_list', (data: { rooms: RoomState[] }) => {
       store().setAvailableRooms(data.rooms || [])
+    })
+
+    socket.on('recent_reports', (data: { reports: RecentReport[] }) => {
+      store().setRecentReports(data.reports || [])
     })
 
     socket.on('player_connection', (data: { player_name: string; connected: boolean; bot_controlled?: boolean }) => {
@@ -293,6 +297,10 @@ class SocketManager {
 
   listRooms() {
     this.emit('list_rooms')
+  }
+
+  listRecentReports() {
+    this.emit('list_recent_reports')
   }
 
   createRoom(withBots = false) {

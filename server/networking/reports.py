@@ -94,6 +94,59 @@ def save_report(report: dict, directory: Path = REPORT_DIR) -> Path:
     return path
 
 
+# What became of each report, and whose reports stay off the board:
+# {"ignore_names": ["..."], "reports": {"<id>": {"status": "fixed" | "wont_fix" | "open", "hu": "...", "en": "..."}}}
+OUTCOMES_FILE = Path(__file__).resolve().parent.parent / "report_outcomes.json"
+STATUSES = ("fixed", "wont_fix", "open")
+RECENT_REPORTS = 10
+_recent_cache: dict = {}
+
+
+def recent_reports(directory: Path = REPORT_DIR, outcomes_file: Path = OUTCOMES_FILE,
+                   limit: int = RECENT_REPORTS) -> list:
+    """
+    The latest reports for the thank-you board: who sent it, when, and what became of it.
+    Only the name and the outcome leave the server, never the text or the table.
+    """
+    paths = sorted(directory.glob("*.json"), reverse=True) if directory.is_dir() else []
+    try:
+        outcomes_stamp = outcomes_file.stat().st_mtime
+    except OSError:
+        outcomes_stamp = None
+    key = (str(directory), tuple(p.name for p in paths), outcomes_stamp)
+    if key in _recent_cache:
+        return _recent_cache[key]
+    try:
+        config = json.loads(outcomes_file.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        config = {}
+    outcomes = config.get("reports") or {}
+    ignored = {str(name).casefold() for name in config.get("ignore_names") or []}
+    board = []
+    for path in paths:
+        if len(board) >= limit:
+            break
+        try:
+            report = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        name = str((report.get("reporter") or {}).get("name") or "?")
+        if name.strip().casefold() in ignored:
+            continue
+        outcome = outcomes.get(report.get("id"), {})
+        status = outcome.get("status")
+        board.append({
+            "id": report.get("id"),
+            "name": name[:20],
+            "created_at": report.get("created_at"),
+            "status": status if status in STATUSES else "open",
+            "note": {lang: outcome[lang] for lang in ("hu", "en") if isinstance(outcome.get(lang), str)},
+        })
+    _recent_cache.clear()
+    _recent_cache[key] = board
+    return board
+
+
 class ReportThrottle:
     """At most one report every few seconds per player."""
 

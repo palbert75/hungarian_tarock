@@ -163,6 +163,15 @@ export interface RoomState {
 
 export type AvailableRoom = RoomState
 
+/** One line of the thank-you board: who reported a problem and what became of it */
+export interface RecentReport {
+  id: string
+  name: string
+  created_at: string
+  status: 'fixed' | 'wont_fix' | 'open'
+  note: { hu?: string; en?: string }
+}
+
 export type ConnectionStatus =
   | 'disconnected'
   | 'connecting'

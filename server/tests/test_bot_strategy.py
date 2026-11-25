@@ -991,8 +991,9 @@ def test_ulti_teammate_keeps_the_smallest_tarokk():
     ulti = Announcement(player_position=2, announcement_type=AnnouncementType.PAGAT_ULTIMO)
     view = play_view("XII V III hQ", trick=[(1, "XVIII")], declarer=0, partner=2, announcements=[ulti])
     assert played(decide_card(view), view) == "V"
+    # Leading, the teammate draws with the highest (report 20261123-173746); the III stays too
     lead = play_view("XII V III hQ", declarer=0, partner=2, announcements=[ulti])
-    assert played(decide_card(lead), lead) == "V"
+    assert played(decide_card(lead), lead) == "XII"
 
 
 def test_defender_with_the_skiz_never_gets_the_protect_xxi_advice():
@@ -1107,3 +1108,71 @@ def test_waiting_skiz_does_not_take_over_while_others_still_play():
     view = play_view("skiz XVI XIV XII I hC sC sJ", trick=[(3, "III"), (0, "XIII")],
                      position=1, declarer=3, partner=2)
     assert decide_card(view).reason_key == "hint.follow.skiz_duck_high"
+
+
+def test_long_tarokk_hand_keeps_the_xxi_through_the_first_tricks():
+    # Problem report 20261123-161317: the declarer (seat 1), dealt eight tarokks, plays last to
+    # trick two and gave the XXI up at once. Such a hand is never forced to: a small tarokk wins.
+    history = [[(3, "s10"), (0, "sJ"), (1, "sK"), (2, "IV")]]
+    view = play_view("XXI XVIII XVII XIV XII X VIII V", trick=[(2, "dQ"), (3, "dJ"), (0, "d10")],
+                     position=1, declarer=1, history=history)
+    d = decide_card(view)
+    assert played(d, view) == "V" and d.reason_key != "hint.follow.xxi_escape"
+    # From the fourth trick on the XXI escapes as before
+    later = history + [[(1, "XVIII"), (2, "IX"), (3, "II"), (0, "III")],
+                       [(2, "cK"), (3, "VII"), (0, "XVI"), (1, "XVII")]]
+    view = play_view("XXI XIV XII X VIII V", trick=[(2, "dQ"), (3, "dJ"), (0, "d10")],
+                     position=1, declarer=1, history=later)
+    d = decide_card(view)
+    assert played(d, view) == "XXI" and d.reason_key == "hint.follow.xxi_escape"
+
+
+def test_ulti_support_draws_with_the_highest_tarokk():
+    # Problem report 20261123-173746: the declarer (seat 0) announced trull and pagát ulti. Their
+    # partner led the XI, seat 3 took it over with the XV and forced the declarer's XX.
+    trull = Announcement(player_position=0, announcement_type=AnnouncementType.TRULL)
+    ulti = Announcement(player_position=0, announcement_type=AnnouncementType.PAGAT_ULTIMO)
+    history = [[(1, "hJ"), (2, "h10"), (3, "XVI"), (0, "hK")],
+               [(3, "s10"), (0, "XIX"), (1, "sQ"), (2, "sK")],
+               [(0, "skiz"), (1, "III"), (2, "IV"), (3, "VIII")],
+               [(0, "V"), (1, "VII"), (2, "XVIII"), (3, "X")]]
+    view = play_view("XI XVII II dQ sC", position=2, declarer=0, partner=2, i_am_partner=True,
+                     history=history, announcements=[trull, ulti])
+    view.called_rank = "XVIII"
+    d = decide_card(view)
+    assert played(d, view) == "XVII" and d.reason_key == "hint.lead.ulti_support"
+
+
+def test_with_our_trull_a_sure_xxi_is_not_spent_on_a_suit_lead():
+    # Problem report 20261124-145402: my partner (seat 0) announced trull, so the skíz is theirs
+    # and my XXI wins whenever it comes. Seat 2 must follow spades unless void: trump lower.
+    trull = Announcement(player_position=0, announcement_type=AnnouncementType.TRULL)
+    view = play_view("XXI XIX XVIII XII VII d10 cK cQ cC", trick=[(3, "s10"), (0, "sQ")],
+                     position=1, declarer=1, partner=0, announcements=[trull])
+    d = decide_card(view)
+    assert played(d, view) == "XIX" and d.reason_key == "hint.follow.trull_win"
+    # Seat 2 has shown it holds no spade: only the XXI is sure to hold the trick
+    history = [[(3, "sJ"), (0, "sC"), (1, "XII"), (2, "V")]]
+    view = play_view("XXI XIX XVIII VII d10 cK cQ cC", trick=[(3, "s10"), (0, "sQ")],
+                     position=1, declarer=1, partner=0, history=history, announcements=[trull])
+    assert played(decide_card(view), view) == "XXI"
+
+
+def test_declarer_with_all_honours_leads_the_pagat_under_the_called_xx():
+    # Problem report 20261122-234956: the declarer (seat 1) holds skíz, XXI and pagát, announced
+    # trull and called the XX. Nothing the opponents hold beats the XX: lead the pagát now and the
+    # partner brings it home. The bot led the II instead, and later lost the pagát and the trull.
+    trull = Announcement(player_position=1, announcement_type=AnnouncementType.TRULL)
+    history = [[(2, "dK"), (3, "dC"), (0, "XVI"), (1, "dJ")],
+               [(0, "cJ"), (1, "XXI"), (2, "III"), (3, "cK")]]
+    view = play_view("II skiz VI XIV I hQ h10", position=1, declarer=1, history=history, announcements=[trull])
+    d = decide_card(view)
+    assert played(d, view) == "I" and d.reason_key == "hint.lead.pagat_home"
+    # The partner answers with the called card, over the opponent's XIX
+    partner = play_view("XX V XI hK sK c10 hJ", trick=[(1, "I"), (2, "XIX")], position=3, declarer=1,
+                        i_am_partner=True, history=history, announcements=[trull])
+    assert played(decide_card(partner), partner) == "XX"
+    # Once the XX has been played, an opponent may hold the highest tarokk left: the pagát waits
+    gone = history + [[(1, "II"), (2, "XIX"), (3, "XX"), (0, "IV")]]
+    view = play_view("skiz VI XIV I hQ h10", position=1, declarer=1, history=gone, announcements=[trull])
+    assert decide_card(view).reason_key != "hint.lead.pagat_home"

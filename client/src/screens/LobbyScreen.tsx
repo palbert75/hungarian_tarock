@@ -4,6 +4,7 @@ import { useGameStore } from '@/store/gameStore'
 import { socketManager } from '@/services/socketManager'
 import TopBar from '@/components/TopBar'
 import SettingsSheet from '@/components/SettingsSheet'
+import ThanksBoard from '@/components/ThanksBoard'
 
 /** Pick a table, start one, or play against bots straight away. */
 export default function LobbyScreen() {
@@ -89,6 +90,8 @@ export default function LobbyScreen() {
               {t('lobby.join')}
             </button>
           </form>
+
+          <ThanksBoard />
         </div>
       </div>
 

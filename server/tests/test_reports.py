@@ -5,7 +5,7 @@ import json
 import pytest
 
 from models.game_state import GamePhase
-from networking.reports import ReportThrottle, build_report, may_return_to_reporter, save_report
+from networking.reports import ReportThrottle, build_report, may_return_to_reporter, recent_reports, save_report
 from tests.service_helpers import make_service, seed
 
 
@@ -112,3 +112,30 @@ def test_throttle():
     with pytest.raises(ValueError):
         throttle.check("p1")
     throttle.check("p2")
+
+
+def test_recent_reports_show_name_and_outcome_but_no_text(tmp_path):
+    reports = tmp_path / "reports"
+    reports.mkdir()
+    for i in range(12):
+        rid = f"2026112{i % 10}-1200{i:02d}-abc{i:03d}"
+        (reports / f"{rid}.json").write_text(json.dumps({
+            "id": rid, "created_at": f"2026-11-2{i % 10}T12:00:00+00:00",
+            "reporter": {"position": 0, "name": f"Player{i}"}, "text": "secret hand details", "game": {},
+        }), encoding="utf-8")
+    newest = sorted(p.stem for p in reports.glob("*.json"))[-1]
+    outcomes = tmp_path / "outcomes.json"
+    outcomes.write_text(json.dumps({"reports": {newest: {"status": "wont_fix", "en": "Works as intended"},
+                                                "other": {"status": "bogus"}}}), encoding="utf-8")
+    board = recent_reports(reports, outcomes)
+    assert len(board) == 10
+    assert board[0]["id"] == newest and board[0]["status"] == "wont_fix"
+    assert board[0]["note"] == {"en": "Works as intended"}
+    assert all(entry["status"] == "open" for entry in board[1:])
+    assert "secret" not in json.dumps(board)
+    # No directory, no outcomes file: an empty board, not an error
+    assert recent_reports(tmp_path / "missing", tmp_path / "none.json") == []
+    # Ignored names stay off the board; the board still fills up from the others
+    outcomes.write_text(json.dumps({"ignore_names": ["player11"], "reports": {}}), encoding="utf-8")
+    board = recent_reports(reports, outcomes)
+    assert len(board) == 10 and "Player11" not in [entry["name"] for entry in board]

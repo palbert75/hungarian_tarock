@@ -27,7 +27,12 @@
     "betweenHands": "két játszma között",
     "join": "Beülök",
     "haveCode": "Van asztalkódod?",
-    "codePlaceholder": "Asztalkód"
+    "codePlaceholder": "Asztalkód",
+    "thanksTitle": "Köszönjük a hibajelentéseket!",
+    "thanksIntro": "Minden jelentéstől jobban játszanak a gépek. A legutóbbiak:",
+    "statusFixed": "Javítva",
+    "statusWontFix": "Nem javítjuk",
+    "statusOpen": "Vizsgáljuk"
   },
   "room": {
     "code": "Asztal: {{code}}",
@@ -254,6 +259,7 @@
       "tarokks": "{{count}} tarokkod van: mondd be. Minden játékos fizet érte neked, akárhogy végződik a játék."
     },
     "lead": {
+      "pagat_home": "A ti oldalatok trullt mondott, és a hívott lap még a partnerednél van: az ellenfél semmivel sem tudja felülütni. Hívd most a pagátot ({{card}}), a partnered a hívott lappal hazaviszi.",
       "pagat_drop": "A többiek kezében még {{count}} tarokk van, több, mint amennyi ebbe az ütésbe eshet (akinek nincs tarokkja, az nem tehet): az utolsó ütésre is marad, és ott elüti a pagátodat, ami bukott csendes pagátulti. Hívd ki most a pagátot ({{card}}).",
       "kings_suit": "A felvevők négy királyt vagy duplajátékot mondtak: olyan színt hívj, amelynek a királya nincs nálad ({{card}}), a saját királyaidat pedig ne tedd ki a tarokkjaiknak.",
       "trull_suit": "Trull van bemondva, és a felvevők ellen játszol: színt hívj ({{card}}), ne tarokkot.",

@@ -18,7 +18,7 @@ from models.player import Player
 from networking.actions import GameService
 from networking.limits import RateLimit, Refused, client_address
 from networking.protocol import create_error_message
-from networking.reports import ReportThrottle, build_report, may_return_to_reporter, save_report
+from networking.reports import ReportThrottle, build_report, may_return_to_reporter, recent_reports, save_report
 from networking.room_manager import (
     BOT_DELAYS, EMPTY_TABLE_GRACE_SECONDS, STAND_IN_SECONDS, WAITING_GRACE_SECONDS, Room, RoomManager,
 )
@@ -550,6 +550,15 @@ async def send_chat_message(sid: str, data: dict):
 # ----------------------------------------------------------------- reports
 
 report_throttle = ReportThrottle()
+
+
+@sio.event
+async def list_recent_reports(sid: str, data: dict = None):
+    """The thank-you board on the lobby: the latest reports, their senders and what became of them."""
+    try:
+        await sio.emit("recent_reports", {"reports": recent_reports()}, room=sid)
+    except Exception as e:
+        await send_error(sid, "RECENT_REPORTS_ERROR", e)
 
 
 @sio.event

@@ -5,6 +5,7 @@ import type {
   GameState,
   RoomState,
   AvailableRoom,
+  RecentReport,
   YourTurnData,
   GameOverData,
   ToastMessage,
@@ -31,6 +32,8 @@ interface GameStore {
   // Room
   roomState: RoomState | null
   availableRooms: AvailableRoom[]
+  /** The thank-you board on the lobby */
+  recentReports: RecentReport[]
 
   // Game
   gameState: GameState | null
@@ -54,6 +57,7 @@ interface GameStore {
 
   setRoomState: (roomState: RoomState | null) => void
   setAvailableRooms: (rooms: AvailableRoom[]) => void
+  setRecentReports: (reports: RecentReport[]) => void
   resetRoomSession: () => void
 
   setGameState: (gameState: GameState | null) => void
@@ -87,6 +91,7 @@ export const useGameStore = create<GameStore>()(
       quickBots: false,
       roomState: null,
       availableRooms: [],
+      recentReports: [],
       gameState: null,
       yourTurnData: null,
       gameOverData: null,
@@ -105,6 +110,7 @@ export const useGameStore = create<GameStore>()(
 
       setRoomState: (roomState) => set({ roomState }),
       setAvailableRooms: (rooms) => set({ availableRooms: rooms }),
+      setRecentReports: (reports) => set({ recentReports: reports }),
 
       resetRoomSession: () =>
         set({

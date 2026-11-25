@@ -27,7 +27,12 @@
     "betweenHands": "between hands",
     "join": "Join",
     "haveCode": "Got a table code?",
-    "codePlaceholder": "Table code"
+    "codePlaceholder": "Table code",
+    "thanksTitle": "Thank you for the reports!",
+    "thanksIntro": "Every report makes the bots play better. The latest ones:",
+    "statusFixed": "Fixed",
+    "statusWontFix": "Won't fix",
+    "statusOpen": "In review"
   },
   "room": {
     "code": "Table {{code}}",
@@ -254,6 +259,7 @@
       "tarokks": "You hold {{count}} tarokks: declare them. Every other player pays you for it, however the game ends."
     },
     "lead": {
+      "pagat_home": "Your side called trull and the called card is still in your partner's hand: nothing the opponents hold can beat it. Lead the pagát ({{card}}) now, your partner takes it home with the called card.",
       "pagat_drop": "The other hands still hold {{count}} tarokks, more than can fall in this trick (a player without tarokks cannot play one): one is left for the last trick and beats your pagát there, a lost silent pagát ulti. Lead the pagát ({{card}}) now.",
       "kings_suit": "The caller's team announced four kings or double game: lead a suit whose king you do not hold ({{card}}), and keep your own kings out of their tarokks.",
       "trull_suit": "Trull is called and you play against the caller's team: lead a suit ({{card}}), not a tarokk.",
