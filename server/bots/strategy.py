@@ -863,6 +863,8 @@ def _follow(view: SeatView) -> Decision:
             return _play(min(losers, key=_cheapness), "hint.follow.xxi_duck")
 
     # Waiting with the skíz for the XXI: stay out of the lead, and shed high tarokks doing so
+    # The owner's rule: the XXI catch comes before everything. The skíz does not take a king,
+    # not even one the other side's four kings depends on (report 20261125-161521: won't fix).
     if _hunting(view):
         # The owner's rule: a tarokk was led and no more tarokks are out than players still to
         # play, so the XXI has to come: play the skíz before it shows
