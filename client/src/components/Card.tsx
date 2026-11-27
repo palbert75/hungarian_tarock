@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Card as CardType } from '@/types'
@@ -37,20 +37,28 @@ export default function Card({ card, width, selected, dimmed, winner, hinted, ta
   const { t } = useTranslation()
   const [artFailed, setArtFailed] = useState(false)
   // Swipe up to throw: the card follows the finger, flies off when released far enough
-  const drag = useRef<{ id: number; x: number; y: number; height: number; moved: boolean } | null>(null)
+  const drag = useRef<{ id: number; x: number; y: number; lastX: number; lastY: number; height: number; moved: boolean } | null>(null)
   const swallowClick = useRef(false)
   const [offset, setOffset] = useState<{ x: number; y: number } | null>(null)
   const [thrown, setThrown] = useState(false)
 
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     if (!onSwipeUp || thrown || (e.pointerType === 'mouse' && e.button !== 0)) return
-    drag.current = { id: e.pointerId, x: e.clientX, y: e.clientY, height: e.currentTarget.offsetHeight, moved: false }
+    drag.current = {
+      id: e.pointerId, x: e.clientX, y: e.clientY, lastX: e.clientX, lastY: e.clientY,
+      height: e.currentTarget.offsetHeight, moved: false,
+    }
     swallowClick.current = false
+    setOffset(null)
     e.currentTarget.setPointerCapture?.(e.pointerId)
   }
   const onPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
     const d = drag.current
     if (!d || d.id !== e.pointerId) return
+    // The button was let go where we did not hear it: the drag ends where the mouse is now
+    if (e.pointerType === 'mouse' && e.buttons === 0) return finishDrag(e.clientX, e.clientY, false)
+    d.lastX = e.clientX
+    d.lastY = e.clientY
     const left = swipeDirection === 'left'
     // Free along the throw direction (towards the table only), damped across it
     const dx = left ? Math.min(0, e.clientX - d.x) : (e.clientX - d.x) * 0.5
@@ -59,14 +67,17 @@ export default function Card({ card, width, selected, dimmed, winner, hinted, ta
     d.moved = true
     setOffset({ x: dx, y: dy })
   }
-  const endDrag = (e: ReactPointerEvent<HTMLDivElement>, cancelled: boolean) => {
+  const finishDrag = (clientX: number, clientY: number, cancelled: boolean) => {
     const d = drag.current
-    if (!d || d.id !== e.pointerId) return
+    if (!d) return
     drag.current = null
-    if (!d.moved) return
+    if (!d.moved) {
+      setOffset(null)
+      return
+    }
     swallowClick.current = true
-    const travel = swipeDirection === 'left' ? d.x - e.clientX : d.y - e.clientY
-    if (!cancelled && travel >= Math.max(THROW_MIN_PX, d.height * THROW_SHARE)) {
+    const travel = swipeDirection === 'left' ? d.x - clientX : d.y - clientY
+    if (!cancelled && onSwipeUp && travel >= Math.max(THROW_MIN_PX, d.height * THROW_SHARE)) {
       setThrown(true)
       onSwipeUp?.()
       // If the play is refused the card comes back
@@ -78,6 +89,24 @@ export default function Card({ card, width, selected, dimmed, winner, hinted, ta
       setOffset(null)
     }
   }
+  const endDrag = (e: ReactPointerEvent<HTMLDivElement>, cancelled: boolean) => {
+    if (drag.current?.id === e.pointerId) finishDrag(e.clientX, e.clientY, cancelled)
+  }
+  // Wherever the button is let go (outside the card, outside the window), the drag ends
+  useEffect(() => {
+    const release = (e: PointerEvent) => {
+      if (drag.current?.id === e.pointerId) finishDrag(e.clientX, e.clientY, e.type === 'pointercancel')
+    }
+    const leave = () => drag.current && finishDrag(drag.current.lastX, drag.current.lastY, true)
+    window.addEventListener('pointerup', release)
+    window.addEventListener('pointercancel', release)
+    window.addEventListener('blur', leave)
+    return () => {
+      window.removeEventListener('pointerup', release)
+      window.removeEventListener('pointercancel', release)
+      window.removeEventListener('blur', leave)
+    }
+  })
   const swipeStyle = thrown
     ? {
         transform:
@@ -114,10 +143,10 @@ export default function Card({ card, width, selected, dimmed, winner, hinted, ta
             }
           : undefined
       }
-      onPointerDown={onSwipeUp ? onPointerDown : undefined}
-      onPointerMove={onSwipeUp ? onPointerMove : undefined}
-      onPointerUp={onSwipeUp ? (e) => endDrag(e, false) : undefined}
-      onPointerCancel={onSwipeUp ? (e) => endDrag(e, true) : undefined}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={(e) => endDrag(e, false)}
+      onPointerCancel={(e) => endDrag(e, true)}
       style={{ ...(width ? { width } : {}), ...(onSwipeUp ? { touchAction: 'none' } : {}), ...swipeStyle }}
       className={[
         'tcard',
