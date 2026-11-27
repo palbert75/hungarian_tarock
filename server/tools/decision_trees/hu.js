@@ -2,6 +2,12 @@
 // as written there (for a text put together from parts, the whole text as shown). PAGE_HU: the texts of
 // page.html by their data-t key. build.py stops when a text has no Hungarian here.
 const HU={
+  "A known teammate announced pagát ulti, they led a tarokk, their card is not certain to hold, and I have a tarokk (not the skíz) that beats everything still out?":
+    "Egy ismert társam pagátultit mondott, tarokkot hívott, a lapja nem biztos, hogy viszi, és van olyan tarokkom (nem a skíz), amely mindent üt, ami még kint van?",
+  "Win with my cheapest tarokk that nobody can beat":
+    "A legkisebb olyan tarokkommal ütök, amit senki sem tud felülütni",
+  "no opponent takes it cheaply, the tarokks keep coming out for the ulti":
+    "az ellenfél nem viheti olcsón, és a tarokkok tovább fogynak az ultihoz",
   "I am the declarer and hold the pagát, my side announced trull, I did not announce pagát ulti, and the called card is still unplayed and beats every tarokk the opponents may hold?":
     "Én vagyok a felvevő, nálam a pagát, az oldalunk trullt mondott, én nem mondtam pagátultit, és a hívott lap még nem ment ki, és mindent üt, ami az ellenfélnél lehet?",
   "With skíz and XXI on my side, the called XX is the highest tarokk outside my hand: the partner answers my tarokk lead with it.":

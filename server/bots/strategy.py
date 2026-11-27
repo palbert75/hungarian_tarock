@@ -55,6 +55,7 @@ ADOPTED = frozenset({
     "kurta",           # the long hand leaves cheap early tricks to the shorter teammate
     "pagat_catch",     # with trull announced on my side, draw tarokks until the pagát falls
     "ulti_keep_small", # the ulti announcer's teammate keeps a small tarokk for last
+    "ulti_cover",      # the ulti announcer's teammate wins an uncertain tarokk trick with a sure tarokk
     "kontra",          # kontra four kings and pagát ulti with a long, high tarokk hand
     "invit_accept",    # a great honour takes the auction after somebody's invit
     "invit_trull",     # the owner's rule: whoever takes an invit with a great honour announces trull
@@ -937,6 +938,15 @@ def _follow(view: SeatView) -> Decision:
         )
         if pagat and certain and not _announced(view, "pagat_ultimo", by_me=True):
             return _play(pagat, "hint.follow.pagat_home")
+        # Problem report 20261127-094937: my teammate announced pagát ulti and leads tarokks to
+        # draw them. An opponent after me must not take the trick cheaply: I win it with a
+        # tarokk nobody can beat, so the drawing goes on and the tarokks come out.
+        if ("ulti_cover" in TACTICS and not certain and lead_card.is_tarokk()
+                and _mate_announced(view, {"pagat_ultimo"})):
+            sure = [c for c in without_pagat if c.is_tarokk() and not _is(c, SKIZ)
+                    and all(value < c.tarokk_value() for value in out)]
+            if sure:
+                return _play(min(sure, key=lambda c: c.tarokk_value()), "hint.follow.ulti_cover")
         if hit_hard and not certain and not winner_card.is_tarokk():
             hard = _hard_tarokk(without_pagat, out, trick_points)
             if hard:

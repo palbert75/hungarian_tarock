@@ -303,6 +303,7 @@
       "pagat_home": "Ez az ütés biztosan a tiéd vagy a társadé: vidd haza most a pagátot.",
       "feed_teammate": "A társad viszi ezt az ütést: add neki a legértékesebb lapodat, ezt: {{card}}.",
       "teammate_wins_low": "A társad viszi ezt az ütést: ne pazarolj erős lapot, tedd ezt: {{card}}.",
+      "ulti_cover": "A társad pagátultit mondott: az ellenfél ne vigye olcsón a tarokkját. Üss ezzel: {{card}}, ezt senki sem üti felül.",
       "win_cheap": "Ezt az ütést érdemes elvinni: üsd meg a legkisebb lappal, ami még üt: {{card}}.",
       "low": "Nem éri meg, vagy nem tudod elvinni: tedd a legolcsóbb lapodat, ezt: {{card}}.",
       "skiz_take_lead": "A skízzel a XXI-re vársz. Ha az ütés a partnerednél marad, az ő hívására a XXI mindkettőtök mögött tehet, és hazamegy. Vedd át a hívást ezzel: {{card}} – a XXI gazdája nem tudhatja, melyikőtöknél van a skíz.",

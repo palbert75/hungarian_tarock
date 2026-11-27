@@ -1176,3 +1176,22 @@ def test_declarer_with_all_honours_leads_the_pagat_under_the_called_xx():
     gone = history + [[(1, "II"), (2, "XIX"), (3, "XX"), (0, "IV")]]
     view = play_view("skiz VI XIV I hQ h10", position=1, declarer=1, history=gone, announcements=[trull])
     assert decide_card(view).reason_key != "hint.lead.pagat_home"
+
+
+def test_ulti_cover_wins_the_teammates_tarokk_lead_with_a_sure_tarokk():
+    # Problem report 20261127-094937: the declarer (seat 0) announced pagát ulti and led the X.
+    # Their partner played the IX under it, and the XVII after them took the trick cheaply.
+    ulti = Announcement(player_position=0, announcement_type=AnnouncementType.PAGAT_ULTIMO)
+    history = [[(3, "VI"), (0, "skiz"), (1, "VII"), (2, "II")]]
+    hand = "XXI XX XIX XII IX V dQ sQ"
+    view = play_view(hand, trick=[(0, "X")], position=1, declarer=0, partner=1, i_am_partner=True,
+                     history=history, announcements=[ulti])
+    view.called_rank = "XX"
+    d = decide_card(view)
+    # The skíz is gone, the XXI and XX are mine: the XIX beats everything still out
+    assert played(d, view) == "XIX" and d.reason_key == "hint.follow.ulti_cover"
+    # Without the ulti the teammate's lead is left to them
+    plain = play_view(hand, trick=[(0, "X")], position=1, declarer=0, partner=1, i_am_partner=True,
+                      history=history)
+    plain.called_rank = "XX"
+    assert decide_card(plain).reason_key == "hint.follow.teammate_wins_low"

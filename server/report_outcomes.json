@@ -34,6 +34,7 @@
   "20261125-094551-bb00a2": {"status": "wont_fix", "hu": "Licitálni csak honőrrel lehet; ha mindenki passzol, újraosztás jön.", "en": "Bidding needs an honour; when all pass the cards are dealt again."},
   "20261125-140547-022a0d": {"status": "fixed", "hu": "A XX–XVI birtokában már a XV (és lejjebb) is hívható.", "en": "Holding XX to XVI you can now call the XV (and lower)."},
   "20261125-141902-32422d": {"status": "fixed", "hu": "A maradék talon a felvevő után következőtől oszlik, nem mindig ugyanannak jut több.", "en": "The rest of the talon is shared from the player after the declarer, not always the same seat."},
-  "20261125-161521-d9b8b9": {"status": "wont_fix", "hu": "A skíz a XXI fogására vár, ez minden más előtt jár, a bemondott király megfogása előtt is.", "en": "The skíz waits to catch the XXI; that comes before everything, even catching an announced king."}
+  "20261125-161521-d9b8b9": {"status": "wont_fix", "hu": "A skíz a XXI fogására vár, ez minden más előtt jár, a bemondott király megfogása előtt is.", "en": "The skíz waits to catch the XXI; that comes before everything, even catching an announced king."},
+  "20261127-094937-d589bc": {"status": "fixed", "hu": "A pagátulti partnere biztos tarokkal üti felül a társa tarokkhívását, hogy az ellenfél ne vigye olcsón. Trull nem jár: a felvevő pagátultija azt jelzi, hogy csak a pagáttal licitált, így a partner nem tudhatja, kinél a skíz.", "en": "The pagát ulti partner covers their teammate's tarokk lead with a sure tarokk, so no opponent takes it cheaply. No trull: the declarer's pagát ulti says they bid on the pagát alone, so the partner cannot know who holds the skíz."}
  }
 }

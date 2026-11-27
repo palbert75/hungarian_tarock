@@ -145,6 +145,7 @@ function followTree(two){
   const drive = two ? ', or (while skíz and XXI are both unplayed) the known teammate seated before me seems to wait with the skíz' : ', or the known teammate seated before me seems to wait with the skíz';
   const mate=seq(
     q('Their card is certain to hold (no opponent after me, or their tarokk beats everything still out), I have the pagát, and I did not announce pagát ulti?',{src:L(593)},'yes',H('Play the pagát','bring it home')),
+    q('A known teammate announced pagát ulti, they led a tarokk, their card is not certain to hold, and I have a tarokk (not the skíz) that beats everything still out?',{src:LS(`if ("ulti_cover" in TACTICS and not certain and lead_card.is_tarokk()`),tag:'ulti_cover'},'yes',T('Win with my cheapest tarokk that nobody can beat','no opponent takes it cheaply, the tarokks keep coming out for the ulti')),
     q('Not certain, they are winning with a suit card, an opponent plays after me, all I can play are tarokks, and a king is in the trick or my teammate led the suit?',{src:L(595),tag:'hit_hard · hit_hard_lead'},'yes',T('Play a hard tarokk','keep the trick and the lead on our side')),
     q('The trick is certain and I have a suit card?',{src:L(600),tag:'safe_feed'},'yes',S('Play my most valuable suit card','feed the teammate')),
     X('Play my cheapest card'));

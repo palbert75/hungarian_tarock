@@ -303,6 +303,7 @@
       "pagat_home": "This trick is safely yours or your teammate's: bring the pagát home now.",
       "feed_teammate": "Your teammate is winning this trick: give them your most valuable card, {{card}}.",
       "teammate_wins_low": "Your teammate is winning this trick: do not waste a strong card, play {{card}}.",
+      "ulti_cover": "Your teammate announced pagát ulti: an opponent must not take their tarokk cheaply. Win the trick with {{card}}, nobody can beat it.",
       "win_cheap": "This trick is worth taking: win it with {{card}}, the lowest card that wins.",
       "low": "Not worth winning, or you cannot win it: play your cheapest card, {{card}}.",
       "skiz_take_lead": "You are waiting with the skíz for the XXI. If your teammate keeps this trick, their lead lets the XXI play behind both of you and go home. Take the lead yourself with {{card}}: the holder of the XXI cannot know which of you has the skíz.",
