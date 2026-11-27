@@ -1,9 +1,9 @@
 import { io, Socket } from 'socket.io-client'
 import i18n from '@/i18n'
-import { useGameStore } from '@/store/gameStore'
+import { useGameStore, selectMyPosition } from '@/store/gameStore'
 import { playSound } from '@/utils/sound'
 import { tarokkName } from '@/utils/cardNames'
-import type { BotSpeed, GameOverData, GameState, RecentReport, RoomState, TrickCard, YourTurnData } from '@/types'
+import type { BotSpeed, GameOverData, GameState, RecentReport, RoomState, TrickCard, XxiCatch, YourTurnData } from '@/types'
 
 /** Server messages come either bare or wrapped as { type, data }. */
 const unwrap = <T = any>(payload: any): T =>
@@ -232,6 +232,13 @@ class SocketManager {
       playSound('trick')
       if (this.trickTimer) clearTimeout(this.trickTimer)
       this.trickTimer = setTimeout(() => store().setFinishedTrick(null), TRICK_SHOW_MS)
+    })
+
+    socket.on('xxi_caught', (payload) => {
+      const data = unwrap<Omit<XxiCatch, 'id'>>(payload)
+      store().celebrateXxiCatch(data)
+      const me = selectMyPosition(store())
+      if (me !== null) playSound(data.winners.includes(me) ? 'fanfare' : 'sad')
     })
 
     socket.on('game_over', (payload) => {

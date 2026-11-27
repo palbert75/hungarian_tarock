@@ -660,6 +660,88 @@ html, body {
   .seat-burst { display: none; }
 }
 
+.burst-confetti i { border-radius: 1px; width: 7px; height: 4px; box-shadow: none; }
+.burst-confetti i:nth-child(4n + 1) { background: #facc15; }
+.burst-confetti i:nth-child(4n + 2) { background: #f472b6; }
+.burst-confetti i:nth-child(4n + 3) { background: #34d399; }
+.burst-confetti i:nth-child(4n) { background: #60a5fa; }
+.burst-confetti b { border-color: #facc15; }
+
+/* A little rain over a seat whose XXI was caught */
+.seat-rain { position: absolute; left: 50%; top: -0.6rem; width: 0; height: 0; pointer-events: none; z-index: 30; }
+.seat-rain-cloud { position: absolute; left: -0.8rem; top: -0.9rem; font-size: 1.5rem; filter: grayscale(0.6); animation: seat-cloud 4.2s ease-in-out forwards; }
+.seat-rain i {
+  position: absolute; left: var(--x); top: 0.5rem; width: 2px; height: 8px; border-radius: 1px;
+  background: #93c5fd; opacity: 0;
+  animation: seat-drop 700ms linear var(--delay) 5;
+}
+@keyframes seat-cloud {
+  0% { opacity: 0; transform: translateY(-6px); }
+  10%, 85% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; }
+}
+@keyframes seat-drop {
+  0% { opacity: 0; transform: translateY(0); }
+  20% { opacity: 0.9; }
+  100% { opacity: 0; transform: translateY(26px); }
+}
+
+/* The XXI caught: confetti or rain over the whole screen */
+.xxi-fx { position: fixed; inset: 0; z-index: 60; pointer-events: none; overflow: hidden; animation: xxi-fx-fade var(--fx-ms) ease forwards; }
+.xxi-fx-sad { background: radial-gradient(ellipse at center, rgba(15, 23, 42, 0.15), rgba(15, 23, 42, 0.6)); }
+.xxi-confetti {
+  position: absolute; top: -20px; border-radius: 1px; opacity: 0;
+  animation-name: xxi-confetti-fall; animation-timing-function: cubic-bezier(0.3, 0.5, 0.6, 1); animation-fill-mode: forwards;
+}
+.xxi-rain {
+  position: absolute; top: -30px; width: 2px; height: 18px; border-radius: 1px;
+  background: linear-gradient(rgba(147, 197, 253, 0), rgba(147, 197, 253, 0.8)); opacity: 0;
+  animation-name: xxi-rain-fall; animation-timing-function: linear; animation-iteration-count: 3;
+}
+.xxi-banner {
+  position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%);
+  max-width: calc(100vw - 2rem); width: max-content; padding: 0.8rem 1.4rem; border-radius: 1.2rem;
+  text-align: center; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+  animation: xxi-banner-pop var(--fx-ms) ease-out forwards;
+}
+.xxi-fx-happy .xxi-banner { background: linear-gradient(135deg, #a16207, #ca8a04); border: 2px solid #fde047; color: #fff; }
+.xxi-fx-sad .xxi-banner { background: #334155; border: 2px solid #64748b; color: #e2e8f0; }
+.xxi-banner-icon { font-size: 2.4rem; line-height: 1; }
+.xxi-fx-sad .xxi-banner-icon { animation: xxi-sway 1.6s ease-in-out infinite; }
+.xxi-banner-title { font-size: clamp(1.3rem, 6vw, 2rem); font-weight: 800; line-height: 1.15; margin-top: 0.2rem; }
+.xxi-banner-line { font-size: 0.85rem; opacity: 0.9; margin-top: 0.2rem; }
+@keyframes xxi-confetti-fall {
+  0% { opacity: 1; transform: translate(0, 0) rotate(0deg); }
+  85% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--drift), 105vh) rotate(var(--spin)); }
+}
+@keyframes xxi-rain-fall {
+  0% { opacity: 0; transform: translateY(0); }
+  10% { opacity: 1; }
+  100% { opacity: 0.2; transform: translateY(105vh); }
+}
+@keyframes xxi-banner-pop {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+  8% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+  13% { transform: translate(-50%, -50%) scale(1); }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes xxi-fx-fade { 0%, 85% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes xxi-sway { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+
+/* The polgármester's hat beside the name, popping on when it changes hands */
+.mayor-hat { display: inline-flex; flex: none; margin: -0.7rem 0 -0.2rem; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6)); animation: mayor-hat-on 900ms cubic-bezier(0.3, 1.6, 0.5, 1) both; }
+@keyframes mayor-hat-on {
+  0% { opacity: 0; transform: translateY(-14px) rotate(-25deg) scale(0.4); }
+  100% { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seat-rain, .xxi-confetti, .xxi-rain { display: none; }
+  .mayor-hat, .xxi-fx-sad .xxi-banner-icon { animation: none; }
+}
+
 /* Trick by trick on the result screen */
 .trick-table { display: grid; grid-template-columns: 1.4rem repeat(4, minmax(0, 1fr)); gap: 0.25rem 0.3rem; align-items: center; font-size: 0.8rem; }
 .trick-head { text-align: center; font-size: 0.68rem; font-weight: 700; border-radius: 0.4rem; padding: 0.1rem 0.2rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

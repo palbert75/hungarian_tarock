@@ -71,6 +71,7 @@ class PersistenceManager:
                         "owner_id": room.owner_id,
                         "creator_id": room.creator_id,
                         "bot_speed": room.bot_speed,
+                        "away_mayor": room.away_mayor,
                         # The result on the table and the bots' reasons must outlive a restart too
                         "last_game_over": room.last_game_over,
                         "decision_log": room.decision_log,
@@ -233,6 +234,7 @@ class PersistenceManager:
             room.owner_id = meta.get("owner_id")
             room.creator_id = meta.get("creator_id")
             room.bot_speed = meta.get("bot_speed", "normal")
+            room.away_mayor = meta.get("away_mayor")
             room.last_game_over = meta.get("last_game_over")
             room.decision_log = meta.get("decision_log") or []
             room.hand_started_at = meta.get("hand_started_at")
@@ -297,6 +299,7 @@ class PersistenceManager:
         game_state.declarer_alone = game_state_dict.get('declarer_alone', False)
         game_state.called_card_discarded_by = game_state_dict.get('called_card_discarded_by')
         game_state.game_contra = game_state_dict.get('game_contra', False)
+        game_state.xxi_catch_shown = game_state_dict.get('xxi_catch_shown', False)
         game_state.hand_number = game_state_dict.get('hand_number', 1)
 
         logger.debug("game_state_basic_fields_set",
@@ -418,6 +421,7 @@ class PersistenceManager:
                 bot_controlled=player_dict.get('bot_controlled', False),
                 vacant=player_dict.get('vacant', False),
                 total_score=player_dict.get('total_score', 0),
+                polgarmester=player_dict.get('polgarmester', False),
                 ready_next=player_dict.get('ready_next', False),
                 talon_card_ids=player_dict.get('talon_card_ids', [])
             )

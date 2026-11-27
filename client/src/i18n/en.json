@@ -63,7 +63,13 @@
     "declarer": "declarer",
     "partner": "partner",
     "dealer": "dealer",
-    "dropped": "dropped out"
+    "dropped": "dropped out",
+    "mayor": "polgármester: the last one whose XXI was caught"
+  },
+  "xxiCatch": {
+    "won": "You caught the XXI!",
+    "lost": "The XXI is lost…",
+    "line": "{{skiz}}'s skíz caught {{xxi}}'s XXI"
   },
   "game": {
     "yourTurn": "Your turn",

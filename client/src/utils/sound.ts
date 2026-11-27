@@ -1,6 +1,6 @@
 import { useSettings } from '@/store/settingsStore'
 
-type SoundKind = 'turn' | 'card' | 'trick'
+type SoundKind = 'turn' | 'card' | 'trick' | 'fanfare' | 'sad'
 
 let ctx: AudioContext | null = null
 
@@ -8,6 +8,8 @@ const TONES: Record<SoundKind, { freq: number[]; duration: number; type: Oscilla
   turn: { freq: [660, 880], duration: 0.12, type: 'sine' },
   card: { freq: [220], duration: 0.05, type: 'triangle' },
   trick: { freq: [523, 659, 784], duration: 0.09, type: 'sine' },
+  fanfare: { freq: [523, 659, 784, 1047, 784, 1047], duration: 0.11, type: 'triangle' },
+  sad: { freq: [392, 370, 349, 262], duration: 0.28, type: 'sine' },
 }
 
 /** Short generated sounds; silent when sounds are switched off or audio is unavailable. */

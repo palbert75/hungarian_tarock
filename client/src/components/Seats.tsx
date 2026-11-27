@@ -31,13 +31,25 @@ const SPARKS = Array.from({ length: 14 }, (_, i) => {
   return { dx: Math.cos(angle) * reach, dy: Math.sin(angle) * reach, delay: (i % 4) * 35 }
 })
 
-/** A short burst of sparks in the seat's new colour. */
-function Burst({ relation }: { relation: Relation }) {
+/** A short burst of sparks in the seat's new colour, or of confetti for a caught XXI. */
+function Burst({ relation }: { relation: Relation | 'confetti' }) {
   return (
     <span className={`seat-burst burst-${relation}`} aria-hidden="true">
       <b />
       {SPARKS.map((s, i) => (
         <i key={i} style={{ '--dx': `${s.dx}px`, '--dy': `${s.dy}px`, '--delay': `${s.delay}ms` } as CSSProperties} />
+      ))}
+    </span>
+  )
+}
+
+/** A small cloud raining on a seat whose XXI was just caught. */
+function RainCloud() {
+  return (
+    <span className="seat-rain" aria-hidden="true">
+      <span className="seat-rain-cloud">☁️</span>
+      {[0, 1, 2, 3, 4].map((i) => (
+        <i key={i} style={{ '--x': `${(i - 2) * 7}px`, '--delay': `${(i * 170) % 500}ms` } as CSSProperties} />
       ))}
     </span>
   )
@@ -69,6 +81,7 @@ export default function Seats({ table, content, detail, turn, big, center }: Sea
   const { relationOf, known } = useSides(table)
   const seats: Partial<Record<Seat, ReactNode>> = {}
   const speech = useGameStore((s) => s.speech)
+  const xxiCatch = useGameStore((s) => s.xxiCatch)
 
   // Sparks on a seat whose side has just come to light
   const [bursts, setBursts] = useState<Record<number, { id: number; relation: Relation }>>({})
@@ -104,6 +117,7 @@ export default function Seats({ table, content, detail, turn, big, center }: Sea
         isDealer={position === game.dealer_position}
         isDeclarer={position === game.declarer_position}
         isPartner={game.partner_revealed && position === game.partner_position}
+        isMayor={!!player?.polgarmester}
         side={known ? relationOf(position) : undefined}
         detail={detail?.(position)}
         small={!big}
@@ -117,6 +131,8 @@ export default function Seats({ table, content, detail, turn, big, center }: Sea
       >
         {bursts[position] && <Burst key={bursts[position].id} relation={bursts[position].relation} />}
         {speech[position] && <SpeechBubble key={speech[position].id} speech={speech[position]} />}
+        {xxiCatch?.winners.includes(position) && <Burst key={`xxi-${xxiCatch.id}`} relation="confetti" />}
+        {xxiCatch?.losers.includes(position) && <RainCloud key={`xxi-${xxiCatch.id}`} />}
         {seat === 'N' ? (
           <>
             {label}

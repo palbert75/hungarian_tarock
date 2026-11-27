@@ -12,10 +12,13 @@ import type {
   ChatMessage,
   FinishedTrick,
   Speech,
+  XxiCatch,
 } from '@/types'
 
 /** How long a spoken bid or announcement stays over the seat (ms) */
 export const SPEECH_MS = 3800
+/** How long the XXI catch is celebrated (ms) */
+export const XXI_CATCH_MS = 4500
 
 interface GameStore {
   // Connection
@@ -42,6 +45,8 @@ interface GameStore {
   finishedTrick: FinishedTrick | null
   /** Seat -> what that player has just said (bid, call, announcement) */
   speech: Record<number, Speech>
+  /** The XXI was just caught: confetti and rain clouds */
+  xxiCatch: XxiCatch | null
 
   // UI
   selectedCards: string[]
@@ -65,6 +70,7 @@ interface GameStore {
   setGameOverData: (data: GameOverData | null) => void
   setFinishedTrick: (trick: FinishedTrick | null) => void
   say: (position: number, text: string, tone?: Speech['tone']) => void
+  celebrateXxiCatch: (data: Omit<XxiCatch, 'id'>) => void
 
   toggleCardSelection: (cardId: string, max?: number) => void
   clearSelectedCards: () => void
@@ -97,6 +103,7 @@ export const useGameStore = create<GameStore>()(
       gameOverData: null,
       finishedTrick: null,
       speech: {},
+      xxiCatch: null,
       selectedCards: [],
       toasts: [],
       chatMessages: [],
@@ -122,6 +129,7 @@ export const useGameStore = create<GameStore>()(
           yourTurnData: null,
           gameOverData: null,
           finishedTrick: null,
+          xxiCatch: null,
           selectedCards: [],
           chatMessages: [],
           unreadChat: 0,
@@ -146,6 +154,14 @@ export const useGameStore = create<GameStore>()(
             return { speech: rest }
           })
         }, SPEECH_MS)
+      },
+
+      celebrateXxiCatch: (data) => {
+        const id = Date.now() + Math.random()
+        set({ xxiCatch: { ...data, id } })
+        setTimeout(() => {
+          if (get().xxiCatch?.id === id) set({ xxiCatch: null })
+        }, XXI_CATCH_MS)
       },
 
       toggleCardSelection: (cardId, max) => {

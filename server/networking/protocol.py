@@ -54,6 +54,7 @@ class MessageType(str, Enum):
     CARD_PLAYED = "card_played"
     TRICK_STARTED = "trick_started"
     TRICK_COMPLETE = "trick_complete"
+    XXI_CAUGHT = "xxi_caught"
 
     # Scoring
     GAME_OVER = "game_over"

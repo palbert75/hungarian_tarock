@@ -196,6 +196,9 @@ class GameState(BaseModel):
     called_card_discarded_by: Optional[int] = None
     game_contra: bool = False
 
+    # The XXI catch of this hand has been shown to the table
+    xxi_catch_shown: bool = False
+
     # Hands played at this table
     hand_number: int = 1
 
@@ -284,6 +287,7 @@ class GameState(BaseModel):
         self.declarer_alone = False
         self.called_card_discarded_by = None
         self.game_contra = False
+        self.xxi_catch_shown = False
         for player in self.players:
             player.ready_next = False
 
@@ -882,6 +886,7 @@ class GameState(BaseModel):
         }
         if include_all_hands:
             result["called_card_discarded_by"] = self.called_card_discarded_by
+            result["xxi_catch_shown"] = self.xxi_catch_shown
 
         # Add winning bid if it exists
         if self.winning_bid:

@@ -13,6 +13,7 @@ from typing import Any, Awaitable, Callable, List, Optional
 import structlog
 
 from bots.decision import Decision, fallback_decision
+from game_logic.announcement_checker import xxi_catch
 from game_logic.bidding import BiddingManager
 from game_logic.final_scoring import calculate_final_score
 from models.announcement import Announcement, AnnouncementType
@@ -552,7 +553,40 @@ class GameService:
             if game_state.phase == GamePhase.SCORING:
                 await self._game_over(room)
 
+        await self.show_xxi_catch(room)
         await self.after_action(room)
+
+    async def show_xxi_catch(self, room: Room) -> None:
+        """
+        Tell the table the XXI was caught, once, and hand the mayor's hat to its owner.
+
+        Whether a skíz on the XXI is a catch depends on the sides, so while the
+        partner is hidden it waits: until the called card falls or the hand ends.
+        """
+        game_state = room.game_state
+        if game_state.xxi_catch_shown or game_state.declarer_position is None:
+            return
+        if not game_state.partner_revealed and game_state.phase not in (GamePhase.SCORING, GamePhase.GAME_END):
+            return
+        declarer_side = {game_state.declarer_position}
+        if game_state.partner_position is not None:
+            declarer_side.add(game_state.partner_position)
+        catch = xxi_catch(game_state.trick_history, declarer_side)
+        if catch is None:
+            return
+        skiz_by, xxi_by = catch
+        game_state.xxi_catch_shown = True
+        skiz_side = declarer_side if skiz_by in declarer_side else {0, 1, 2, 3} - declarer_side
+        for p in game_state.players:
+            p.polgarmester = p.position == xxi_by
+        room.away_mayor = None
+        await self.broadcast(room, MessageType.XXI_CAUGHT, {
+            "skiz_position": skiz_by,
+            "xxi_position": xxi_by,
+            "winners": sorted(skiz_side),
+            "losers": sorted({0, 1, 2, 3} - skiz_side),
+        })
+        await self.broadcast_room_state(room)
 
     async def act_throw_in(self, room: Room, player: Player) -> None:
         """A player with all four kings throws the hand in; the same dealer deals again."""
@@ -576,6 +610,7 @@ class GameService:
         if not game_state.partner_revealed and game_state.partner_position is not None:
             game_state.partner_revealed = True
             game_state.players[game_state.partner_position].partner_revealed = True
+        await self.show_xxi_catch(room)
 
         result = calculate_final_score(
             players=game_state.players,

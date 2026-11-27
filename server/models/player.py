@@ -38,6 +38,7 @@ class Player(BaseModel):
     bot_controlled: bool = False  # A bot is currently playing this seat
     vacant: bool = False          # Seat freed between hands; keeps its running total
     total_score: int = 0          # Running total across hands at this table
+    polgarmester: bool = False    # Had the XXI caught last: wears the mayor's hat until it is caught again
     ready_next: bool = False      # Asked for the next hand
     talon_card_ids: List[str] = Field(default_factory=list)  # Cards received from the talon this hand
 
@@ -190,6 +191,7 @@ class Player(BaseModel):
             "bot_controlled": self.bot_controlled,
             "vacant": self.vacant,
             "total_score": self.total_score,
+            "polgarmester": self.polgarmester,
             "ready_next": self.ready_next,
             # Tarokks put into the skart are declared at the table, so the count is public
             "tarokks_discarded": sum(1 for card in self.discard_pile if card.is_tarokk()),

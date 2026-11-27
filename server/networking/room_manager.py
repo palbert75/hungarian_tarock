@@ -52,6 +52,7 @@ class Room:
         self.decision_log: List[dict] = []  # What the bots did this hand and why (for problem reports)
         self.dropped_at: Dict[str, float] = {}  # player_id -> time the connection dropped
         self.hand_started_at: Optional[float] = None  # When the hand in play was dealt (for the statistics)
+        self.away_mayor: Optional[str] = None  # Name of the polgármester who left: the hat waits for them
 
     # ------------------------------------------------------------------ seats
 
@@ -95,6 +96,10 @@ class Room:
             player.is_bot = True
             player.bot_controlled = True
             player.is_ready = True
+        elif name == self.away_mayor:
+            # The polgármester is back: the hat goes on again
+            player.polgarmester = True
+            self.away_mayor = None
         self.players.append(player)
         self._sort_players()
         return player
@@ -145,6 +150,10 @@ class Room:
         if not player:
             return
         self.player_sessions.pop(player_id, None)
+        if player.polgarmester:
+            # The hat leaves with the person, and comes back if they rejoin
+            player.polgarmester = False
+            self.away_mayor = None if player.is_bot else player.name
         if self.game_state.phase == GamePhase.WAITING:
             self.players.remove(player)
         else:
@@ -348,6 +357,7 @@ class Room:
                     "is_bot": p.is_bot,
                     "bot_controlled": p.bot_controlled,
                     "total_score": p.total_score,
+                    "polgarmester": p.polgarmester,
                 }
                 for p in self.seated()
             ],

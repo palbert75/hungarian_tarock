@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Player, RoomPlayer, Seat } from '@/types'
+import MayorHat from './MayorHat'
 
 interface TableViewProps {
   /** What to show at each screen seat */
@@ -31,6 +32,8 @@ interface SeatLabelProps {
   isDealer?: boolean
   isDeclarer?: boolean
   isPartner?: boolean
+  /** Their XXI was caught last: the polgármester's hat */
+  isMayor?: boolean
   /** Which side the seat is on, as far as the viewer knows; omitted before the bidding ends */
   side?: 'ally' | 'enemy' | 'unknown'
   /** Extra line under the name (tricks won, "ready"…) */
@@ -39,7 +42,7 @@ interface SeatLabelProps {
 }
 
 /** A player's name with the badges everybody at the table may know. */
-export function SeatLabel({ player, isMe, isTurn, isDealer, isDeclarer, isPartner, side, detail, small }: SeatLabelProps) {
+export function SeatLabel({ player, isMe, isTurn, isDealer, isDeclarer, isPartner, isMayor, side, detail, small }: SeatLabelProps) {
   const { t } = useTranslation()
   if (!player) return null
   const dropped = !player.is_connected && !player.bot_controlled
@@ -53,6 +56,7 @@ export function SeatLabel({ player, isMe, isTurn, isDealer, isDeclarer, isPartne
       >
         {player.bot_controlled && <span aria-label={t('seat.bot')}>🤖</span>}
         <span className="truncate max-w-[6.5rem]">{isMe ? t('seat.you') : player.name}</span>
+        {isMayor && <MayorHat title={t('seat.mayor')} />}
         {isDeclarer && <span title={t('seat.declarer')} aria-label={t('seat.declarer')}>👑</span>}
         {isPartner && <span title={t('seat.partner')} aria-label={t('seat.partner')}>🤝</span>}
         {isDealer && <span title={t('seat.dealer')} aria-label={t('seat.dealer')} className="opacity-80">Ⓓ</span>}

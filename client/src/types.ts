@@ -70,6 +70,8 @@ export interface Player {
   bot_controlled?: boolean
   vacant?: boolean
   total_score?: number
+  /** Their XXI was caught last: wears the mayor's hat until the next catch */
+  polgarmester?: boolean
   ready_next?: boolean
   total_points: number
   tricks_won_count: number
@@ -77,6 +79,15 @@ export interface Player {
   talon_card_ids?: string[] // Cards you received from the talon this hand
   /** How many tarokks this player put into the skart (declared at the table) */
   tarokks_discarded?: number
+}
+
+/** The skíz has caught the XXI: who celebrates and who mourns */
+export interface XxiCatch {
+  id: number
+  skiz_position: number
+  xxi_position: number
+  winners: number[]
+  losers: number[]
 }
 
 export interface TrickCard {

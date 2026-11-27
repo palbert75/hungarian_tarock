@@ -1,6 +1,6 @@
 """Check if announcements were achieved using trick history."""
 
-from typing import List, Dict, Optional, Set
+from typing import List, Dict, Optional, Set, Tuple
 from models.player import Player
 from models.announcement import Announcement, AnnouncementType
 
@@ -96,11 +96,8 @@ def check_pagat_ultimo(trick_history: List[dict], team: Set[int]) -> bool:
     return pagat_ultimo_winner(trick_history) in team
 
 
-def xxi_catcher(trick_history: List[dict], declarer_side: Set[int]) -> Optional[int]:
-    """
-    Position of the player whose skíz captured the other side's XXI, or None.
-    A skíz that falls on a teammate's XXI is not a catch.
-    """
+def xxi_catch(trick_history: List[dict], declarer_side: Set[int]) -> Optional[Tuple[int, int]]:
+    """(skíz player, XXI player) if the skíz captured the other side's XXI, else None."""
     for trick in trick_history:
         skiz_by = xxi_by = None
         for card_info in trick['cards']:
@@ -110,9 +107,18 @@ def xxi_catcher(trick_history: List[dict], declarer_side: Set[int]) -> Optional[
                 xxi_by = card_info['player_position']
         if skiz_by is not None and xxi_by is not None:
             if (skiz_by in declarer_side) != (xxi_by in declarer_side):
-                return skiz_by
+                return skiz_by, xxi_by
             return None
     return None
+
+
+def xxi_catcher(trick_history: List[dict], declarer_side: Set[int]) -> Optional[int]:
+    """
+    Position of the player whose skíz captured the other side's XXI, or None.
+    A skíz that falls on a teammate's XXI is not a catch.
+    """
+    catch = xxi_catch(trick_history, declarer_side)
+    return catch[0] if catch else None
 
 
 def check_xxi_catch(trick_history: List[dict], team: Set[int], declarer_side: Set[int]) -> bool:

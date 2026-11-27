@@ -63,7 +63,13 @@
     "declarer": "felvevő",
     "partner": "partner",
     "dealer": "osztó",
-    "dropped": "kiesett"
+    "dropped": "kiesett",
+    "mayor": "polgármester: az ő XXI-esét fogták meg utoljára"
+  },
+  "xxiCatch": {
+    "won": "Megfogtátok a XXI-est!",
+    "lost": "Odalett a XXI-es…",
+    "line": "{{skiz}} skíze megfogta {{xxi}} XXI-esét"
   },
   "game": {
     "yourTurn": "Te jössz",

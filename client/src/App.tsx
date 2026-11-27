@@ -8,6 +8,7 @@ import LobbyScreen from '@/screens/LobbyScreen'
 import WaitingRoomScreen from '@/screens/WaitingRoomScreen'
 import GameScreen from '@/screens/GameScreen'
 import Toast from '@/components/Toast'
+import XxiCatchFx from '@/components/XxiCatchFx'
 import ConnectionBanner from '@/components/ConnectionBanner'
 import BackgroundMusic from '@/components/BackgroundMusic'
 
@@ -55,6 +56,7 @@ export default function App() {
       <Screen />
       <BackgroundMusic />
       <ConnectionBanner />
+      <XxiCatchFx />
       <Toast />
     </div>
   )
