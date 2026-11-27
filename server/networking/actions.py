@@ -558,15 +558,14 @@ class GameService:
 
     async def show_xxi_catch(self, room: Room) -> None:
         """
-        Tell the table the XXI was caught, once, and hand the mayor's hat to its owner.
+        Tell the table the XXI was caught and hand the mayor's hat to its owner.
 
-        Whether a skíz on the XXI is a catch depends on the sides, so while the
-        partner is hidden it waits: until the called card falls or the hand ends.
+        The skíz and the XXI get their effect at once. Their partners get theirs
+        when the sides are public (the called card has fallen or the hand ends):
+        before that it would tell the table who the hidden partner is.
         """
         game_state = room.game_state
         if game_state.xxi_catch_shown or game_state.declarer_position is None:
-            return
-        if not game_state.partner_revealed and game_state.phase not in (GamePhase.SCORING, GamePhase.GAME_END):
             return
         declarer_side = {game_state.declarer_position}
         if game_state.partner_position is not None:
@@ -575,18 +574,33 @@ class GameService:
         if catch is None:
             return
         skiz_by, xxi_by = catch
-        game_state.xxi_catch_shown = True
-        skiz_side = declarer_side if skiz_by in declarer_side else {0, 1, 2, 3} - declarer_side
-        for p in game_state.players:
-            p.polgarmester = p.position == xxi_by
-        room.away_mayor = None
-        await self.broadcast(room, MessageType.XXI_CAUGHT, {
-            "skiz_position": skiz_by,
-            "xxi_position": xxi_by,
-            "winners": sorted(skiz_side),
-            "losers": sorted({0, 1, 2, 3} - skiz_side),
-        })
-        await self.broadcast_room_state(room)
+        sides_public = game_state.partner_revealed or game_state.phase in (GamePhase.SCORING, GamePhase.GAME_END)
+        already = game_state.xxi_catch_partial
+        if not sides_public and already:
+            return
+        if sides_public:
+            skiz_side = declarer_side if skiz_by in declarer_side else {0, 1, 2, 3} - declarer_side
+            winners, losers = skiz_side, {0, 1, 2, 3} - skiz_side
+            if already:
+                # The two of them have had theirs: now their partners
+                winners, losers = winners - {skiz_by}, losers - {xxi_by}
+            game_state.xxi_catch_shown = True
+        else:
+            winners, losers = {skiz_by}, {xxi_by}
+            game_state.xxi_catch_partial = True
+        if not already:
+            for p in game_state.players:
+                p.polgarmester = p.position == xxi_by
+            room.away_mayor = None
+        if winners or losers:
+            await self.broadcast(room, MessageType.XXI_CAUGHT, {
+                "skiz_position": skiz_by,
+                "xxi_position": xxi_by,
+                "winners": sorted(winners),
+                "losers": sorted(losers),
+            })
+        if not already:
+            await self.broadcast_room_state(room)
 
     async def act_throw_in(self, room: Room, player: Player) -> None:
         """A player with all four kings throws the hand in; the same dealer deals again."""

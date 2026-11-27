@@ -300,6 +300,7 @@ class PersistenceManager:
         game_state.called_card_discarded_by = game_state_dict.get('called_card_discarded_by')
         game_state.game_contra = game_state_dict.get('game_contra', False)
         game_state.xxi_catch_shown = game_state_dict.get('xxi_catch_shown', False)
+        game_state.xxi_catch_partial = game_state_dict.get('xxi_catch_partial', False)
         game_state.hand_number = game_state_dict.get('hand_number', 1)
 
         logger.debug("game_state_basic_fields_set",

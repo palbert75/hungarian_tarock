@@ -198,6 +198,8 @@ class GameState(BaseModel):
 
     # The XXI catch of this hand has been shown to the table
     xxi_catch_shown: bool = False
+    # Shown to the skíz and the XXI only, while the partner is hidden
+    xxi_catch_partial: bool = False
 
     # Hands played at this table
     hand_number: int = 1
@@ -288,6 +290,7 @@ class GameState(BaseModel):
         self.called_card_discarded_by = None
         self.game_contra = False
         self.xxi_catch_shown = False
+        self.xxi_catch_partial = False
         for player in self.players:
             player.ready_next = False
 
@@ -887,6 +890,7 @@ class GameState(BaseModel):
         if include_all_hands:
             result["called_card_discarded_by"] = self.called_card_discarded_by
             result["xxi_catch_shown"] = self.xxi_catch_shown
+            result["xxi_catch_partial"] = self.xxi_catch_partial
 
         # Add winning bid if it exists
         if self.winning_bid:

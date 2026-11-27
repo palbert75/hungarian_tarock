@@ -29,9 +29,11 @@ export default function XxiCatchFx() {
   const me = useGameStore(selectMyPosition)
   const players = useGameStore((s) => s.gameState?.players)
 
-  const happy = !!caught && (me === null || caught.winners.includes(me))
+  // Only the players the news is for: the partners of a hidden side get theirs later
+  const happy = !!caught && me !== null && caught.winners.includes(me)
+  const sad = !!caught && me !== null && caught.losers.includes(me)
   const bits = useMemo(() => (caught ? pieces(happy ? 90 : 60, caught.id) : []), [caught, happy])
-  if (!caught) return null
+  if (!caught || (!happy && !sad)) return null
 
   const nameAt = (position: number) => players?.find((p) => p.position === position)?.name ?? '?'
   const style = { '--fx-ms': `${XXI_CATCH_MS}ms` } as CSSProperties

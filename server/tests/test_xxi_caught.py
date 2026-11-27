@@ -39,16 +39,32 @@ async def test_catch_is_told_once_and_the_xxi_owner_gets_the_hat():
 
 
 @pytest.mark.asyncio
-async def test_hidden_partner_keeps_the_catch_back_until_the_hand_ends():
+async def test_hidden_partner_skiz_and_xxi_at_once_their_partners_when_the_hand_ends():
     service, room, recorder = playing_room(partner_revealed=False)
     room.game_state.trick_history = [trick((1, "skiz"), (0, "XXI"))]
 
     await service.show_xxi_catch(room)
-    assert recorder.of("xxi_caught") == []
+    await service.show_xxi_catch(room)
+    first = [m["data"] for m in recorder.of("xxi_caught")]
+    assert first == [{"skiz_position": 1, "xxi_position": 0, "winners": [1], "losers": [0]}]
+    assert room.game_state.players[0].polgarmester is True
 
     room.game_state.phase = GamePhase.SCORING
     await service.show_xxi_catch(room)
-    assert len(recorder.of("xxi_caught")) == 1
+    await service.show_xxi_catch(room)
+    later = [m["data"] for m in recorder.of("xxi_caught")][1:]
+    assert later == [{"skiz_position": 1, "xxi_position": 0, "winners": [3], "losers": [2]}]
+
+
+@pytest.mark.asyncio
+async def test_declarer_alone_with_hidden_sides_the_others_get_theirs_at_the_end():
+    service, room, recorder = playing_room(partner_revealed=False, partner=None)
+    room.game_state.trick_history = [trick((2, "skiz"), (0, "XXI"))]
+    await service.show_xxi_catch(room)
+    room.game_state.phase = GamePhase.SCORING
+    await service.show_xxi_catch(room)
+    sent = [(m["data"]["winners"], m["data"]["losers"]) for m in recorder.of("xxi_caught")]
+    assert sent == [([2], [0]), ([1, 3], [])]
 
 
 @pytest.mark.asyncio

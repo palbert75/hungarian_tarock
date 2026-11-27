@@ -238,7 +238,8 @@ class SocketManager {
       const data = unwrap<Omit<XxiCatch, 'id'>>(payload)
       store().celebrateXxiCatch(data)
       const me = selectMyPosition(store())
-      if (me !== null) playSound(data.winners.includes(me) ? 'fanfare' : 'sad')
+      if (me !== null && data.winners.includes(me)) playSound('fanfare')
+      else if (me !== null && data.losers.includes(me)) playSound('sad')
     })
 
     socket.on('game_over', (payload) => {
